@@ -51,7 +51,14 @@ API REST desarrollada con **Express.js** y **TypeScript** para el manejo de text
    ```
    Edita el archivo `.env` con tus credenciales de base de datos.
 
-4. **Crear la base de datos y tabla**
+4. **Configurar la base de datos**
+   
+   Ejecuta el script incluido en tu servidor MySQL/MariaDB:
+   ```bash
+   mysql -u root -p < database_setup.sql
+   ```
+   
+   O ejecuta manualmente:
    ```sql
    CREATE DATABASE IF NOT EXISTS uttecam;
    USE uttecam;
@@ -81,6 +88,8 @@ npm start
 
 | Método | Endpoint | Descripción | Body |
 |--------|----------|-------------|------|
+| `GET` | `/` | Información de la API | - |
+| `GET` | `/health` | Estado del servidor y BD | - |
 | `GET` | `/api/textos` | Obtener todos los textos | - |
 | `GET` | `/api/textos/:id` | Obtener un texto por ID | - |
 | `POST` | `/api/textos` | Crear un nuevo texto | `{ "contenido": "string" }` |

@@ -15,7 +15,12 @@ export const pool = mysql.createPool({
 });
 
 export async function dbPing() {
-  const conn = await pool.getConnection();
-  await conn.ping();
-  conn.release();
+  try {
+    const conn = await pool.getConnection();
+    await conn.ping();
+    conn.release();
+    return true;
+  } catch (error) {
+    throw error;
+  }
 }

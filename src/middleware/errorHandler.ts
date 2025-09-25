@@ -6,5 +6,19 @@ export function notFound(req: Request, res: Response) {
 
 export function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
   console.error('[ERROR]', err);
-  res.status(500).json({ error: 'Error interno', detalle: process.env.NODE_ENV === 'development' ? String(err) : undefined });
+  
+  // Error de conexión a la base de datos
+  if (err.code === 'ECONNREFUSED' || err.code === 'ER_ACCESS_DENIED_ERROR' || err.errno) {
+    return res.status(503).json({ 
+      error: 'Servicio no disponible',
+      mensaje: 'Error de conexión a la base de datos. Verifica la configuración.',
+      detalle: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+  
+  // Error genérico
+  res.status(500).json({ 
+    error: 'Error interno del servidor',
+    detalle: process.env.NODE_ENV === 'development' ? err.message : undefined 
+  });
 }
