@@ -19,21 +19,35 @@ app.get('/', (_req, res) => {
   });
 });
 
-// Ruta de health check
+// Ruta de health check mejorado con Sequelize
 app.get('/health', async (_req, res) => {
-  const health = {
+  const health: any = {
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    database: 'disconnected'
+    database: 'disconnected',
+    environment: process.env.NODE_ENV || 'development',
+    api_version: '2.0.0'
   };
 
   try {
-    const { dbPing } = require('./config/db');
-    await dbPing();
+    // Importar Sequelize y modelo
+    const sequelize = require('./config/database').default;
+    const Texto = require('./models/Texto').default;
+    
+    // Verificar conexión con authenticate
+    await sequelize.authenticate();
+    
+    // Hacer consulta real para confirmar funcionamiento
+    const totalRecords = await Texto.count();
+    
     health.database = 'connected';
-  } catch (error) {
+    health.sequelize = 'authenticated';
+    health.totalRecords = totalRecords;
+    
+  } catch (error: any) {
     health.database = 'disconnected';
+    health.db_error = error.message;
   }
 
   res.json(health);

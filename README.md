@@ -19,8 +19,9 @@ API CRUD para gestión de textos de la Universidad Tecnológica de Tecamachalco,
 ### 1. Clonar e instalar dependencias
 
 ```bash
-git clone <tu-repositorio>
+git clone https://github.com/Lisa2900/BKUTTECAM.git
 cd BKUTTECAM
+git checkout version-estable
 npm install
 ```
 
@@ -176,32 +177,45 @@ npm run db:seed
 ## 🛠️ Arquitectura del Proyecto
 
 ```
-src/
-├── config/
-│   ├── database.ts          # Configuración Sequelize
-│   ├── syncDatabase.ts      # Sincronización y seeds
-│   ├── db.backup.ts         # Configuración MySQL anterior
-├── models/
-│   ├── Texto.ts             # Modelo Sequelize
+BKUTTECAM/
+├── 📁 backup/              # Archivos de respaldo
+│   ├── db.backup.ts        # Configuración MySQL anterior
 │   ├── textoModel.backup.ts # Modelo MySQL anterior
-├── controllers/
-│   └── textoController.ts   # Controladores con Sequelize
-├── routes/
-│   └── textos.ts           # Definición de rutas
-├── middleware/
-│   └── errorHandler.ts     # Manejo de errores
-├── app.ts                  # Configuración Express
-└── server.ts              # Punto de entrada
+│   └── README_old.md       # Documentación anterior
+├── 📁 docs/                # Documentación API
+├── 📁 src/                 # Código fuente TypeScript
+│   ├── config/
+│   │   ├── database.ts     # Configuración Sequelize
+│   │   └── syncDatabase.ts # Sincronización y seeds
+│   ├── models/
+│   │   └── Texto.ts        # Modelo Sequelize
+│   ├── controllers/
+│   │   └── textoController.ts # Controladores con Sequelize
+│   ├── routes/
+│   │   └── textos.ts       # Definición de rutas
+│   ├── middleware/
+│   │   └── errorHandler.ts # Manejo de errores
+│   ├── app.ts              # Configuración Express
+│   └── server.ts           # Punto de entrada
+├── 📄 README.md            # Documentación principal
+├── 📄 DEVELOPMENT.md       # Guía de desarrollo
+├── 📄 package.json         # Dependencias y scripts
+├── 📄 tsconfig.json        # Configuración TypeScript
+├── 📄 .env.example         # Plantilla variables entorno
+└── 📄 .gitignore          # Archivos excluidos de git
 ```
 
 ## 🔧 Scripts Disponibles
 
 ```bash
 npm run dev        # Desarrollo con auto-recarga
-npm run build      # Compilar TypeScript
-npm start          # Ejecutar en producción
+npm run build      # Limpiar y compilar TypeScript
+npm run start      # Ejecutar en producción
+npm run clean      # Limpiar archivos compilados
 npm run db:reset   # Resetear BD con datos de prueba
 npm run db:seed    # Insertar datos de ejemplo
+npm run lint       # Linter (configurar próximamente)
+npm run test       # Tests (configurar próximamente)
 ```
 
 ## 🚦 Ventajas de Sequelize
@@ -245,14 +259,51 @@ npm run db:seed    # Insertar datos de ejemplo
 - **dotenv** - Variables de entorno
 - **CORS** - Intercambio de recursos
 
+## 🔗 Enlaces importantes
+
+- **Repositorio GitHub:** https://github.com/Lisa2900/BKUTTECAM
+- **Rama principal:** `version-estable` (con Sequelize)
+- **Ramas disponibles:** `master`, `typescript-version`, `version-estable`
+
+## 📋 Estado del proyecto
+
+### ✅ **Completado:**
+- ✅ Implementación completa de Sequelize ORM
+- ✅ API CRUD funcional con paginación y búsqueda
+- ✅ Validaciones automáticas y manejo de errores
+- ✅ Estadísticas en tiempo real
+- ✅ Documentación completa
+- ✅ Estructura de proyecto limpia y organizada
+- ✅ Scripts de utilidad para desarrollo
+
+### 🚧 **En desarrollo futuro:**
+- [ ] Sistema de autenticación
+- [ ] Tests unitarios y de integración
+- [ ] Documentación Swagger/OpenAPI
+- [ ] Docker para containerización
+- [ ] CI/CD con GitHub Actions
+
+## 🛡️ Requisitos del sistema
+
+- **Node.js:** >= 16.0.0
+- **MySQL:** >= 8.0
+- **npm:** >= 8.0.0
+
 ## 🤝 Contribuir
 
 1. Haz fork del proyecto
-2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`
-3. Commit tus cambios: `git commit -m 'Añadir nueva funcionalidad'`
-4. Push a la rama: `git push origin feature/nueva-funcionalidad`
-5. Abre un Pull Request
+2. Clona tu fork: `git clone https://github.com/TU_USUARIO/BKUTTECAM.git`
+3. Cambia a la rama de desarrollo: `git checkout version-estable`
+4. Crea una rama para tu feature: `git checkout -b feature/nueva-funcionalidad`
+5. Commit tus cambios: `git commit -m 'Añadir nueva funcionalidad'`
+6. Push a la rama: `git push origin feature/nueva-funcionalidad`
+7. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ---
 
-**Universidad Tecnológica de Tecamachalco** 🎓
+**Universidad Tecnológica de Tecamachalco** 🎓  
+**Desarrollado con ❤️ y TypeScript**
