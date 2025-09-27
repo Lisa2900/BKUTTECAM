@@ -1,12 +1,21 @@
 import { Router } from 'express';
-import { listar, obtener, crear, actualizar, eliminar } from '../controllers/textoController';
+import {
+  listarTextos,
+  obtenerTexto,
+  crearTexto,
+  actualizarTexto,
+  eliminarTexto,
+  estadisticasTextos
+} from '../controllers/textoController';
 
 const router = Router();
 
-router.get('/', listar);
-router.get('/:id', obtener);
-router.post('/', crear);
-router.put('/:id', actualizar);
-router.delete('/:id', eliminar);
+// Rutas CRUD
+router.get('/', listarTextos);
+router.get('/stats', estadisticasTextos);
+router.get('/:id', obtenerTexto);
+router.post('/', crearTexto);
+router.put('/:id', actualizarTexto);
+router.delete('/:id', eliminarTexto);
 
 export default router;

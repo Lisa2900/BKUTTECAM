@@ -1,30 +1,38 @@
 import app from './app';
-import { dbPing } from './config/db';
+import { syncDatabase } from './config/syncDatabase';
 
-const port = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 3000;
 
-async function start() {
+// Inicializar servidor
+const startServer = async () => {
   try {
-    // Iniciar servidor independientemente de la DB para desarrollo
-    const server = app.listen(port, () => {
-      console.log(`🚀 Servidor ejecutándose en http://localhost:${port}`);
+    // Iniciar servidor primero
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+      console.log(`📡 API disponible en: http://localhost:${PORT}`);
+      console.log(`📋 Endpoints: http://localhost:${PORT}/api/textos`);
+      console.log(`📊 Estadísticas: http://localhost:${PORT}/api/textos/stats`);
     });
 
-    // Intentar conectar a la base de datos
+    // Luego intentar conectar la base de datos
     try {
-      await dbPing();
-      console.log('✅ Base de datos conectada correctamente');
+      await syncDatabase(false); // Cambiar a true para reset completo
+      console.log('✅ Sequelize configurado y base de datos sincronizada');
     } catch (dbError: any) {
       console.warn('⚠️  Advertencia: No se pudo conectar a la base de datos');
-      console.warn('   Verifica tu configuración de DB en el archivo .env');
+      console.warn('   Verifica tu configuración de MySQL y el archivo .env');
       console.warn('   Error:', dbError.message);
-      console.warn('   El servidor continuará ejecutándose para desarrollo...');
+      console.warn('   💡 Para usar Sequelize necesitas:');
+      console.warn('      1. MySQL corriendo');
+      console.warn('      2. Base de datos "uttecam" creada');
+      console.warn('      3. Archivo .env configurado');
+      console.warn('   El servidor continuará ejecutándose...');
     }
 
   } catch (e: any) {
-    console.error('❌ Error iniciando el servidor:', e.message);
+    console.error('❌ Error crítico al iniciar servidor:', e.message);
     process.exit(1);
   }
-}
+};
 
-start();
+startServer();
