@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import textosRouter from './routes/textos';
+import nosotrosRouter from './routes/nosotros';
 import { notFound, errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -18,6 +19,8 @@ app.get('/', (_req, res) => {
     }
   });
 });
+// Ruta Nosotros
+app.use('/api/nosotros', nosotrosRouter);
 
 // Ruta de health check mejorado con Sequelize
 app.get('/health', async (_req, res) => {
