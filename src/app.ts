@@ -1,11 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import textosRouter from './routes/textos';
+import nosotrosRouter from './routes/nosotros';
 import { notFound, errorHandler } from './middleware/errorHandler';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Servir archivos estáticos (imágenes subidas)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Ruta principal
 app.get('/', (_req, res) => {
@@ -14,10 +19,13 @@ app.get('/', (_req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      textos: '/api/textos'
+      textos: '/api/textos',
+      nosotros: '/api/nosotros'
     }
   });
 });
+// Ruta Nosotros
+app.use('/api/nosotros', nosotrosRouter);
 
 // Ruta de health check mejorado con Sequelize
 app.get('/health', async (_req, res) => {
