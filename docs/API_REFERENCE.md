@@ -32,7 +32,9 @@ Obtiene información básica de la API.
   "version": "1.0.0",
   "endpoints": {
     "health": "/health",
-    "textos": "/api/textos"
+    "textos": "/api/textos",
+    "nosotros": "/api/nosotros",
+    "directorios": "/api/directorios"
   }
 }
 ```
@@ -337,4 +339,325 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
 curl_close($ch);
 echo $response;
+```
+
+---
+
+## Directorios API
+
+El módulo de directorios gestiona la información del personal y estructura organizacional de la universidad.
+
+### GET /api/directorios
+
+Obtiene todos los directorios registrados.
+
+**Response Success (200)**
+```json
+{
+  "message": "Directorios obtenidos correctamente",
+  "data": [
+    {
+      "id": 1,
+      "titulo": "Secretaría de Vinculación",
+      "nombre": "Mtro. Daniel Huerta Conde",
+      "telefono": "2494223300",
+      "extension": "120",
+      "correo": "vinculacion@uttecam.edu.mx",
+      "imagen": "directorio_1696123456789.png"
+    },
+    {
+      "id": 2,
+      "titulo": "Encargado de Secretaría Académica",
+      "nombre": "Mtro. Carlos Islas Contreras",
+      "telefono": "2494223300",
+      "extension": "135",
+      "correo": "secretariaacademica@uttecam.edu.mx",
+      "imagen": "directorio_1696123456790.png"
+    }
+  ]
+}
+```
+
+**Status Codes**
+- `200`: Directorios obtenidos exitosamente
+- `500`: Error del servidor
+
+---
+
+### GET /api/directorios/:id
+
+Obtiene un directorio específico por su ID.
+
+**Parameters**
+- `id` (number): ID del directorio
+
+**Response Success (200)**
+```json
+{
+  "message": "Directorio encontrado",
+  "data": {
+    "id": 1,
+    "titulo": "Secretaría de Vinculación",
+    "nombre": "Mtro. Daniel Huerta Conde",
+    "telefono": "2494223300",
+    "extension": "120",
+    "correo": "vinculacion@uttecam.edu.mx",
+    "imagen": "directorio_1696123456789.png"
+  }
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Directorio no encontrado"
+}
+```
+
+**Response Error (400)**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Status Codes**
+- `200`: Directorio encontrado
+- `400`: ID inválido
+- `404`: Directorio no encontrado
+- `500`: Error del servidor
+
+---
+
+### POST /api/directorios
+
+Crea un nuevo directorio. Soporta subida de imagen mediante multipart/form-data.
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**
+- `titulo` (string, required): Título del cargo (máx. 150 caracteres)
+- `nombre` (string, required): Nombre completo de la persona (máx. 150 caracteres)
+- `telefono` (string, optional): Número de teléfono (máx. 20 caracteres, solo números)
+- `extension` (string, optional): Extensión telefónica (máx. 10 caracteres, solo números)
+- `correo` (string, optional): Correo electrónico (máx. 150 caracteres, formato email válido)
+- `imagen` (file, optional): Imagen del directorio (formatos: jpeg, jpg, png, gif, webp, avif, svg | máx. 5MB)
+
+**Response Success (201)**
+```json
+{
+  "message": "Directorio creado correctamente",
+  "data": {
+    "id": 3,
+    "titulo": "Director de Tecnologías",
+    "nombre": "Ing. Ana García López",
+    "telefono": "2494223300",
+    "extension": "140",
+    "correo": "tecnologias@uttecam.edu.mx",
+    "imagen": "directorio_1696123456791.png"
+  }
+}
+```
+
+**Response Error (400) - Campos requeridos**
+```json
+{
+  "error": "Título y nombre son campos requeridos"
+}
+```
+
+**Response Error (400) - Validación**
+```json
+{
+  "error": "Error de validación",
+  "details": [
+    {
+      "field": "correo",
+      "message": "Debe ser un correo electrónico válido"
+    },
+    {
+      "field": "telefono",
+      "message": "El teléfono debe contener solo números"
+    }
+  ]
+}
+```
+
+**Status Codes**
+- `201`: Directorio creado exitosamente
+- `400`: Error de validación o campos requeridos faltantes
+- `500`: Error del servidor
+
+---
+
+### PUT /api/directorios/:id
+
+Actualiza un directorio existente. Soporta subida de imagen mediante multipart/form-data.
+
+**Parameters**
+- `id` (number): ID del directorio a actualizar
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**
+- `titulo` (string, required): Título del cargo (máx. 150 caracteres)
+- `nombre` (string, required): Nombre completo de la persona (máx. 150 caracteres)
+- `telefono` (string, optional): Número de teléfono (máx. 20 caracteres, solo números)
+- `extension` (string, optional): Extensión telefónica (máx. 10 caracteres, solo números)
+- `correo` (string, optional): Correo electrónico (máx. 150 caracteres, formato email válido)
+- `imagen` (file, optional): Nueva imagen del directorio (formatos: jpeg, jpg, png, gif, webp, avif, svg | máx. 5MB)
+
+**Response Success (200)**
+```json
+{
+  "message": "Directorio actualizado correctamente",
+  "data": {
+    "id": 1,
+    "titulo": "Secretaría de Vinculación Empresarial",
+    "nombre": "Mtro. Daniel Huerta Conde",
+    "telefono": "2494223300",
+    "extension": "120",
+    "correo": "vinculacion@uttecam.edu.mx",
+    "imagen": "directorio_1696123456792.png"
+  }
+}
+```
+
+**Response Error (400) - ID inválido**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Directorio no encontrado"
+}
+```
+
+**Response Error (400) - Validación**
+```json
+{
+  "error": "Error de validación",
+  "details": [
+    {
+      "field": "titulo",
+      "message": "El título debe tener entre 1 y 150 caracteres"
+    }
+  ]
+}
+```
+
+**Status Codes**
+- `200`: Directorio actualizado exitosamente
+- `400`: Error de validación, ID inválido o campos requeridos faltantes
+- `404`: Directorio no encontrado
+- `500`: Error del servidor
+
+---
+
+### DELETE /api/directorios/:id
+
+Elimina un directorio específico.
+
+**Parameters**
+- `id` (number): ID del directorio a eliminar
+
+**Response Success (200)**
+```json
+{
+  "message": "Directorio eliminado correctamente",
+  "data": {
+    "id": 1
+  }
+}
+```
+
+**Response Error (400)**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Directorio no encontrado"
+}
+```
+
+**Status Codes**
+- `200`: Directorio eliminado exitosamente
+- `400`: ID inválido
+- `404`: Directorio no encontrado
+- `500`: Error del servidor
+
+---
+
+## Directorios - Ejemplos de Uso
+
+### JavaScript/Fetch - Obtener todos los directorios
+```javascript
+fetch('http://localhost:3000/api/directorios')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Crear directorio con imagen
+```javascript
+const formData = new FormData();
+formData.append('titulo', 'Director de Innovación');
+formData.append('nombre', 'Dr. Luis Martínez');
+formData.append('telefono', '2494223300');
+formData.append('extension', '150');
+formData.append('correo', 'innovacion@uttecam.edu.mx');
+formData.append('imagen', fileInput.files[0]); // archivo de input file
+
+fetch('http://localhost:3000/api/directorios', {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Actualizar directorio
+```javascript
+const formData = new FormData();
+formData.append('titulo', 'Secretaría de Vinculación Empresarial');
+formData.append('nombre', 'Mtro. Daniel Huerta Conde');
+formData.append('telefono', '2494223300');
+formData.append('extension', '120');
+formData.append('correo', 'vinculacion@uttecam.edu.mx');
+
+fetch('http://localhost:3000/api/directorios/1', {
+  method: 'PUT',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### cURL - Crear directorio con imagen
+```bash
+curl -X POST http://localhost:3000/api/directorios \
+  -F "titulo=Director de Sistemas" \
+  -F "nombre=Ing. María González" \
+  -F "telefono=2494223300" \
+  -F "extension=160" \
+  -F "correo=sistemas@uttecam.edu.mx" \
+  -F "imagen=@/ruta/a/imagen.jpg"
+```
+
+### cURL - Obtener directorio específico
+```bash
+curl -X GET http://localhost:3000/api/directorios/1
+```
+
+### cURL - Eliminar directorio
+```bash
+curl -X DELETE http://localhost:3000/api/directorios/1
 ```

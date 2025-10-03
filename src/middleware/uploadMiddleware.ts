@@ -48,6 +48,37 @@ export const uploadNosotros = multer({
   fileFilter: fileFilter
 });
 
+// Configuración de almacenamiento para directorios
+const storageDirectorios = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/directorios');
+    
+    // Crear directorio si no existe
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    // Generar nombre único: directorio_timestamp.extension
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname);
+    const filename = `directorio_${timestamp}${extension}`;
+    
+    cb(null, filename);
+  }
+});
+
+// Configuración de multer para directorios
+export const uploadDirectorios = multer({
+  storage: storageDirectorios,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB máximo
+  },
+  fileFilter: fileFilter
+});
+
 // Función utilitaria para eliminar archivos
 export const deleteFile = (filePath: string): boolean => {
   try {

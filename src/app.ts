@@ -3,6 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import textosRouter from './routes/textos';
 import nosotrosRouter from './routes/nosotros';
+import directorioRouter from './routes/directorio';
+import formularioRouter from './routes/formulario';
 import { notFound, errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -20,12 +22,17 @@ app.get('/', (_req, res) => {
     endpoints: {
       health: '/health',
       textos: '/api/textos',
-      nosotros: '/api/nosotros'
+      nosotros: '/api/nosotros',
+      directorios: '/api/directorios',
+      formularios: '/api/formularios'
     }
   });
 });
-// Ruta Nosotros
+
+// Rutas de la API
 app.use('/api/nosotros', nosotrosRouter);
+app.use('/api/directorios', directorioRouter);
+app.use('/api/formularios', formularioRouter);
 
 // Ruta de health check mejorado con Sequelize
 app.get('/health', async (_req, res) => {

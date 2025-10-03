@@ -1,6 +1,6 @@
 
 import { NextFunction, Request, Response } from "express";
-import NosotrosContenido, { TipoContenido } from "../models/nosotros";
+import NosotrosContenido, { TipoContenido } from "../models/Nosotros";
 import { ValidationError, Op } from "sequelize";
 import { deleteFile } from "../middleware/uploadMiddleware";
 import path from "path";
