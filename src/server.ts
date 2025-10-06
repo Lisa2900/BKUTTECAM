@@ -14,6 +14,8 @@ const startServer = async () => {
       console.log(`📊 Estadísticas: http://localhost:${PORT}/api/textos/stats`);
     });
 
+    console.log('🔔 Prioridad 1 establecida');
+
     // Luego intentar conectar la base de datos
     try {
       await syncDatabase(false); // Cambiar a true para reset completo

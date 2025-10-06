@@ -661,3 +661,506 @@ curl -X GET http://localhost:3000/api/directorios/1
 ```bash
 curl -X DELETE http://localhost:3000/api/directorios/1
 ```
+
+---
+
+## Nosotros API
+
+El módulo de **Nosotros** gestiona el contenido institucional de la universidad (visión, misión, valores, historia, etc.) con soporte para imágenes.
+
+### GET /api/nosotros/contenido
+
+Obtiene todo el contenido institucional.
+
+**Response Success (200)**
+```json
+{
+  "message": "Contenido obtenido correctamente",
+  "count": 4,
+  "data": [
+    {
+      "id": 1,
+      "tipo": "vision",
+      "titulo": "Nuestra Visión",
+      "descripcion": "Ser una institución líder en educación tecnológica...",
+      "imagen": "nosotros/vision_1727486365123.jpg",
+      "imageUrl": "/uploads/nosotros/vision_1727486365123.jpg",
+      "lista": null,
+      "fechaCreacion": "2025-10-01T10:00:00.000Z",
+      "fechaActualizacion": "2025-10-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "tipo": "mision",
+      "titulo": "Nuestra Misión",
+      "descripcion": "Formar profesionales con excelencia académica...",
+      "imagen": "nosotros/mision_1727486365124.png",
+      "imageUrl": "/uploads/nosotros/mision_1727486365124.png",
+      "lista": null,
+      "fechaCreacion": "2025-10-01T10:05:00.000Z",
+      "fechaActualizacion": "2025-10-01T10:05:00.000Z"
+    },
+    {
+      "id": 3,
+      "tipo": "valores",
+      "titulo": "Nuestros Valores",
+      "descripcion": "Los valores que nos guían como institución",
+      "imagen": "nosotros/valores_1727486365125.webp",
+      "imageUrl": "/uploads/nosotros/valores_1727486365125.webp",
+      "lista": ["Excelencia", "Integridad", "Responsabilidad", "Innovación"],
+      "fechaCreacion": "2025-10-01T10:10:00.000Z",
+      "fechaActualizacion": "2025-10-01T10:10:00.000Z"
+    }
+  ]
+}
+```
+
+**Status Codes**
+- `200`: Contenido obtenido exitosamente
+- `500`: Error del servidor
+
+---
+
+### GET /api/nosotros/contenido/:id
+
+Obtiene un contenido específico por su ID.
+
+**Parameters**
+- `id` (number): ID del contenido
+
+**Response Success (200)**
+```json
+{
+  "message": "Contenido encontrado",
+  "data": {
+    "id": 1,
+    "tipo": "vision",
+    "titulo": "Nuestra Visión",
+    "descripcion": "Ser una institución líder en educación tecnológica...",
+    "imagen": "nosotros/vision_1727486365123.jpg",
+    "imageUrl": "/uploads/nosotros/vision_1727486365123.jpg",
+    "lista": null,
+    "fechaCreacion": "2025-10-01T10:00:00.000Z",
+    "fechaActualizacion": "2025-10-01T10:00:00.000Z"
+  }
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Contenido no encontrado"
+}
+```
+
+**Response Error (400)**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Status Codes**
+- `200`: Contenido encontrado
+- `400`: ID inválido
+- `404`: Contenido no encontrado
+- `500`: Error del servidor
+
+---
+
+### GET /api/nosotros/contenido/tipo/:tipo
+
+Obtiene contenido filtrado por tipo.
+
+**Parameters**
+- `tipo` (string): Tipo de contenido (vision, mision, valores, historia, etc.)
+
+**Response Success (200)**
+```json
+{
+  "message": "Contenido obtenido correctamente",
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "tipo": "vision",
+      "titulo": "Nuestra Visión",
+      "descripcion": "Ser una institución líder...",
+      "imagen": "nosotros/vision_1727486365123.jpg",
+      "imageUrl": "/uploads/nosotros/vision_1727486365123.jpg",
+      "lista": null,
+      "fechaCreacion": "2025-10-01T10:00:00.000Z",
+      "fechaActualizacion": "2025-10-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "No se encontró contenido del tipo especificado"
+}
+```
+
+**Status Codes**
+- `200`: Contenido encontrado
+- `404`: No se encontró contenido de ese tipo
+- `500`: Error del servidor
+
+---
+
+### POST /api/nosotros/contenido
+
+Crea nuevo contenido institucional. Soporta subida de imagen mediante multipart/form-data.
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**
+- `tipo` (string, required): Tipo de contenido (vision, mision, valores, historia, etc.) (máx. 50 caracteres)
+- `titulo` (string, required): Título del contenido (máx. 200 caracteres)
+- `descripcion` (text, optional): Descripción detallada del contenido
+- `imagen` (file, optional): Imagen asociada (formatos: jpeg, jpg, png, gif, webp, avif, svg | máx. 5MB)
+- `lista` (array, optional): Array de elementos JSON para contenido tipo lista
+
+**Response Success (201)**
+```json
+{
+  "message": "Contenido creado correctamente",
+  "data": {
+    "id": 4,
+    "tipo": "historia",
+    "titulo": "Nuestra Historia",
+    "descripcion": "Fundada en 1991, la UTTECAM ha sido...",
+    "imagen": "nosotros/historia_1727486365126.jpg",
+    "imageUrl": "/uploads/nosotros/historia_1727486365126.jpg",
+    "lista": null,
+    "fechaCreacion": "2025-10-06T15:30:00.000Z",
+    "fechaActualizacion": "2025-10-06T15:30:00.000Z"
+  }
+}
+```
+
+**Response Error (400) - Campos requeridos**
+```json
+{
+  "error": "Tipo y título son campos requeridos"
+}
+```
+
+**Response Error (400) - Validación**
+```json
+{
+  "error": "Error de validación",
+  "details": [
+    {
+      "field": "tipo",
+      "message": "El tipo debe tener entre 1 y 50 caracteres"
+    }
+  ]
+}
+```
+
+**Response Error (400) - Imagen inválida**
+```json
+{
+  "error": "Solo se permiten imágenes (jpeg, jpg, png, gif, webp, avif, svg)"
+}
+```
+
+**Status Codes**
+- `201`: Contenido creado exitosamente
+- `400`: Error de validación o campos requeridos faltantes
+- `500`: Error del servidor
+
+---
+
+### PUT /api/nosotros/contenido/:id
+
+Actualiza contenido institucional existente. Soporta subida de nueva imagen mediante multipart/form-data.
+
+**Parameters**
+- `id` (number): ID del contenido a actualizar
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**
+- `tipo` (string, optional): Tipo de contenido (máx. 50 caracteres)
+- `titulo` (string, optional): Título del contenido (máx. 200 caracteres)
+- `descripcion` (text, optional): Descripción detallada del contenido
+- `imagen` (file, optional): Nueva imagen (reemplaza la anterior | formatos: jpeg, jpg, png, gif, webp, avif, svg | máx. 5MB)
+- `lista` (array, optional): Array de elementos JSON
+
+**Response Success (200)**
+```json
+{
+  "message": "Contenido actualizado correctamente",
+  "data": {
+    "id": 1,
+    "tipo": "vision",
+    "titulo": "Nuestra Visión Actualizada",
+    "descripcion": "Ser una institución líder en educación tecnológica y formación integral...",
+    "imagen": "nosotros/vision_1727486365127.png",
+    "imageUrl": "/uploads/nosotros/vision_1727486365127.png",
+    "lista": null,
+    "fechaCreacion": "2025-10-01T10:00:00.000Z",
+    "fechaActualizacion": "2025-10-06T16:00:00.000Z"
+  }
+}
+```
+
+**Response Error (400) - ID inválido**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Contenido no encontrado"
+}
+```
+
+**Response Error (400) - Validación**
+```json
+{
+  "error": "Error de validación",
+  "details": [
+    {
+      "field": "titulo",
+      "message": "El título debe tener entre 1 y 200 caracteres"
+    }
+  ]
+}
+```
+
+**Status Codes**
+- `200`: Contenido actualizado exitosamente
+- `400`: Error de validación o ID inválido
+- `404`: Contenido no encontrado
+- `500`: Error del servidor
+
+---
+
+### DELETE /api/nosotros/contenido/:id
+
+Elimina un contenido institucional específico. También elimina automáticamente la imagen asociada.
+
+**Parameters**
+- `id` (number): ID del contenido a eliminar
+
+**Response Success (200)**
+```json
+{
+  "message": "Contenido eliminado correctamente",
+  "data": {
+    "id": 1
+  }
+}
+```
+
+**Response Error (400)**
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+**Response Error (404)**
+```json
+{
+  "message": "Contenido no encontrado"
+}
+```
+
+**Status Codes**
+- `200`: Contenido eliminado exitosamente
+- `400`: ID inválido
+- `404`: Contenido no encontrado
+- `500`: Error del servidor
+
+---
+
+## Nosotros - Características de Manejo de Imágenes
+
+### 📸 Sistema de Upload
+
+- **Formatos soportados:** JPEG, JPG, PNG, GIF, WEBP, AVIF, SVG
+- **Tamaño máximo:** 5MB por archivo
+- **Nomenclatura automática:** `{tipo}_{timestamp}.{extension}`
+- **Directorio:** `/uploads/nosotros/`
+- **URLs completas:** Generadas automáticamente en el campo `imageUrl`
+
+### 🛡️ Gestión Automática
+
+- ✅ **Eliminación automática** de imágenes al eliminar contenido
+- ✅ **Reemplazo automático** al actualizar con nueva imagen
+- ✅ **Limpieza en errores** - Rollback automático
+- ✅ **Validación de seguridad** - Solo formatos permitidos
+
+### 📁 Acceso a Imágenes
+
+Las imágenes subidas están disponibles públicamente en:
+```
+http://localhost:3000/uploads/nosotros/{nombre_archivo}
+```
+
+---
+
+## Nosotros - Ejemplos de Uso
+
+### JavaScript/Fetch - Obtener todo el contenido
+```javascript
+fetch('http://localhost:3000/api/nosotros/contenido')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Obtener contenido por tipo
+```javascript
+fetch('http://localhost:3000/api/nosotros/contenido/tipo/vision')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Crear contenido con imagen
+```javascript
+const formData = new FormData();
+formData.append('tipo', 'vision');
+formData.append('titulo', 'Nuestra Visión');
+formData.append('descripcion', 'Ser una institución líder en educación tecnológica...');
+formData.append('imagen', fileInput.files[0]); // archivo de input file
+
+fetch('http://localhost:3000/api/nosotros/contenido', {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Crear contenido con lista
+```javascript
+const formData = new FormData();
+formData.append('tipo', 'valores');
+formData.append('titulo', 'Nuestros Valores');
+formData.append('descripcion', 'Los valores que nos guían');
+formData.append('lista', JSON.stringify([
+  'Excelencia',
+  'Integridad',
+  'Responsabilidad',
+  'Innovación'
+]));
+formData.append('imagen', fileInput.files[0]);
+
+fetch('http://localhost:3000/api/nosotros/contenido', {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Actualizar solo texto (mantener imagen)
+```javascript
+const formData = new FormData();
+formData.append('titulo', 'Título Actualizado');
+formData.append('descripcion', 'Nueva descripción del contenido');
+
+fetch('http://localhost:3000/api/nosotros/contenido/1', {
+  method: 'PUT',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### JavaScript/Fetch - Actualizar imagen
+```javascript
+const formData = new FormData();
+formData.append('imagen', newFileInput.files[0]); // nueva imagen
+
+fetch('http://localhost:3000/api/nosotros/contenido/1', {
+  method: 'PUT',
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### cURL - Crear contenido con imagen
+```bash
+curl -X POST http://localhost:3000/api/nosotros/contenido \
+  -F "tipo=vision" \
+  -F "titulo=Nuestra Visión" \
+  -F "descripcion=Ser una institución líder en educación tecnológica" \
+  -F "imagen=@/ruta/a/tu/imagen.jpg"
+```
+
+### cURL - Actualizar solo texto
+```bash
+curl -X PUT http://localhost:3000/api/nosotros/contenido/1 \
+  -F "titulo=Título Actualizado" \
+  -F "descripcion=Nueva descripción"
+```
+
+### cURL - Obtener contenido específico
+```bash
+curl -X GET http://localhost:3000/api/nosotros/contenido/1
+```
+
+### cURL - Obtener por tipo
+```bash
+curl -X GET http://localhost:3000/api/nosotros/contenido/tipo/mision
+```
+
+### cURL - Eliminar contenido
+```bash
+curl -X DELETE http://localhost:3000/api/nosotros/contenido/1
+```
+
+### PowerShell - Crear contenido
+```powershell
+# Para archivos en PowerShell, usar herramientas como Postman o crear formularios HTML
+$body = @{
+    tipo = "vision"
+    titulo = "Nuestra Visión"
+    descripcion = "Ser una institución líder en educación tecnológica"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:3000/api/nosotros/contenido" -Method POST -Body $body -ContentType "application/json"
+```
+
+---
+
+## Resumen de Endpoints
+
+### Textos
+- `GET /api/textos` - Listar textos con paginación
+- `GET /api/textos/stats` - Estadísticas
+- `GET /api/textos/:id` - Obtener por ID
+- `POST /api/textos` - Crear texto
+- `PUT /api/textos/:id` - Actualizar texto
+- `DELETE /api/textos/:id` - Eliminar texto
+
+### Directorios
+- `GET /api/directorios` - Listar directorios
+- `GET /api/directorios/:id` - Obtener por ID
+- `POST /api/directorios` - Crear directorio (con imagen)
+- `PUT /api/directorios/:id` - Actualizar directorio (con imagen)
+- `DELETE /api/directorios/:id` - Eliminar directorio
+
+### Nosotros
+- `GET /api/nosotros/contenido` - Listar todo el contenido
+- `GET /api/nosotros/contenido/:id` - Obtener por ID
+- `GET /api/nosotros/contenido/tipo/:tipo` - Obtener por tipo
+- `POST /api/nosotros/contenido` - Crear contenido (con imagen)
+- `PUT /api/nosotros/contenido/:id` - Actualizar contenido (con imagen)
+- `DELETE /api/nosotros/contenido/:id` - Eliminar contenido
+
+---
+
+**API UTTECAM - Documentación Completa v1.0** 📚  
+**Última actualización:** Octubre 2025

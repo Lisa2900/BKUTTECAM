@@ -1,6 +1,25 @@
 # UTTECAM API con Sequelize 🚀
 
-API CRUD para gestión de textos de la Universidad Tecnológica de Tecamachalco, ahora implementada con **Sequelize ORM**.
+API CRUD para gestión de contenido de la Universidad Tecnológica de Tecamachalco, implementada con **Sequelize ORM**, **TypeScript** y **Express**.
+
+---
+
+## 📚 Documentación Completa
+
+> 📑 **[Ver Índice Completo de Documentación →](./docs/INDEX.md)** - Guía detallada de todos los documentos disponibles
+
+| Documento | Descripción |
+|-----------|-------------|
+| **[API Reference](./docs/API_REFERENCE.md)** | 📖 Documentación completa de todos los endpoints (Textos, Directorios, Nosotros) |
+| **[Architecture Guide](./docs/ARCHITECTURE.md)** | 🏗️ Arquitectura del sistema, flujo de datos y diagramas técnicos |
+| **[Installation Guide](./docs/INSTALLATION.md)** | ⚙️ Guía detallada de instalación paso a paso |
+| **[Development Guide](./docs/DEVELOPMENT.md)** | 💻 Guía para desarrollo local y estructura del proyecto |
+| **[Deployment Guide](./docs/DEPLOYMENT.md)** | 🚀 Opciones de despliegue (cPanel, VPS, Cloud) |
+| **[cPanel Deployment](./docs/CPANEL_DEPLOYMENT.md)** | 🌐 Guía específica para deployment en cPanel |
+| **[Images Upload Guide](./docs/IMAGENES_UPLOAD.md)** | 📸 Sistema de manejo de imágenes y uploads |
+| **[Changelog](./CHANGELOG.md)** | 📝 Historial de versiones y cambios del proyecto |
+
+---
 
 ## ✨ Características
 
@@ -59,22 +78,54 @@ npm run build
 npm start
 ```
 
-## 📡 Endpoints de la API
+## 📡 Módulos de la API
 
-### Textos CRUD
+La API cuenta con **3 módulos principales**:
 
-| Método | Endpoint | Descripción | Parámetros |
-|--------|----------|-------------|------------|
-| GET | `/api/textos` | Listar textos con paginación | `page`, `limit`, `search` |
-| GET | `/api/textos/stats` | Estadísticas de textos | - |
-| GET | `/api/textos/:id` | Obtener texto por ID | `id` |
-| POST | `/api/textos` | Crear nuevo texto | `contenido` |
-| PUT | `/api/textos/:id` | Actualizar texto | `id`, `contenido` |
-| DELETE | `/api/textos/:id` | Eliminar texto | `id` |
+### 1️⃣ Textos
+Gestión de contenido textual general.
 
-### Ejemplos de uso
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/textos` | Listar textos con paginación y búsqueda |
+| GET | `/api/textos/stats` | Estadísticas de textos |
+| GET | `/api/textos/:id` | Obtener texto por ID |
+| POST | `/api/textos` | Crear nuevo texto |
+| PUT | `/api/textos/:id` | Actualizar texto |
+| DELETE | `/api/textos/:id` | Eliminar texto |
 
-#### Listar textos con paginación
+### 2️⃣ Directorios
+Gestión del directorio de personal y estructura organizacional.
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/directorios` | Listar todos los directorios |
+| GET | `/api/directorios/:id` | Obtener directorio por ID |
+| POST | `/api/directorios` | Crear directorio (con imagen) |
+| PUT | `/api/directorios/:id` | Actualizar directorio (con imagen) |
+| DELETE | `/api/directorios/:id` | Eliminar directorio |
+
+### 3️⃣ Nosotros
+Gestión de contenido institucional (visión, misión, valores, historia).
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/nosotros/contenido` | Listar todo el contenido institucional |
+| GET | `/api/nosotros/contenido/:id` | Obtener contenido por ID |
+| GET | `/api/nosotros/contenido/tipo/:tipo` | Obtener contenido por tipo |
+| POST | `/api/nosotros/contenido` | Crear contenido (con imagen) |
+| PUT | `/api/nosotros/contenido/:id` | Actualizar contenido (con imagen) |
+| DELETE | `/api/nosotros/contenido/:id` | Eliminar contenido |
+
+📖 **[Ver documentación completa de endpoints →](./docs/API_REFERENCE.md)**
+
+---
+
+## 💡 Ejemplos de Uso Rápido
+
+### Textos - Listar con paginación
+
+#### Textos - Listar con paginación
 ```http
 GET /api/textos?page=1&limit=5
 ```
@@ -264,6 +315,7 @@ npm run test       # Tests (configurar próximamente)
 - **Repositorio GitHub:** https://github.com/Lisa2900/BKUTTECAM
 - **Rama principal:** `version-estable` (con Sequelize)
 - **Ramas disponibles:** `master`, `typescript-version`, `version-estable`
+- **Changelog:** [CHANGELOG.md](./CHANGELOG.md) - Historial de versiones y cambios
 
 ## 📋 Estado del proyecto
 
