@@ -10,16 +10,20 @@ import {
   getTiposContenido
 } from "../controllers/nosotrosController";
 
+// Middleware de seguridad
+import { authenticateToken } from '../middleware/auth';
+import { validateNosotros, validateId, handleValidationErrors } from '../middleware/validation';
+
 const router = Router();
 
-// Ruta para obtener tipos disponibles
+// Rutas públicas (solo lectura)
 router.get("/tipos", getTiposContenido);
-
-// Rutas para contenido con manejo de imágenes
-router.post("/contenido", uploadNosotros.single('imagen'), crearContenido);
 router.get("/contenido", getNosotrosContenido);
-router.get("/contenido/:id", getNosotrosContenidoPorId);
-router.put("/contenido/:id", uploadNosotros.single('imagen'), updateNosotrosContenido);
-router.delete("/contenido/:id", deleteNosotrosContenido);
+router.get("/contenido/:id", validateId, handleValidationErrors, getNosotrosContenidoPorId);
+
+// Rutas protegidas (requieren autenticación)
+router.post("/contenido", authenticateToken, uploadNosotros.single('imagen'), validateNosotros, handleValidationErrors, crearContenido);
+router.put("/contenido/:id", authenticateToken, validateId, uploadNosotros.single('imagen'), validateNosotros, handleValidationErrors, updateNosotrosContenido);
+router.delete("/contenido/:id", authenticateToken, validateId, handleValidationErrors, deleteNosotrosContenido);
 
 export default router;

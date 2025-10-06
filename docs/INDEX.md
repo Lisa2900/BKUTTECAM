@@ -220,6 +220,8 @@ Bienvenido a la documentación completa de la API UTTECAM. Este índice te ayuda
 - **[API_REFERENCE.md](./API_REFERENCE.md)** - Endpoints
 
 ### 🏗️ DevOps / SysAdmins
+- **[SECURITY.md](./SECURITY.md)** - 🔥 **NUEVO** Seguridad OWASP Top 10 ⭐
+- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - 🔥 **NUEVO** Implementación de seguridad
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Opciones de deploy
 - **[CPANEL_DEPLOYMENT.md](./CPANEL_DEPLOYMENT.md)** - Deploy específico
 - **[INSTALLATION.md](./INSTALLATION.md)** - Requisitos y setup
@@ -250,6 +252,11 @@ Bienvenido a la documentación completa de la API UTTECAM. Este índice te ayuda
 ### Deployment
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Opciones de despliegue
 - [CPANEL_DEPLOYMENT.md](./CPANEL_DEPLOYMENT.md) - Deploy en cPanel ⭐
+
+### 🔒 Seguridad y Cumplimiento
+- [SECURITY.md](./SECURITY.md) - 🔥 **NUEVO** Documentación completa OWASP Top 10 ⭐
+- [IMPLEMENTATION.md](./IMPLEMENTATION.md) - 🔥 **NUEVO** Guía de implementación de seguridad
+- [ADMIN_USER.md](./ADMIN_USER.md) - 🔥 **NUEVO** Usuario administrador y credenciales
 
 ### Arquitectura y Diseño
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Arquitectura completa
@@ -332,3 +339,12 @@ Esta documentación se mantiene actualizada con cada versión. Si encuentras err
 ---
 
 **¿Necesitas ayuda?** Consulta los documentos apropiados según tu caso de uso o contáctanos.
+
+---
+
+## 🔒 Rutas Públicas y Protegidas
+
+Consulta el listado actualizado de endpoints públicos y protegidos:
+- **[RUTAS_PUBLICAS_PROTEGIDAS.md](./RUTAS_PUBLICAS_PROTEGIDAS.md)**
+
+---

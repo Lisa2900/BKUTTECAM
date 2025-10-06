@@ -8,21 +8,19 @@ import {
 } from '../controllers/directorioControler';
 import { uploadDirectorios } from '../middleware/uploadMiddleware';
 
+// Middleware de seguridad
+import { authenticateToken } from '../middleware/auth';
+import { validateDirectorio, validateId, handleValidationErrors } from '../middleware/validation';
+
 const router = Router();
 
-// GET /api/directorios - Obtener todos los directorios
+// Rutas públicas (solo lectura)
 router.get('/', getAllDirectorios);
+router.get('/:id', validateId, handleValidationErrors, getDirectorioById);
 
-// GET /api/directorios/:id - Obtener un directorio por ID
-router.get('/:id', getDirectorioById);
-
-// POST /api/directorios - Crear un nuevo directorio
-router.post('/', uploadDirectorios.single('imagen'), createDirectorio);
-
-// PUT /api/directorios/:id - Actualizar un directorio
-router.put('/:id', uploadDirectorios.single('imagen'), updateDirectorio);
-
-// DELETE /api/directorios/:id - Eliminar un directorio
-router.delete('/:id', deleteDirectorio);
+// Rutas protegidas (requieren autenticación)
+router.post('/', authenticateToken, uploadDirectorios.single('imagen'), validateDirectorio, handleValidationErrors, createDirectorio);
+router.put('/:id', authenticateToken, validateId, uploadDirectorios.single('imagen'), validateDirectorio, handleValidationErrors, updateDirectorio);
+router.delete('/:id', authenticateToken, validateId, handleValidationErrors, deleteDirectorio);
 
 export default router;
