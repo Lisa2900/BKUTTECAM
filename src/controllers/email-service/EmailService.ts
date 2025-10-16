@@ -6,7 +6,7 @@ export interface SendEmailOptions {
   to: string | string[];
   subject: string;
   htmlBody: string;
-  attachments: Attachement[];
+  attachments?: Attachement[];
 }
 
 export interface Attachement {
@@ -20,31 +20,32 @@ export class EmailService {
   private transporter: Transporter;
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      from: 'web uttecam',
-      service: process.env.MAILER_SERVICE,
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      host: 'smtp-mail.outlook.com',
+      port: 587,
+      secure: /* process.env.SMTP_SECURE === 'true' */ false, // true for 465, false for other ports
       auth: {
         user: process.env.MAILER_EMAIL,
         pass: process.env.MAILER_SECRET_KEY
+      },
+      tls: {
+        // A veces se necesita esta opción si hay problemas de cifrado o certificados
+        ciphers: "SSLv3",
+        rejectUnauthorized: false
       }
     })
   }
 
 
   async sendEmail(options: SendEmailOptions): Promise<SentMessageInfo> {
-
+    const fromAddress = process.env.MAILER_EMAIL || process.env.SMTP_USER || '';
     const mailOptions = {
-      from: `'Mi App' <${process.env.SMTP_USER}>`, // sender address
-      to: options.to, // lista de destinatarios
-      subject: options.subject, // Subject line
-      html: options.htmlBody, // html body
-      attachments: options.attachments // array of attachments
-    }
-
+      from: `'UTTECAM' <${fromAddress}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.htmlBody,
+      attachments: options.attachments
+    };
     const info = await this.transporter.sendMail(mailOptions);
     return info;
-
   }
 }

@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { UploadedFile } from "express-fileupload";
-import { UploadService } from "./UploadService";
+import { UploadService, SavedFile } from "./UploadService";
 import { EmailService } from "../email-service";
+import { FormType } from "../../types/formType";
+import generateEmailHTML from "../../helpers/htmlEmail";
+import { CustomError } from "../../errors/CustomErrors";
 
 export class UploadController {
   constructor(
@@ -10,60 +13,87 @@ export class UploadController {
   ) { }
 
   async saveTempFile(req: Request, res: Response) {
-    let savedFileInfo: { tempFilePath: string; filename: string; mimetype: string } | null = null;
-    let file: UploadedFile | undefined; // <-- para poder limpiar en el catch
+    let savedFiles: SavedFile[] = [];
+
+    // Normaliza archivos del request
+    const reqFiles = req.files || undefined;
+    const raw = (reqFiles as any)?.attachment as UploadedFile | UploadedFile[] | undefined;
+    const files: UploadedFile[] = raw ? (Array.isArray(raw) ? raw : [raw]) : [];
+
+    const infoForm: FormType = {
+      nombre: req.body.nombre!,
+      matricula: req.body.matricula!,
+      email: req.body.email!,
+      telefono: req.body.telefono!,
+      carrera: req.body.carrera!,
+      nivel: req.body.nivel,
+      entrega: req.body.entrega,
+      'documentos-solicitados': req.body['documentos-solicitados'],
+      referencia: req.body.referencia,
+      'numero-seguro': req.body['numero-seguro'],
+      attachment: raw
+    };
+
+    // Si no hay archivos, envía correo sin adjunto
+    if (files.length === 0) {
+      try {
+        const info = await this.emailService.sendEmail({
+          to: 'mstrwalfe@gmail.com',
+          subject: 'Archivo adjunto desde API',
+          htmlBody: generateEmailHTML(infoForm),
+        });
+        return res.status(200).json({ ok: true, message: 'Email sent', emailInfo: { messageId: info.messageId } });
+      } catch (error) {
+        console.error(error);
+        return res.status(502).json({ ok: false, message: 'Error sending email without attachment' });
+      }
+    }
 
     try {
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).json({ error: 'No files were uploaded.' });
-      }
+      // Guarda todos los archivos
+      savedFiles = await Promise.all(files.map(f => this.uploadService.savedFile(f)));
 
-      file = (req.files.attachment as UploadedFile) || undefined;
-      if (!file) {
-        return res.status(400).json({ error: 'No file uploaded with key "attachment".' });
-      }
+      // Si el middleware dejó un temp distinto, límpialo
+      await Promise.all(files.map(async (f, i) => {
+        const tmp = (f as any).tempFilePath as string | undefined;
+        if (tmp && tmp !== savedFiles[i].tempFilePath) {
+          try { await this.uploadService.deleteFile(tmp); } catch { }
+        }
+      }));
 
-      const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
-      if (!allowedTypes.includes(file.mimetype)) {
-        // limpia el temporal creado por express-fileupload
-        const tmp = (file as any).tempFilePath as string | undefined;
-        if (tmp) await this.uploadService.deleteFile(tmp);
-        return res.status(400).json({ error: 'Invalid file type. Only PDF and images are allowed.' });
-      }
-
-      // mueve del temp del middleware a tu carpeta final
-      savedFileInfo = await this.uploadService.savedFile(file);
-
+      // Envía correo con todos los adjuntos
       const info = await this.emailService.sendEmail({
-        to: 'jesus.sr0704@gmail.com',
+        to: '22307090@estudiante.uttecam.edu.mx',
         subject: 'Archivo adjunto desde API',
-        htmlBody: '<h1>Archivo adjunto</h1><p>Se ha adjuntado un archivo desde la API.</p>',
-        attachments: [
-          {
-            filename: savedFileInfo.filename,
-            path: savedFileInfo.tempFilePath,
-            contentType: savedFileInfo.mimetype
-          }
-        ]
+        htmlBody: generateEmailHTML(infoForm),
+        attachments: savedFiles.map(sf => ({
+          filename: sf.filename,
+          path: sf.tempFilePath,
+          contentType: sf.mimetype
+        }))
       });
 
-      // borra el archivo final tras enviarlo
-      await this.uploadService.deleteFile(savedFileInfo.tempFilePath);
+      // Limpieza final de todos los guardados
+      await Promise.allSettled(savedFiles.map(sf => this.uploadService.deleteFile(sf.tempFilePath)));
 
-      return res.json({ message: 'File uploaded and email sent successfully', emailInfo: info });
+      return res.status(200).json({
+        ok: true,
+        message: 'Files uploaded and email sent',
+        attachments: savedFiles.map(sf => sf.filename),
+        emailInfo: { messageId: info.messageId }
+      });
     } catch (error) {
-      // limpia el temp del middleware si existe
-      const tmp = (file as any)?.tempFilePath as string | undefined;
-      if (tmp) {
-        try { await this.uploadService.deleteFile(tmp); } catch { }
-      }
-      // limpia el archivo final si ya se había movido
-      if (savedFileInfo?.tempFilePath) {
-        try { await this.uploadService.deleteFile(savedFileInfo.tempFilePath); } catch { }
-      }
+      // Limpieza defensiva
+      await Promise.allSettled(savedFiles.map(sf => this.uploadService.deleteFile(sf.tempFilePath)));
+      await Promise.allSettled(files.map(async f => {
+        const tmp = (f as any)?.tempFilePath as string | undefined;
+        if (tmp) await this.uploadService.deleteFile(tmp);
+      }));
 
-      console.error('Error in saveTempFile:', error);
-      return res.status(500).json({ error: 'Error uploading file or sending email' });
+      if (error instanceof CustomError) {
+        return res.status(error.statusCode).json({ ok: false, message: error.message });
+      }
+      return res.status(500).json({ ok: false, message: 'Error uploading files or sending email' });
     }
   }
 }

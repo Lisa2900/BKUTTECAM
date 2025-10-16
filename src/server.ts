@@ -1,5 +1,6 @@
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
+import { scheduleTempUploadsCleanup } from './helpers/deleteTempFiles';
 
 const PORT = process.env.PORT || 3000;
 
@@ -8,6 +9,7 @@ const startServer = async () => {
   try {
     // Iniciar servidor primero
     const server = app.listen(PORT, () => {
+      scheduleTempUploadsCleanup(24 * 60 * 60 * 1000, { olderThanMs: 15 * 60 * 1000, onlyTmpPrefix: true });
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
       console.log(`📡 API disponible en: http://localhost:${PORT}`);
       console.log(`📋 Endpoints: http://localhost:${PORT}/api/textos`);
