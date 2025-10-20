@@ -1,5 +1,6 @@
 import sequelize, { connectDatabase } from './database';
 import Texto from '../models/Texto';
+import SolicitudesConstanciasKardex from '../models/Solicitud_Constancia';
 
 export const syncDatabase = async (force: boolean = false): Promise<void> => {
   // Probar conexión primero

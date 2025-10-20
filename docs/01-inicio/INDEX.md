@@ -49,6 +49,16 @@ Bienvenido a la documentación completa de la API UTTECAM. Este índice te ayuda
   - GET, POST, PUT, DELETE
   - Paginación, búsqueda, estadísticas
 - **Módulo Directorios** (5 endpoints)
+  - CRUD completo con manejo de imágenes
+- **Módulo Nosotros** (6 endpoints)
+  - Gestión de contenido institucional
+- **Módulo Autenticación** (8 endpoints) 🔒
+  - Login, registro, perfiles, gestión de usuarios
+- **Módulo Solicitudes de Constancia** (9 endpoints) 🆕
+  - Sistema completo de solicitudes académicas
+  - Endpoints públicos y protegidos
+  - Seguimiento por número de referencia
+- **Módulo Directorios** (5 endpoints)
   - CRUD completo con imágenes
   - Validaciones de campos
 - **Módulo Nosotros** (6 endpoints)
@@ -158,10 +168,30 @@ Bienvenido a la documentación completa de la API UTTECAM. Este índice te ayuda
 
 ---
 
-### 9. [CHANGELOG.md](../CHANGELOG.md)
+---
+
+### 10. [SOLICITUDES_CONSTANCIA_KARDEX.md](./SOLICITUDES_CONSTANCIA_KARDEX.md) 🆕
+**Módulo de Solicitudes de Constancias y Kardex**
+
+- ✅ Descripción completa del módulo
+- ✅ Arquitectura y flujo de datos
+- ✅ Modelo de datos detallado
+- ✅ API endpoints (públicos y protegidos)
+- ✅ Sistema de seguimiento por referencia
+- ✅ Validaciones y seguridad
+- ✅ Instalación y configuración
+- ✅ Scripts de base de datos
+- ✅ Ejemplos de uso y pruebas
+- ✅ Troubleshooting y mantenimiento
+
+**Ideal para:** Implementación del sistema de solicitudes académicas, administradores educativos
+
+---
+
+### 11. [CHANGELOG.md](../CHANGELOG.md)
 **Historial de Versiones**
 
-- ✅ Versión actual (1.0.0)
+- ✅ Versión actual (2.0.0-secure)
 - ✅ Historial de cambios
 - ✅ Nuevas características por versión
 - ✅ Correcciones de bugs
@@ -183,6 +213,11 @@ Bienvenido a la documentación completa de la API UTTECAM. Este índice te ayuda
 1. [DEPLOYMENT.md](./DEPLOYMENT.md) - Elegir plataforma
 2. [CPANEL_DEPLOYMENT.md](./CPANEL_DEPLOYMENT.md) - Deploy en cPanel (recomendado)
 3. [API_REFERENCE.md](./API_REFERENCE.md) - Verificar endpoints
+
+### Quiero integrar el sistema de solicitudes académicas
+1. [SOLICITUDES_CONSTANCIA_KARDEX.md](./SOLICITUDES_CONSTANCIA_KARDEX.md) - Documentación completa del módulo
+2. [API_REFERENCE.md](./API_REFERENCE.md) - Endpoints y ejemplos de uso
+3. [INSTALLATION.md](./INSTALLATION.md) - Si necesitas configurar desde cero
 
 ### Quiero integrar la API en mi frontend
 1. [API_REFERENCE.md](./API_REFERENCE.md) - Documentación completa de endpoints

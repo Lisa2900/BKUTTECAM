@@ -14,6 +14,7 @@ import textosRouter from './routes/textos';
 import nosotrosRouter from './routes/nosotros';
 import directorioRouter from './routes/directorio';
 import authRouter from './routes/auth';
+import solicitudConstanciaRouter from './routes/solicitudConstancia';
 
 // Ruta temporal para formularios (puede expandirse luego)
 import { Router } from 'express';
@@ -117,7 +118,8 @@ app.get('/', (_req, res) => {
       textos: '/api/textos',
       nosotros: '/api/nosotros',
       directorios: '/api/directorios',
-      formularios: '/api/formularios'
+      formularios: '/api/formularios',
+      solicitudes: '/api/solicitudes-constancia'
     }
   });
 });
@@ -130,6 +132,7 @@ app.use('/api/textos', textosRouter);
 app.use('/api/nosotros', nosotrosRouter);
 app.use('/api/directorios', directorioRouter);
 app.use('/api/formularios', formularioRouter);
+app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

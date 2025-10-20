@@ -239,6 +239,23 @@ Gestión de contenido institucional (visión, misión, valores, historia).
 | PUT | `/api/nosotros/contenido/:id` | Actualizar contenido (con imagen) | ✅ |
 | DELETE | `/api/nosotros/contenido/:id` | Eliminar contenido | ✅ |
 
+### 4️⃣ **Solicitudes de Constancia** 🆕
+Sistema de solicitudes de constancias de estudios, kardex y trámite de título.
+
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/solicitudes-constancia` | Crear nueva solicitud | ❌ |
+| GET | `/api/solicitudes-constancia/referencia/:ref` | Consultar por número de referencia | ❌ |
+| GET | `/api/solicitudes-constancia/matricula/:mat` | Consultar por matrícula | ❌ |
+| GET | `/api/solicitudes-constancia` | Listar todas las solicitudes | ✅ |
+| GET | `/api/solicitudes-constancia/buscar` | Buscar solicitudes | ✅ |
+| GET | `/api/solicitudes-constancia/estadisticas` | Estadísticas del módulo | ✅ |
+| GET | `/api/solicitudes-constancia/:id` | Obtener solicitud por ID | ✅ |
+| PUT | `/api/solicitudes-constancia/:id/estado` | Actualizar estado | ✅ |
+| DELETE | `/api/solicitudes-constancia/:id` | Eliminar solicitud | 🔴 |
+
+> 📋 **[Ver documentación completa del módulo →](./docs/SOLICITUDES_CONSTANCIA_KARDEX.md)**
+
 ### 🛡️ **Sistema (Health & Security)**
 Endpoints de monitoreo y estado del sistema.
 

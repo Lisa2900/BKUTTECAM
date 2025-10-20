@@ -7,6 +7,80 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.0.0-secure] - 2025-10-10
+
+### 🆕 NUEVO MÓDULO: Solicitudes de Constancia y Kardex
+
+**🎯 CARACTERÍSTICAS PRINCIPALES:**
+- ✅ Sistema completo de solicitudes académicas en línea
+- ✅ Gestión de constancias de estudios, kardex y trámite de título
+- ✅ Seguimiento por número de referencia único
+- ✅ Endpoints públicos para estudiantes y protegidos para administradores
+- ✅ Validaciones completas y sistema de auditoría
+- ✅ Estadísticas y reportes avanzados
+
+### 📦 Archivos Nuevos
+- `src/models/Solicitud_Constancia.ts` - Modelo de datos con validaciones
+- `src/controllers/solicitudConstanciaController.ts` - Lógica de negocio completa
+- `src/routes/solicitudConstancia.ts` - Rutas y middleware de seguridad
+- `sql/solicitudes_constancias_kardex.sql` - Script de base de datos con triggers y vistas
+- `docs/SOLICITUDES_CONSTANCIA_KARDEX.md` - Documentación completa del módulo
+- `scripts/test-solicitudes.js` - Script de pruebas automatizadas
+
+### 🔗 API Endpoints Nuevos
+#### Públicos (Sin autenticación):
+- `POST /api/solicitudes-constancia` - Crear nueva solicitud
+- `GET /api/solicitudes-constancia/referencia/:ref` - Consultar por número de referencia
+- `GET /api/solicitudes-constancia/matricula/:mat` - Consultar por matrícula
+
+#### Protegidos (Requieren autenticación):
+- `GET /api/solicitudes-constancia` - Listar todas las solicitudes con filtros
+- `GET /api/solicitudes-constancia/buscar` - Búsqueda avanzada
+- `GET /api/solicitudes-constancia/estadisticas` - Estadísticas del módulo
+- `GET /api/solicitudes-constancia/:id` - Obtener solicitud por ID
+- `PUT /api/solicitudes-constancia/:id/estado` - Actualizar estado (editor/admin)
+- `DELETE /api/solicitudes-constancia/:id` - Eliminar solicitud (solo admin)
+
+### 🛡️ Seguridad Implementada
+- ✅ Rate limiting diferenciado para endpoints públicos y protegidos
+- ✅ Validación exhaustiva de datos de entrada
+- ✅ Logging de auditoría para todas las operaciones
+- ✅ Prevención de solicitudes duplicadas
+- ✅ Autorización por roles (viewer/editor/admin)
+- ✅ Números de referencia únicos y seguros
+
+### 📊 Características del Modelo
+- ✅ Estados de solicitud: pendiente, en_proceso, completado, cancelado
+- ✅ Niveles académicos: TSU, LIC
+- ✅ Tipos de entrega: presencial, electrónico
+- ✅ Documentos: Constancia de Estudios, Constancia de trámite de título, Kardex
+- ✅ Validaciones de integridad en base de datos
+- ✅ Triggers automáticos para fechas de actualización
+- ✅ Índices optimizados para consultas frecuentes
+
+### 🗃️ Base de Datos
+- ✅ Tabla `solicitudes_constancias_kardex` con constraints completos
+- ✅ Índices optimizados para rendimiento
+- ✅ Triggers para validación y auditoría
+- ✅ Vistas para reportes y estadísticas
+- ✅ Datos de ejemplo para pruebas
+
+### 📖 Documentación
+- ✅ Documentación completa del módulo
+- ✅ Diagramas de flujo de datos
+- ✅ Ejemplos de uso para todos los endpoints
+- ✅ Guías de troubleshooting
+- ✅ Scripts de prueba automatizados
+
+### 🧪 Testing
+- ✅ Script `npm run test:solicitudes` para pruebas automatizadas
+- ✅ Validación de endpoints públicos y protegidos
+- ✅ Verificación de autenticación y autorización
+- ✅ Pruebas de validación de datos
+- ✅ Tests de creación, consulta y actualización
+
+---
+
 ## [2.0.0-secure] - 2024-10-06
 
 ### 🔒 IMPLEMENTACIÓN COMPLETA OWASP TOP 10 2021

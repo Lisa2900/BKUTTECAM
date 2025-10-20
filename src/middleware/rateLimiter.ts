@@ -52,12 +52,13 @@ export const authRateLimit = rateLimit({
 export const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutos
   delayAfter: 50, // permitir 50 requests sin delay
-  delayMs: 500, // añadir 500ms de delay por request después del límite
+  delayMs: () => 500, // añadir 500ms de delay por request después del límite
   maxDelayMs: 20000, // delay máximo de 20 segundos
   message: {
     error: 'Ralentización aplicada',
     message: 'Demasiadas peticiones - velocidad reducida'
-  }
+  },
+  validate: { delayMs: false } // Deshabilitar advertencia de delayMs
 });
 
 // Rate limiter para uploads de archivos
