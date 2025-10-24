@@ -2,11 +2,21 @@
 
 ## Documentos en esta sección
 
-Todo sobre seguridad, autenticación y administración del sistema.
+Todo sobre seguridad, autenticación, verificación de tokens y administración del sistema.
 
-### 📄 Documentos Disponibles
+### 📄 Documentos Principales
 
-1. **[SECURITY.md](./SECURITY.md)** - Características de Seguridad
+1. **[AUTENTICACION_JWT.md](./AUTENTICACION_JWT.md)** ⭐ **NUEVO** - Guía Completa de JWT
+   - Cómo funciona JWT
+   - Login y obtención de tokens
+   - **Verificación de tokens** (manual y automática)
+   - Uso de tokens en requests
+   - Testing de seguridad
+   - Troubleshooting completo
+   - Mejores prácticas
+   - **Ideal para:** Entender y usar autenticación JWT
+
+2. **[SECURITY.md](./SECURITY.md)** - Características de Seguridad
    - JWT Authentication
    - Password Hashing (bcrypt)
    - Rate Limiting
@@ -17,7 +27,7 @@ Todo sobre seguridad, autenticación y administración del sistema.
    - Helmet.js
    - **Ideal para:** Implementar seguridad, auditorías
 
-2. **[ADMIN_USER.md](./ADMIN_USER.md)** ⭐ - Usuario Administrador
+3. **[ADMIN_USER.md](./ADMIN_USER.md)** - Usuario Administrador
    - Credenciales por defecto
    - Cómo obtener token JWT
    - Usar token en requests
@@ -26,11 +36,145 @@ Todo sobre seguridad, autenticación y administración del sistema.
    - Cambiar contraseña
    - **Ideal para:** Administradores, testing de API
 
-3. **[RUTAS_PUBLICAS_PROTEGIDAS.md](./RUTAS_PUBLICAS_PROTEGIDAS.md)** - Control de Acceso
+4. **[RUTAS_PUBLICAS_PROTEGIDAS.md](./RUTAS_PUBLICAS_PROTEGIDAS.md)** - Control de Acceso
    - Rutas públicas vs protegidas
    - Middleware de autenticación
    - Roles y permisos
    - **Ideal para:** Entender control de acceso
+
+### 🧪 Testing de Seguridad
+
+5. **[RESUMEN_TEST_TOKENS.md](./RESUMEN_TEST_TOKENS.md)** ⭐ **NUEVO** - Resumen Ejecutivo
+   - Resumen del sistema de testing
+   - Resultados y estadísticas
+   - Guía rápida de uso
+   - **Ideal para:** Vista general del testing
+
+6. **[TEST_TOKEN_SECURITY.md](./TEST_TOKEN_SECURITY.md)** **NUEVO** - Test Completo
+   - 10 tests de seguridad implementados
+   - Descripción detallada de cada test
+   - Interpretación de resultados
+   - Recomendaciones de seguridad
+   - **Ideal para:** Testing profundo de JWT
+
+7. **[GUIA_VISUAL_TEST_TOKENS.md](./GUIA_VISUAL_TEST_TOKENS.md)** **NUEVO** - Guía Visual
+   - Interpretación visual de resultados
+   - Códigos de color explicados
+   - Ejemplos de salidas
+   - Troubleshooting visual
+   - **Ideal para:** Entender resultados de tests
+
+---
+
+## 🔐 Inicio Rápido
+
+### 1. Verificar Seguridad de Tokens
+
+```bash
+# Ejecutar test completo de seguridad
+npm run test:tokens
+```
+
+Este comando ejecuta 10 tests que verifican:
+- ✅ Generación correcta de tokens
+- ✅ Expiración de tokens
+- ✅ Rechazo de tokens inválidos
+- ✅ Protección de rutas
+- ✅ Validación de formato
+- ✅ Y más...
+
+**Ver:** [RESUMEN_TEST_TOKENS.md](./RESUMEN_TEST_TOKENS.md) para detalles.
+
+### 2. Obtener Token JWT (Login)
+
+```bash
+curl -X POST http://localhost:3002/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
+```
+
+**Respuesta:**
+```json
+{
+  "message": "Login exitoso",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "role": "admin"
+  }
+}
+```
+
+### 3. Verificar Token (Obtener Perfil)
+
+```bash
+curl http://localhost:3002/api/auth/profile \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+**Respuestas posibles:**
+- ✅ **200 OK** - Token válido
+- ❌ **401 Unauthorized** - Token no proporcionado
+- ❌ **403 Forbidden** - Token inválido o expirado
+
+### 4. Usar Token en Requests
+
+```bash
+# Reemplaza TU_TOKEN_JWT con el token obtenido
+curl http://localhost:3002/api/textos \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+**Ver:** [AUTENTICACION_JWT.md](./AUTENTICACION_JWT.md) para guía completa.
+
+---
+
+## 🎯 Guía de Verificación de Tokens
+
+### ¿Cómo saber si un token es válido?
+
+#### Método 1: Usar el endpoint de perfil
+```bash
+curl http://localhost:3002/api/auth/profile \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+- Si retorna **200**: Token válido ✅
+- Si retorna **401**: No enviaste token ❌
+- Si retorna **403**: Token inválido o expirado ❌
+
+#### Método 2: Ejecutar tests automáticos
+```bash
+npm run test:tokens
+```
+
+Verifica automáticamente:
+- Tokens válidos
+- Tokens expirados
+- Tokens manipulados
+- Formato correcto
+- Firma válida
+
+#### Método 3: Verificación programática
+```typescript
+import { verifyToken } from './middleware/auth';
+
+const token = 'eyJhbGci...';
+const decoded = verifyToken(token);
+
+if (decoded) {
+  console.log('✅ Token válido');
+  console.log('Usuario:', decoded.username);
+} else {
+  console.log('❌ Token inválido');
+}
+```
+
+**Ver:** [AUTENTICACION_JWT.md#verificación-de-tokens](./AUTENTICACION_JWT.md#verificación-de-tokens)
 
 ---
 
@@ -38,46 +182,32 @@ Todo sobre seguridad, autenticación y administración del sistema.
 
 ### Usuario Administrador
 ```
+Username: admin
+Password: admin123
 Email: admin@uttecam.edu.mx
-Password: Admin2024!
 ```
 
 ⚠️ **IMPORTANTE:** Cambiar estas credenciales en producción.
 
+### Crear Nuevo Usuario Admin
+```bash
+npm run create:admin
+```
+
 ---
 
-## 🚀 Uso Rápido
-
-### 1. Obtener Token JWT
+## 🚀 Comandos Útiles
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@uttecam.edu.mx",
-    "password": "Admin2024!"
-  }'
-```
+# Testing de seguridad
+npm run test:tokens          # Test completo de tokens JWT
 
-**Respuesta:**
-```json
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "nombre": "Admin",
-    "email": "admin@uttecam.edu.mx",
-    "role": "admin"
-  }
-}
-```
+# Gestión de usuarios
+npm run create:admin         # Crear usuario administrador
 
-### 2. Usar Token en Requests
-
-```bash
-curl http://localhost:3000/api/textos \
-  -H "Authorization: Bearer TU_TOKEN_JWT"
+# Base de datos
+npm run db:reset             # Reset completo de BD
+npm run db:seed              # Seed de datos iniciales
 ```
 
 ---

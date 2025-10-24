@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
@@ -15,9 +15,11 @@ import nosotrosRouter from './routes/nosotros';
 import directorioRouter from './routes/directorio';
 import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
+import routerDocumentos from './routes/Documentos';
+
 
 // Ruta temporal para formularios (puede expandirse luego)
-import { Router } from 'express';
+
 const formularioRouter = Router();
 formularioRouter.get('/', (_req, res) => {
   res.json({ mensaje: 'Módulo de formularios disponible próximamente' });
@@ -119,7 +121,13 @@ app.get('/', (_req, res) => {
       nosotros: '/api/nosotros',
       directorios: '/api/directorios',
       formularios: '/api/formularios',
-      solicitudes: '/api/solicitudes-constancia'
+      solicitudes: '/api/solicitudes-constancia',
+      documentos: {
+        areas: '/api/documentos/areas',
+        categorias: '/api/documentos/categorias',
+        archivos: '/api/documentos/archivos',
+        estadisticas: '/api/documentos/estadisticas'
+      }
     }
   });
 });
@@ -133,6 +141,7 @@ app.use('/api/nosotros', nosotrosRouter);
 app.use('/api/directorios', directorioRouter);
 app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
+app.use('/api/documentos', routerDocumentos);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

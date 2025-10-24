@@ -2,6 +2,13 @@
 
 Bienvenido a la documentación completa y organizada de la API UTTECAM. Esta guía te ayudará a navegar de manera eficiente por toda la información del proyecto.
 
+## 🚀 Acceso Rápido
+
+- 📖 **[INDICE_VISUAL.md](./INDICE_VISUAL.md)** - Índice visual completo de toda la documentación
+- 🔍 **[VERIFICACION_TOKENS.md](./VERIFICACION_TOKENS.md)** - Índice rápido para verificar tokens JWT
+- 🔐 **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** - Guía completa de autenticación
+- 🧪 **Testing:** `npm run test:tokens` - Validar seguridad de tokens
+
 ---
 
 ## 🗂️ Estructura de Documentación
@@ -54,7 +61,13 @@ Guías de deployment en diferentes entornos
 - **[deploy.md](./05-despliegue/deploy.md)** - Guía rápida de deployment
 
 ### 🔒 [06. Seguridad y Administración](./06-seguridad-administracion/)
-Seguridad, autenticación y administración
+Seguridad, autenticación, verificación de tokens y administración
+- **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** ⭐ **NUEVO** - Guía completa de JWT
+  - Login y obtención de tokens
+  - **Verificación de tokens** (3 métodos diferentes)
+  - Uso de tokens en requests
+  - Testing de seguridad
+  - Troubleshooting completo
 - **[SECURITY.md](./06-seguridad-administracion/SECURITY.md)** - Características de seguridad
   - JWT Authentication
   - Rate Limiting
@@ -65,6 +78,10 @@ Seguridad, autenticación y administración
   - Cómo usar el token JWT
   - Permisos del administrador
 - **[RUTAS_PUBLICAS_PROTEGIDAS.md](./06-seguridad-administracion/RUTAS_PUBLICAS_PROTEGIDAS.md)** - Control de acceso a rutas
+- **Testing de Seguridad:**
+  - **[RESUMEN_TEST_TOKENS.md](./06-seguridad-administracion/RESUMEN_TEST_TOKENS.md)** - Resumen ejecutivo
+  - **[TEST_TOKEN_SECURITY.md](./06-seguridad-administracion/TEST_TOKEN_SECURITY.md)** - Test completo
+  - **[GUIA_VISUAL_TEST_TOKENS.md](./06-seguridad-administracion/GUIA_VISUAL_TEST_TOKENS.md)** - Guía visual
 
 ### 🔧 [07. Troubleshooting](./07-troubleshooting/)
 Solución de problemas comunes
@@ -88,14 +105,16 @@ Arquitectura técnica del sistema
 ### 👨‍💻 Soy Desarrollador Frontend
 1. Lee el [README.md](../README.md) principal
 2. Consulta [API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md) para los endpoints
-3. Revisa [RUTAS_PUBLICAS_PROTEGIDAS.md](./06-seguridad-administracion/RUTAS_PUBLICAS_PROTEGIDAS.md) para autenticación
-4. Consulta [IMAGENES_UPLOAD.md](./04-api-referencia/IMAGENES_UPLOAD.md) si trabajas con imágenes
+3. **Lee [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md) para autenticación**
+4. Revisa [RUTAS_PUBLICAS_PROTEGIDAS.md](./06-seguridad-administracion/RUTAS_PUBLICAS_PROTEGIDAS.md) para control de acceso
+5. Consulta [IMAGENES_UPLOAD.md](./04-api-referencia/IMAGENES_UPLOAD.md) si trabajas con imágenes
 
 ### 🔧 Soy Desarrollador Backend
 1. Comienza con [INSTALLATION.md](./02-instalacion-configuracion/INSTALLATION.md)
 2. Configura el entorno con [DEVELOPMENT.md](./03-desarrollo/DEVELOPMENT.md)
 3. Estudia [ARCHITECTURE.md](./08-arquitectura/ARCHITECTURE.md)
-4. Revisa [SECURITY.md](./06-seguridad-administracion/SECURITY.md)
+4. **Revisa [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md) y [SECURITY.md](./06-seguridad-administracion/SECURITY.md)**
+5. **Ejecuta tests de seguridad:** `npm run test:tokens`
 
 ### 🚀 Necesito Hacer Deployment
 1. Compara opciones en [DEPLOYMENT.md](./05-despliegue/DEPLOYMENT.md)
@@ -104,9 +123,11 @@ Arquitectura técnica del sistema
 4. Si hay errores, consulta [SOLUCION_DEPLOYMENT.md](./07-troubleshooting/SOLUCION_DEPLOYMENT.md)
 
 ### 📊 Soy Administrador de Sistema
-1. Lee [SECURITY.md](./06-seguridad-administracion/SECURITY.md)
-2. Configura usuarios en [ADMIN_USER.md](./06-seguridad-administracion/ADMIN_USER.md)
-3. Monitorea con las guías de [CPANEL_DEPLOYMENT.md](./05-despliegue/CPANEL_DEPLOYMENT.md)
+1. Lee [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md) para entender la autenticación
+2. Ejecuta [tests de seguridad](./06-seguridad-administracion/RESUMEN_TEST_TOKENS.md): `npm run test:tokens`
+3. Revisa [SECURITY.md](./06-seguridad-administracion/SECURITY.md)
+4. Configura usuarios en [ADMIN_USER.md](./06-seguridad-administracion/ADMIN_USER.md)
+5. Monitorea con las guías de [CPANEL_DEPLOYMENT.md](./05-despliegue/CPANEL_DEPLOYMENT.md)
 
 ### 📖 Soy Estudiante o Aprendiz
 1. Empieza por el [README.md](../README.md) principal
@@ -123,11 +144,14 @@ Arquitectura técnica del sistema
 2. **[INSTALLATION.md](./02-instalacion-configuracion/INSTALLATION.md)** - Instalar el proyecto
 3. **[DEVELOPMENT.md](./03-desarrollo/DEVELOPMENT.md)** - Configurar entorno
 4. **[ADMIN_USER.md](./06-seguridad-administracion/ADMIN_USER.md)** - Crear usuario admin
-5. **[API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)** - Explorar la API
+5. **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** - Entender autenticación
+6. **[API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)** - Explorar la API
 
 ### Para Desarrollo Activo
 1. **[DEVELOPMENT.md](./03-desarrollo/DEVELOPMENT.md)** - Comandos y flujo de trabajo
 2. **[API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)** - Referencia constante
+3. **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** - Verificar tokens
+4. **Testing:** `npm run test:tokens` - Validar seguridad
 3. **[ARCHITECTURE.md](./08-arquitectura/ARCHITECTURE.md)** - Entender la estructura
 4. **[SECURITY.md](./06-seguridad-administracion/SECURITY.md)** - Implementar seguridad
 

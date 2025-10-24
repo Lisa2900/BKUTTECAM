@@ -1,6 +1,8 @@
 import sequelize, { connectDatabase } from './database';
 import Texto from '../models/Texto';
 import SolicitudesConstanciasKardex from '../models/Solicitud_Constancia';
+// Importar asociaciones para que se registren correctamente
+import '../models/associations';
 
 export const syncDatabase = async (force: boolean = false): Promise<void> => {
   // Probar conexión primero
@@ -16,6 +18,7 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     await seedDatabase();
   } else {
     console.log('✅ Modelos sincronizados con la base de datos');
+    console.log('🔗 Asociaciones de Area → Categorias → Archivos registradas');
   }
 };
 
