@@ -273,12 +273,14 @@ const verifyDocumentFileType = (buffer: Buffer, mimetype: string): boolean => {
 // Configuración de almacenamiento para documentos
 const secureStorageDocumentos = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Crear ruta base directamente en uploads/documentos
     const uploadPath = path.join(__dirname, '../../uploads/documentos');
-    
+
+    // Crear directorio si no existe
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -376,6 +378,7 @@ export const validateUploadedDocument = (req: Request, res: any, next: any) => {
     }
 
     // Agregar información del archivo a la request
+    const { ID_Categorias } = req.body;
     req.body.Ruta_Documento = `/uploads/documentos/${req.file.filename}`;
     req.body.Nombre = req.body.Nombre || req.file.originalname;
 

@@ -12,9 +12,11 @@ export class DocumentosService {
         include: [{
           model: Categorias,
           as: 'categorias',
+          required: false, // LEFT JOIN - incluir áreas sin categorías
           include: [{
             model: Archivos,
-            as: 'archivos'
+            as: 'archivos',
+            required: false // LEFT JOIN - incluir categorías sin archivos
           }]
         }]
       });
@@ -32,9 +34,11 @@ export class DocumentosService {
         include: [{
           model: Categorias,
           as: 'categorias',
+          required: false, // LEFT JOIN - incluir área aunque no tenga categorías
           include: [{
             model: Archivos,
-            as: 'archivos'
+            as: 'archivos',
+            required: false // LEFT JOIN - incluir categorías aunque no tengan archivos
           }]
         }]
       });

@@ -61,4 +61,45 @@ router.delete("/archivos/:id", eliminarArchivo);
 // ============================================
 router.get("/estadisticas", obtenerEstadisticas);
 
+// RUTAS DE DIAGNÓSTICO
+// ============================================
+router.get("/check-file/:categoryId/:filename", (req, res) => {
+  const { categoryId, filename } = req.params;
+  const fs = require('fs');
+  const path = require('path');
+  
+  // Decodificar el filename por si tiene caracteres especiales
+  const decodedFilename = decodeURIComponent(filename);
+  
+  // Construir rutas - ahora todos los archivos están directamente en uploads/documentos
+  const filePath = path.join(__dirname, '../../uploads/documentos', decodedFilename);
+  const urlPath = `/uploads/documentos/${decodedFilename}`;
+  
+  // Verificar si existe
+  const exists = fs.existsSync(filePath);
+  let fileStats = null;
+  let error = null;
+  
+  if (exists) {
+    try {
+      fileStats = fs.statSync(filePath);
+    } catch (err: any) {
+      error = err.message;
+    }
+  }
+  
+  res.json({
+    filename: decodedFilename,
+    categoryId, // Mantener para compatibilidad
+    filePath: filePath.replace(/\\/g, '/'), // Normalizar para respuesta JSON
+    urlPath,
+    fullUrl: `${req.protocol}://${req.get('host')}${urlPath}`,
+    exists,
+    size: fileStats?.size || null,
+    modified: fileStats?.mtime || null,
+    error,
+    serverPath: __dirname
+  });
+});
+
 export default router;

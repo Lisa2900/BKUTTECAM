@@ -1,5 +1,6 @@
 import sequelize, { connectDatabase } from './database';
 import Texto from '../models/Texto';
+import Area from '../models/Area';
 import SolicitudesConstanciasKardex from '../models/Solicitud_Constancia';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';

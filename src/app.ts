@@ -46,9 +46,15 @@ app.use(speedLimiter);
 
 // 5. CORS SEGURO
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
+  origin: process.env.CORS_ORIGIN?.split(',') || [
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    'https://api.uttecam.edu.mx',
+    'https://uttecam.edu.mx',
+    'https://www.uttecam.edu.mx'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
   credentials: false, // Importante: no permitir credenciales para mayor seguridad
   maxAge: 86400 // Cache preflight por 24 horas
 };
@@ -75,7 +81,7 @@ app.use(sanitizeInput);
 app.use(logUnauthorizedAccess);
 
 // 10. SERVIR ARCHIVOS ESTÁTICOS DE FORMA SEGURA
-app.use('/uploads', 
+app.use('/uploads',
   // Rate limit para downloads
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
@@ -86,17 +92,42 @@ app.use('/uploads',
     dotfiles: 'deny', // No servir archivos ocultos
     index: false, // No mostrar índices de directorio
     setHeaders: (res, path) => {
-      // Headers de seguridad para archivos estáticos
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache por 1 año
-      
-      // Validar extensión de archivo
-      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg'];
+      // Validar extensión de archivo (imágenes y documentos)
+      const allowedExtensions = [
+        // Imágenes
+        '.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg',
+        // Documentos
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
+      ];
       const fileExtension = require('path').extname(path).toLowerCase();
       
       if (!allowedExtensions.includes(fileExtension)) {
         res.status(403).end();
         return;
+      }
+      
+      // Headers de seguridad para archivos estáticos
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
+      
+      // Headers específicos para PDFs y documentos
+      if (fileExtension === '.pdf') {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline'); // Mostrar en navegador en lugar de descargar
+      } else if (['.doc', '.docx'].includes(fileExtension)) {
+        res.setHeader('Content-Type', 'application/msword');
+      } else if (['.xls', '.xlsx'].includes(fileExtension)) {
+        res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      } else if (['.ppt', '.pptx'].includes(fileExtension)) {
+        res.setHeader('Content-Type', 'application/vnd.ms-powerpoint');
+      }
+      
+      // Cache diferente según tipo de archivo
+      const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg'].includes(fileExtension);
+      if (isImage) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Imágenes: 1 año
+      } else {
+        res.setHeader('Cache-Control', 'private, max-age=3600'); // Documentos: 1 hora
       }
     }
   })
