@@ -49,11 +49,12 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000', 
     'http://localhost:3001',
+    'http://localhost:5174',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
   credentials: false, // Importante: no permitir credenciales para mayor seguridad
   maxAge: 86400 // Cache preflight por 24 horas
@@ -61,13 +62,20 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// 6. PARSERS DE BODY
-app.use(express.json({ 
-  limit: '1mb',
-  strict: true
-}));
-app.use(express.urlencoded({ 
-  extended: false, 
+// 6. PARSERS DE BODY (excluir rutas de upload del parsing JSON)
+app.use((req, res, next) => {
+  // Solo aplicar JSON parser a rutas que no sean de upload
+  if (!req.path.includes('/upload-image') && !req.path.includes('/upload')) {
+    express.json({
+      limit: '1mb',
+      strict: true
+    })(req, res, next);
+  } else {
+    next();
+  }
+});
+app.use(express.urlencoded({
+  extended: false,
   limit: '1mb'
 }));
 
@@ -108,7 +116,13 @@ app.use('/uploads',
       
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
+      
+      // Headers CORS para archivos estáticos - Permitir desde cualquier origen
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
       
       // Headers específicos para PDFs y documentos
       if (fileExtension === '.pdf') {

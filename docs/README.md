@@ -5,7 +5,7 @@ Bienvenido a la documentación completa y organizada de la API UTTECAM. Esta gu�
 ## 🚀 Acceso Rápido
 
 - 📖 **[INDICE_VISUAL.md](./INDICE_VISUAL.md)** - Índice visual completo de toda la documentación
-- 🔍 **[VERIFICACION_TOKENS.md](./VERIFICACION_TOKENS.md)** - Índice rápido para verificar tokens JWT
+- 🔍 **[VERIFICACION_TOKENS.md](./06-seguridad-administracion/VERIFICACION_TOKENS.md)** - Índice rápido para verificar tokens JWT
 - 🔐 **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** - Guía completa de autenticación
 - 🧪 **Testing:** `npm run test:tokens` - Validar seguridad de tokens
 
@@ -17,7 +17,7 @@ La documentación está organizada en **8 categorías principales** para facilit
 
 ### 📖 [01. Inicio](./01-inicio/)
 Documentos introductorios y guías rápidas
-- **[INDEX.md](./01-inicio/INDEX.md)** - Índice general detallado (tu punto de partida)
+- **[README.md](./01-inicio/README.md)** - Información general del proyecto
 
 ### ⚙️ [02. Instalación y Configuración](./02-instalacion-configuracion/)
 Todo sobre la instalación y configuración inicial
@@ -131,7 +131,7 @@ Arquitectura técnica del sistema
 
 ### 📖 Soy Estudiante o Aprendiz
 1. Empieza por el [README.md](../README.md) principal
-2. Lee [INDEX.md](./01-inicio/INDEX.md) para una visión general
+2. Lee [INDICE_VISUAL.md](./INDICE_VISUAL.md) para una visión general
 3. Sigue [INSTALLATION.md](./02-instalacion-configuracion/INSTALLATION.md) paso a paso
 4. Experimenta con [API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)
 
@@ -205,7 +205,7 @@ Arquitectura técnica del sistema
 
 1. **Usa el buscador:** Presiona `Ctrl+F` (o `Cmd+F` en Mac) para buscar palabras clave
 2. **Sigue los enlaces:** Todos los documentos están interconectados
-3. **Consulta el índice:** [INDEX.md](./01-inicio/INDEX.md) tiene un desglose detallado
+3. **Consulta el índice:** [INDICE_VISUAL.md](./INDICE_VISUAL.md) tiene un desglose detallado
 4. **Marca tus favoritos:** Guarda los documentos que más uses
 
 ---

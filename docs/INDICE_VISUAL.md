@@ -2,15 +2,14 @@
 
 ## 🎯 Acceso Rápido por Tema
 
-### 🔐 Autenticación y Seguridad
+### � Inicio y Navegación
 
-| Documento | Descripción | Cuándo Usar |
-|-----------|-------------|-------------|
-| **[AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)** ⭐ | Guía completa de JWT y verificación de tokens | Implementar autenticación, verificar tokens |
-| **[VERIFICACION_TOKENS.md](./VERIFICACION_TOKENS.md)** 🆕 | Índice rápido de verificación | Acceso rápido a métodos de verificación |
-| **[SECURITY.md](./06-seguridad-administracion/SECURITY.md)** | Características de seguridad | Auditorías de seguridad |
-| **[ADMIN_USER.md](./06-seguridad-administracion/ADMIN_USER.md)** | Gestión de usuarios admin | Crear/gestionar usuarios |
-| **[RUTAS_PUBLICAS_PROTEGIDAS.md](./06-seguridad-administracion/RUTAS_PUBLICAS_PROTEGIDAS.md)** | Control de acceso | Entender permisos y roles |
+| Documento | Descripción | Propósito |
+|-----------|-------------|-----------|
+| **[README.md](./README.md)** ⭐ | Documentación principal | Punto de entrada |
+| **[INDICE_VISUAL.md](./INDICE_VISUAL.md)** ⭐ | Este índice visual | Navegación rápida |
+| **[GETTING_STARTED.md](./01-inicio/GETTING_STARTED.md)** | Guía de inicio | Primeros pasos |
+| **[NAVIGATION.md](./01-inicio/NAVIGATION.md)** | Mapa de navegación | Guía detallada |
 
 ### 🧪 Testing de Seguridad
 
@@ -25,6 +24,7 @@
 | Documento | Descripción | Uso Principal |
 |-----------|-------------|---------------|
 | **[API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)** ⭐ | Referencia completa de todos los endpoints | Consulta constante |
+| **[NOSOTROS_API.md](./04-api-referencia/NOSOTROS_API.md)** 🆕 | API de contenido institucional | Gestión de visión, misión, valores |
 | **[DIRECTORIOS_API.md](./04-api-referencia/DIRECTORIOS_API.md)** | API de directorios | CRUD de directorio |
 | **[FORMULARIOS_API.md](./04-api-referencia/FORMULARIOS_API.md)** | API de formularios | Gestión de formularios |
 | **[DOCUMENTOS_API.md](./04-api-referencia/DOCUMENTOS_API.md)** | API de documentos | Gestión de documentos |
@@ -55,6 +55,9 @@
 | **[PROBLEMA_RESUELTO.md](./07-troubleshooting/PROBLEMA_RESUELTO.md)** | Problemas comunes | Errores generales |
 | **[SOLUCION_DEPLOYMENT.md](./07-troubleshooting/SOLUCION_DEPLOYMENT.md)** | Errores de deploy | Deployment |
 | **[UPDATE_SUMMARY.md](./07-troubleshooting/UPDATE_SUMMARY.md)** | Resumen de updates | Actualizaciones |
+| **[CHANGES_NUMERO_REFERENCIA.md](./07-troubleshooting/CHANGES_NUMERO_REFERENCIA.md)** | Cambios realizados | Historial de cambios |
+| **[MIGRATION_INSTRUCTIONS.md](./07-troubleshooting/MIGRATION_INSTRUCTIONS.md)** | Instrucciones de migración | Base de datos |
+| **[REORGANIZATION.md](./07-troubleshooting/REORGANIZATION.md)** | Reorganización docs | Documentación |
 
 ### 🏗️ Arquitectura
 
@@ -185,7 +188,7 @@ curl -X POST http://localhost:3002/api/auth/login ...
 
 ### Por Palabra Clave
 
-- **JWT / Token** → [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md), [VERIFICACION_TOKENS.md](./VERIFICACION_TOKENS.md)
+- **JWT / Token** → [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md), [VERIFICACION_TOKENS.md](./06-seguridad-administracion/VERIFICACION_TOKENS.md)
 - **Login / Auth** → [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md), [ADMIN_USER.md](./06-seguridad-administracion/ADMIN_USER.md)
 - **Test / Testing** → [RESUMEN_TEST_TOKENS.md](./06-seguridad-administracion/RESUMEN_TEST_TOKENS.md), [TEST_TOKEN_SECURITY.md](./06-seguridad-administracion/TEST_TOKEN_SECURITY.md)
 - **API / Endpoints** → [API_REFERENCE.md](./04-api-referencia/API_REFERENCE.md)
@@ -200,7 +203,7 @@ curl -X POST http://localhost:3002/api/auth/login ...
 - **Instalar** → [INSTALLATION.md](./02-instalacion-configuracion/INSTALLATION.md)
 - **Configurar** → [DEVELOPMENT.md](./03-desarrollo/DEVELOPMENT.md)
 - **Autenticar** → [AUTENTICACION_JWT.md](./06-seguridad-administracion/AUTENTICACION_JWT.md)
-- **Verificar Token** → [VERIFICACION_TOKENS.md](./VERIFICACION_TOKENS.md)
+- **Verificar Token** → [VERIFICACION_TOKENS.md](./06-seguridad-administracion/VERIFICACION_TOKENS.md)
 - **Testear** → `npm run test:tokens` + [RESUMEN_TEST_TOKENS.md](./06-seguridad-administracion/RESUMEN_TEST_TOKENS.md)
 - **Hacer Deploy** → [CPANEL_DEPLOYMENT.md](./05-despliegue/CPANEL_DEPLOYMENT.md)
 - **Resolver Error** → [PROBLEMA_RESUELTO.md](./07-troubleshooting/PROBLEMA_RESUELTO.md)
@@ -212,19 +215,20 @@ curl -X POST http://localhost:3002/api/auth/login ...
 
 ```
 docs/
-├── 📘 README.md (Este archivo - Punto de entrada)
-├── 🔍 VERIFICACION_TOKENS.md (Índice rápido de verificación)
-├── 📖 INDICE_VISUAL.md (Este documento)
+├── 📘 README.md (Punto de entrada principal)
+├── 📖 INDICE_VISUAL.md (Este documento - Índice visual)
 │
 ├── 01-inicio/
-│   └── INDEX.md
+│   ├── README.md (Información general)
+│   ├── GETTING_STARTED.md (Guía de inicio)
+│   └── NAVIGATION.md (Mapa de navegación)
 │
 ├── 02-instalacion-configuracion/
-│   └── INSTALLATION.md ⭐
+│   └── INSTALLATION.md ⭐ (Instalación completa)
 │
 ├── 03-desarrollo/
-│   ├── DEVELOPMENT.md ⭐
-│   └── IMPLEMENTATION.md
+│   ├── DEVELOPMENT.md ⭐ (Entorno de desarrollo)
+│   └── IMPLEMENTATION.md (Detalles de implementación)
 │
 ├── 04-api-referencia/
 │   ├── API_REFERENCE.md ⭐
@@ -241,18 +245,22 @@ docs/
 │   └── deploy.md
 │
 ├── 06-seguridad-administracion/ 🔐
-│   ├── AUTENTICACION_JWT.md ⭐⭐⭐ NUEVO
-│   ├── SECURITY.md
-│   ├── ADMIN_USER.md
-│   ├── RUTAS_PUBLICAS_PROTEGIDAS.md
-│   ├── RESUMEN_TEST_TOKENS.md ⭐ NUEVO
-│   ├── TEST_TOKEN_SECURITY.md NUEVO
-│   └── GUIA_VISUAL_TEST_TOKENS.md NUEVO
+│   ├── AUTENTICACION_JWT.md ⭐⭐⭐ (Autenticación JWT)
+│   ├── VERIFICACION_TOKENS.md 🆕 (Índice de verificación)
+│   ├── SECURITY.md (Características de seguridad)
+│   ├── ADMIN_USER.md (Gestión de usuarios)
+│   ├── RUTAS_PUBLICAS_PROTEGIDAS.md (Control de acceso)
+│   ├── RESUMEN_TEST_TOKENS.md ⭐ (Resumen de tests)
+│   ├── TEST_TOKEN_SECURITY.md (Tests completos)
+│   └── GUIA_VISUAL_TEST_TOKENS.md (Interpretación visual)
 │
 ├── 07-troubleshooting/
-│   ├── PROBLEMA_RESUELTO.md
-│   ├── SOLUCION_DEPLOYMENT.md
-│   └── UPDATE_SUMMARY.md
+│   ├── PROBLEMA_RESUELTO.md (Problemas comunes)
+│   ├── SOLUCION_DEPLOYMENT.md (Errores de deploy)
+│   ├── UPDATE_SUMMARY.md (Resumen de updates)
+│   ├── CHANGES_NUMERO_REFERENCIA.md (Historial de cambios)
+│   ├── MIGRATION_INSTRUCTIONS.md (Migraciones BD)
+│   └── REORGANIZATION.md (Reorganización docs)
 │
 └── 08-arquitectura/
     └── ARCHITECTURE.md ⭐

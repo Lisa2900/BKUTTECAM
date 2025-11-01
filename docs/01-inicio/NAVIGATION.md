@@ -55,7 +55,7 @@
 docs/
 │
 ├── 📖 README.md (INICIO - Estás aquí)
-├── 🗺️ NAVEGACION.md (Este archivo)
+├── 🗺️ NAVIGATION.md (Este archivo)
 │
 ├── 📁 01-inicio/
 │   ├── README.md

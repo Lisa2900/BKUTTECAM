@@ -62,7 +62,7 @@ La documentación ahora está organizada en **8 categorías temáticas**:
 ## 📄 Archivos Nuevos Creados
 
 1. **`docs/README.md`** - Índice principal con navegación completa
-2. **`docs/NAVEGACION.md`** - Mapa de navegación rápida
+2. **`docs/01-inicio/NAVIGATION.md`** - Mapa de navegación rápida
 3. **`docs/REORGANIZACION.md`** - Este documento
 4. **`docs/01-inicio/README.md`** - Guía de la sección
 5. **`docs/02-instalacion-configuracion/README.md`** - Guía de la sección
@@ -148,12 +148,12 @@ La documentación ahora está organizada en **8 categorías temáticas**:
 ### Para Nuevos Usuarios
 
 1. Empieza por **`docs/README.md`**
-2. Consulta **`docs/NAVEGACION.md`** para navegación rápida
+2. Consulta **`docs/01-inicio/NAVIGATION.md`** para navegación rápida
 3. Sigue las guías por rol o nivel de experiencia
 
 ### Para Desarrolladores Existentes
 
-1. Revisa **`docs/NAVEGACION.md`** para ver la nueva ubicación de archivos
+1. Revisa **`docs/01-inicio/NAVIGATION.md`** para ver la nueva ubicación de archivos
 2. Actualiza tus bookmarks/favoritos
 3. Usa los README.md de cada carpeta como referencia rápida
 
@@ -161,14 +161,14 @@ La documentación ahora está organizada en **8 categorías temáticas**:
 
 1. **Por tema:** Ve directo a la carpeta correspondiente (01-08)
 2. **Por necesidad:** Usa las guías rápidas en `docs/README.md`
-3. **Por palabra clave:** Consulta la tabla de búsqueda en `NAVEGACION.md`
+3. **Por palabra clave:** Consulta la tabla de búsqueda en `01-inicio/NAVIGATION.md`
 
 ---
 
 ## 🔗 Enlaces Útiles
 
 - **[Índice Principal](./README.md)** - Punto de entrada principal
-- **[Navegación Rápida](./NAVEGACION.md)** - Mapa de navegación
+- **[Navegación Rápida](./01-inicio/NAVIGATION.md)** - Mapa de navegación
 - **[Índice Detallado](./01-inicio/INDEX.md)** - Descripción completa de todos los documentos
 
 ---
@@ -181,7 +181,7 @@ La documentación ahora está organizada en **8 categorías temáticas**:
 2. Añade el archivo en la carpeta correspondiente
 3. Actualiza el README.md de esa carpeta
 4. Añade referencia en `docs/README.md`
-5. Añade referencia en `docs/NAVEGACION.md`
+5. Añade referencia en `docs/01-inicio/NAVIGATION.md`
 6. Añade referencia en `01-inicio/INDEX.md`
 
 ### Al Reorganizar

@@ -1,335 +1,444 @@
-
 import { NextFunction, Request, Response } from "express";
-import NosotrosContenido, { TipoContenido } from "../models/Nosotros";
-import { ValidationError, Op } from "sequelize";
-import { deleteFile } from "../middleware/uploadMiddleware";
-import path from "path";
+import NosotrosContent from "../models/Nosotros";
+import path from 'path';
+import fs from 'fs';
 
-// Validar tipos de contenido permitidos
-const tiposPermitidos = Object.values(TipoContenido);
+// ============================================
+// CONTROLADOR PARA CONTENIDO DE "NOSOTROS"
+// ============================================
 
-export const crearContenido = async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/nosotros/content
+// Obtener todo el contenido de la página "Nosotros"
+export const getContent = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { tipo, titulo, descripcion, lista } = req.body;
+    // Obtener el contenido (debería haber solo un registro)
+    const content = await NosotrosContent.findOne();
 
-    // Validaciones básicas
-    if (!tipo || !titulo) {
-      // Si hay archivo subido y falla la validación, eliminarlo
-      if (req.file) {
-        deleteFile(req.file.path);
-      }
-      return res.status(400).json({ 
-        error: "Tipo y título son campos requeridos" 
+    if (!content) {
+      return res.status(404).json({
+        error: "Contenido no encontrado",
+        message: "El contenido de 'Nosotros' no ha sido creado aún. Use POST /api/nosotros/content para crear el contenido inicial."
       });
     }
 
-    // Validar tipo de contenido
-    if (!tiposPermitidos.includes(tipo)) {
-      // Si hay archivo subido y falla la validación, eliminarlo
-      if (req.file) {
-        deleteFile(req.file.path);
-      }
-      return res.status(400).json({ 
-        error: `Tipo no válido. Tipos permitidos: ${tiposPermitidos.join(', ')}` 
-      });
-    }
-
-    // Procesar imagen si existe
-    let rutaImagen = null;
-    if (req.file) {
-      rutaImagen = `nosotros/${req.file.filename}`;
-    }
-
-    // Validar y procesar lista si se proporciona
-    let listaArray = null;
-    if (lista) {
-      try {
-        listaArray = typeof lista === 'string' ? JSON.parse(lista) : lista;
-        if (!Array.isArray(listaArray)) {
-          // Si hay archivo subido y falla la validación, eliminarlo
-          if (req.file) {
-            deleteFile(req.file.path);
-          }
-          return res.status(400).json({ 
-            error: "La lista debe ser un array válido" 
-          });
-        }
-      } catch (error) {
-        // Si hay archivo subido y falla la validación, eliminarlo
-        if (req.file) {
-          deleteFile(req.file.path);
-        }
-        return res.status(400).json({ 
-          error: "Formato de lista inválido" 
-        });
-      }
-    }
-
-    const nuevoContenido = await NosotrosContenido.create({ 
-      tipo,
-      titulo: titulo.trim(),
-      descripcion: descripcion?.trim() || null,
-      imagen: rutaImagen,
-      lista: listaArray
-    });
-
-    res.status(201).json({ 
-      message: "Contenido creado correctamente", 
-      data: {
-        ...nuevoContenido.toJSON(),
-        imageUrl: rutaImagen ? `/uploads/${rutaImagen}` : null
-      }
-    });
-  } catch (error) {
-    // Si hay archivo subido y ocurre un error, eliminarlo
-    if (req.file) {
-      deleteFile(req.file.path);
-    }
+    // Obtener los datos como JSON
+    const data = content.toJSON();
     
-    if (error instanceof ValidationError) {
-      return res.status(400).json({ 
-        error: "Datos de validación incorrectos",
-        details: error.errors.map(err => ({
-          field: err.path,
-          message: err.message
-        }))
-      });
-    }
-    console.error('Error al crear contenido:', error);
-    res.status(500).json({ message: "Error interno del servidor" });
-  }
-};
-
-export const getNosotrosContenido = async (req: Request, res: Response) => {
-  try {
-    const { tipo, id } = req.query;
-    let whereClause: any = {};
-
-    // Filtrar por tipo si se proporciona
-    if (tipo) {
-      if (!tiposPermitidos.includes(tipo as TipoContenido)) {
-        return res.status(400).json({ 
-          error: `Tipo no válido. Tipos permitidos: ${tiposPermitidos.join(', ')}` 
-        });
+    // Parsear campos JSON si vienen como string (problema con Sequelize en MySQL)
+    const parseIfString = (field: any) => {
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch {
+          return field;
+        }
       }
-      whereClause.tipo = tipo;
-    }
-
-    // Filtrar por ID si se proporciona
-    if (id) {
-      whereClause.id = id;
-    }
-
-    const contenidos = await NosotrosContenido.findAll({
-      where: whereClause,
-      order: [['fechaCreacion', 'DESC']]
-    });
-
-    // Agregar URL completa de imagen a cada contenido
-    const contenidosConImagenes = contenidos.map(contenido => ({
-      ...contenido.toJSON(),
-      imageUrl: contenido.imagen ? `/uploads/${contenido.imagen}` : null
-    }));
-
-    res.status(200).json({ 
-      message: "Contenido obtenido correctamente", 
-      count: contenidos.length,
-      data: contenidosConImagenes 
-    });
-  } catch (error) {
-    console.error('Error al obtener contenido:', error);
-    res.status(500).json({ message: "Error al obtener contenido" });
-  }
-};
-
-export const getNosotrosContenidoPorId = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    if (!id || isNaN(Number(id))) {
-      return res.status(400).json({ error: "ID inválido" });
-    }
-
-    const contenido = await NosotrosContenido.findByPk(id);
-
-    if (!contenido) {
-      return res.status(404).json({ message: "Contenido no encontrado" });
-    }
-
-    // Agregar URL completa de imagen
-    const contenidoConImagen = {
-      ...contenido.toJSON(),
-      imageUrl: contenido.imagen ? `/uploads/${contenido.imagen}` : null
+      return field;
     };
 
-    res.status(200).json({ 
-      message: "Contenido obtenido correctamente", 
-      data: contenidoConImagen 
-    });
+    const parsedData = {
+      ...data,
+      politicaIntegral: parseIfString(data.politicaIntegral),
+      vision: parseIfString(data.vision),
+      mision: parseIfString(data.mision),
+      valores: parseIfString(data.valores),
+      noDiscriminacion: parseIfString(data.noDiscriminacion)
+    };
+
+    res.json(parsedData);
   } catch (error) {
-    console.error('Error al obtener contenido por ID:', error);
-    res.status(500).json({ message: "Error al obtener contenido" });
+    next(error);
   }
 };
 
-export const updateNosotrosContenido = async (req: Request, res: Response) => {
+// PUT /api/nosotros/content
+// Actualizar todo el contenido de la página "Nosotros"
+export const updateContent = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const { tipo, titulo, descripcion, lista } = req.body;
+    const {
+      vision,
+      mision,
+      valores,
+      politicaIntegral,
+      objetivoIntegral,
+      noDiscriminacion
+    } = req.body;
 
-    if (!id || isNaN(Number(id))) {
-      // Si hay archivo subido y el ID es inválido, eliminarlo
-      if (req.file) {
-        deleteFile(req.file.path);
-      }
-      return res.status(400).json({ error: "ID inválido" });
-    }
-
-    // Buscar el contenido existente
-    const contenidoExistente = await NosotrosContenido.findByPk(id);
-    if (!contenidoExistente) {
-      // Si hay archivo subido y el contenido no existe, eliminarlo
-      if (req.file) {
-        deleteFile(req.file.path);
-      }
-      return res.status(404).json({ message: "Contenido no encontrado" });
-    }
-
-    // Validar tipo si se proporciona
-    if (tipo && !tiposPermitidos.includes(tipo)) {
-      // Si hay archivo subido y el tipo es inválido, eliminarlo
-      if (req.file) {
-        deleteFile(req.file.path);
-      }
-      return res.status(400).json({ 
-        error: `Tipo no válido. Tipos permitidos: ${tiposPermitidos.join(', ')}` 
+    // Validar estructura básica
+    if (!vision || !mision || !valores || !politicaIntegral || !objetivoIntegral || !noDiscriminacion) {
+      return res.status(400).json({
+        error: "Datos inválidos",
+        details: "Todas las secciones son requeridas"
       });
     }
 
-    // Validar y procesar lista si se proporciona
-    let listaArray = undefined;
-    if (lista !== undefined) {
+    // Buscar o crear el contenido
+    let content = await NosotrosContent.findOne();
+
+    if (!content) {
+      content = await NosotrosContent.create({
+        vision,
+        mision,
+        valores,
+        politicaIntegral,
+        objetivoIntegral,
+        noDiscriminacion
+      });
+    } else {
+      await content.update({
+        vision,
+        mision,
+        valores,
+        politicaIntegral,
+        objetivoIntegral,
+        noDiscriminacion
+      });
+    }
+
+    res.json({
+      message: "Contenido actualizado exitosamente",
+      content: content.toJSON()
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/nosotros/content/:section
+// Actualizar una sección específica del contenido
+export const updateSection = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { section } = req.params;
+    const updateData = req.body;
+
+    // Validar que la sección sea válida
+    const validSections = ['vision', 'mision', 'valores', 'politicaIntegral', 'objetivoIntegral', 'noDiscriminacion'];
+
+    if (!validSections.includes(section)) {
+      return res.status(400).json({
+        error: "Sección inválida",
+        details: `Las secciones válidas son: ${validSections.join(', ')}`
+      });
+    }
+
+    // Buscar el contenido
+    let content = await NosotrosContent.findOne();
+
+    if (!content) {
+      return res.status(404).json({
+        error: "Contenido no encontrado",
+        message: "El contenido de 'Nosotros' no ha sido creado aún. Use POST /api/nosotros/content para crear el contenido inicial."
+      });
+    }
+
+    // Actualizar solo la sección especificada
+    const updateObj: any = {};
+    updateObj[section] = updateData;
+
+    await content.update(updateObj);
+
+    res.json({
+      message: `Sección ${section} actualizada exitosamente`,
+      [section]: content[section as keyof typeof content]
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/nosotros/content
+// Crear nuevo contenido (reemplaza el existente si ya hay uno)
+export const createContent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      vision,
+      mision,
+      valores,
+      politicaIntegral,
+      objetivoIntegral,
+      noDiscriminacion
+    } = req.body;
+
+    // Validar estructura básica
+    if (!vision || !mision || !valores || !politicaIntegral || !objetivoIntegral || !noDiscriminacion) {
+      return res.status(400).json({
+        error: "Datos inválidos",
+        details: "Todas las secciones son requeridas"
+      });
+    }
+
+    // Eliminar contenido existente si hay uno
+    await NosotrosContent.destroy({ where: {} });
+
+    // Crear nuevo contenido
+    const newContent = await NosotrosContent.create({
+      vision,
+      mision,
+      valores,
+      politicaIntegral,
+      objetivoIntegral,
+      noDiscriminacion
+    });
+
+    res.status(201).json({
+      message: "Contenido creado exitosamente",
+      content: newContent.toJSON()
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/nosotros/content/:section
+// Obtener una sección específica del contenido
+export const getSection = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { section } = req.params;
+
+    // Validar que la sección sea válida
+    const validSections = ['vision', 'mision', 'valores', 'politicaIntegral', 'objetivoIntegral', 'noDiscriminacion'];
+
+    if (!validSections.includes(section)) {
+      return res.status(400).json({
+        error: "Sección inválida",
+        details: `Las secciones válidas son: ${validSections.join(', ')}`
+      });
+    }
+
+    // Obtener el contenido
+    const content = await NosotrosContent.findOne();
+
+    if (!content) {
+      return res.status(404).json({
+        error: "Contenido no encontrado",
+        message: "El contenido de 'Nosotros' no ha sido creado aún. Use POST /api/nosotros/content para crear el contenido inicial."
+      });
+    }
+
+    // Parsear el campo si es un string JSON
+    let sectionData = content[section as keyof typeof content];
+    if (typeof sectionData === 'string' && (section === 'vision' || section === 'mision' || section === 'valores' || section === 'noDiscriminacion')) {
       try {
-        listaArray = typeof lista === 'string' ? JSON.parse(lista) : lista;
-        if (listaArray !== null && !Array.isArray(listaArray)) {
-          // Si hay archivo subido y la lista es inválida, eliminarlo
-          if (req.file) {
-            deleteFile(req.file.path);
-          }
-          return res.status(400).json({ 
-            error: "La lista debe ser un array válido o null" 
-          });
-        }
-      } catch (error) {
-        // Si hay archivo subido y el formato de lista es inválido, eliminarlo
-        if (req.file) {
-          deleteFile(req.file.path);
-        }
-        return res.status(400).json({ 
-          error: "Formato de lista inválido" 
+        sectionData = JSON.parse(sectionData);
+      } catch {
+        // Si no se puede parsear, dejar como está
+      }
+    }
+
+    res.json({
+      [section]: sectionData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /api/nosotros/content
+// Eliminar todo el contenido
+export const deleteContent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const deletedCount = await NosotrosContent.destroy({ where: {} });
+
+    res.json({
+      message: "Contenido eliminado exitosamente",
+      deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /api/nosotros/content/:section
+// Eliminar una sección específica (restaurar valores por defecto)
+export const deleteSection = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { section } = req.params;
+
+    // Validar que la sección sea válida
+    const validSections = ['vision', 'mision', 'valores', 'politicaIntegral', 'objetivoIntegral', 'noDiscriminacion'];
+
+    if (!validSections.includes(section)) {
+      return res.status(400).json({
+        error: "Sección inválida",
+        details: `Las secciones válidas son: ${validSections.join(', ')}`
+      });
+    }
+
+    // Buscar el contenido
+    const content = await NosotrosContent.findOne();
+
+    if (!content) {
+      return res.status(404).json({
+        error: "Contenido no encontrado"
+      });
+    }
+
+    // Valores por defecto para cada sección
+    const defaultValues = {
+      vision: {
+        imageSrc: 'nosotros/vision_1759772754247.png',
+        title: 'Visión',
+        description: 'En el año 2027 ser una institución de excelencia, reconocida Nacional e Internacionalmente por su eficiencia, eficacia, pertinencia, equidad, inclusión, vinculación y cuerpos académicos consolidados y comprometidos con las expectativas de los aprendientes y de la sociedad, al brindar educación de calidad y profesionistas con alto sentido humano, competitivos e integrados en el ámbito productivo'
+      },
+      mision: {
+        imageSrc: 'nosotros/general_1761952064258_e361d82abad6d8113e2ec6074b4ef15a.png',
+        title: 'Misión',
+        description: 'Somos una Institución de Educación Superior comprometida con la excelencia, transparencia y rendición de cuentas, que brinda servicios educativos, científicos y tecnológicos con calidad, equidad, inclusión, responsabilidad social y sentido humano para contribuir al bienestar y desarrollo integral regional, estatal y nacional, cumpliendo los requerimientos de las partes interesadas, mediante un modelo formativo integral.'
+      },
+      valores: {
+        imageSrc: 'nosotros/general_1761952189846_0697273e3d61620d3c56851a66ecec60.png',
+        title: 'Valores',
+        description: [
+          'Austeridad',
+          'Honestidad',
+          'Empatía',
+          'Generosidad',
+          'Respeto',
+          'Tolerancia',
+          'Igualdad',
+          'Equidad',
+          'Justicia',
+          'Fraternidad',
+          'Compromiso',
+          'Bien Común'
+        ]
+      },
+      politicaIntegral: 'Somos una institución comprometida en la formación de profesionistas con responsabilidad social, sentido humano y ético, que en conjunto con la comunidad universitaria, contribuyen al desarrollo sustentable a través de establecimiento de objetivos integrales, actualización e innovación de los programas educativos, gestión de la propiedad intelectual y la mejora continua del Sistema de Gestión Integral, considerando el desarrollo educativo, científico y técnico, cumpliendo el marco legal aplicable, considerando las necesidades y expectativas de las partes interesadas, atendiendo los criterios ambientales de manera que se pueda controlar y prevenir la contaminación derivada de nuestros procesos y servicios para la preservación del medio ambiente.',
+      objetivoIntegral: 'Formar integralmente profesionistas competentes socialmente responsables, creativos, emprendedores e innovadores, comprometidos con el cuidado del medio ambiente y la sustentabilidad, a través del proceso enseñanza-aprendizaje, conducido por una planta docente con sentido humano, perfil profesional, experiencia y capacitación adecuada para la realización de su labor educativa.',
+      noDiscriminacion: [
+        [
+          'Apariencia Física',
+          'Cultura',
+          'Discapacidad',
+          'Idioma'
+        ],
+        [
+          'Estado civil',
+          'Religión',
+          'Sexo',
+          'Embarazo'
+        ],
+        [
+          'Opiniones',
+          'Origen étnico o nacional',
+          'Género',
+          'Edad'
+        ]
+      ]
+    };
+
+    // Actualizar la sección con valores por defecto
+    const updateObj: any = {};
+    updateObj[section] = defaultValues[section as keyof typeof defaultValues];
+
+    await content.update(updateObj);
+
+    res.json({
+      message: `Sección ${section} restaurada a valores por defecto`,
+      [section]: content[section as keyof typeof content]
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/nosotros/upload-image
+// Subir imagen para una sección específica de "Nosotros"
+export const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { section, ...additionalData } = req.body;
+
+    // Validar que se especificó la sección
+    if (!section) {
+      return res.status(400).json({
+        error: "Sección requerida",
+        message: "Debe especificar la sección (politicaIntegral, vision, mision, valores)"
+      });
+    }
+
+    // Validar que la sección es válida
+    if (!['politicaIntegral', 'vision', 'mision', 'valores'].includes(section)) {
+      return res.status(400).json({
+        error: "Sección inválida",
+        message: "La sección debe ser: politicaIntegral, vision, mision o valores"
+      });
+    }
+
+    // Verificar que se subió un archivo
+    if (!req.file) {
+      return res.status(400).json({
+        error: "Archivo requerido",
+        message: "No se encontró ningún archivo en la solicitud"
+      });
+    }
+
+    // Obtener el contenido actual
+    let content = await NosotrosContent.findOne();
+    if (!content) {
+      return res.status(404).json({
+        error: "Contenido no encontrado",
+        message: "Debe crear el contenido de 'Nosotros' antes de subir imágenes"
+      });
+    }
+
+    // Construir la URL relativa del archivo
+    const relativePath = `nosotros/${req.file.filename}`;
+
+    // Obtener el contenido actual de la sección y parsearlo si es necesario
+    let sectionData = content[section as keyof typeof content];
+    
+    // Parsear el campo si es un string JSON
+    if (typeof sectionData === 'string') {
+      try {
+        sectionData = JSON.parse(sectionData);
+      } catch {
+        return res.status(500).json({
+          error: "Error al parsear el contenido de la sección",
+          message: "El contenido de la sección no está en el formato correcto"
         });
       }
     }
 
-    // Preparar datos para actualizar (solo los campos proporcionados)
-    const datosActualizacion: any = {};
-    if (tipo) datosActualizacion.tipo = tipo;
-    if (titulo) datosActualizacion.titulo = titulo.trim();
-    if (descripcion !== undefined) datosActualizacion.descripcion = descripcion?.trim() || null;
-    if (lista !== undefined) datosActualizacion.lista = listaArray;
-
-    // Manejar nueva imagen
-    if (req.file) {
-      // Eliminar imagen anterior si existe
-      if (contenidoExistente.imagen) {
-        const rutaAnterior = path.join(__dirname, '../../uploads', contenidoExistente.imagen);
-        deleteFile(rutaAnterior);
-      }
-      datosActualizacion.imagen = `nosotros/${req.file.filename}`;
-    }
-
-    // Actualizar el contenido
-    await contenidoExistente.update(datosActualizacion);
-
-    // Recargar para obtener los datos actualizados
-    await contenidoExistente.reload();
-
-    // Agregar URL completa de imagen
-    const contenidoConImagen = {
-      ...contenidoExistente.toJSON(),
-      imageUrl: contenidoExistente.imagen ? `/uploads/${contenidoExistente.imagen}` : null
+    // Construir el objeto actualizado con la nueva imagen y datos adicionales
+    const updatedSectionData: any = {
+      ...(sectionData as object),
+      imageSrc: relativePath
     };
 
-    res.status(200).json({ 
-      message: "Contenido actualizado correctamente",
-      data: contenidoConImagen
+    // Procesar los datos adicionales del FormData
+    // Parsear description si viene como JSON string (para valores que es un array)
+    if (additionalData.description) {
+      try {
+        updatedSectionData.description = typeof additionalData.description === 'string' 
+          ? JSON.parse(additionalData.description)
+          : additionalData.description;
+      } catch {
+        updatedSectionData.description = additionalData.description;
+      }
+    }
+
+    // Agregar title si se proporcionó
+    if (additionalData.title) {
+      updatedSectionData.title = additionalData.title;
+    }
+
+    // Guardar solo la sección actualizada
+    await content.update({
+      [section]: updatedSectionData
     });
+
+    res.json({
+      message: `Imagen subida exitosamente para la sección ${section}`,
+      section: section,
+      imageSrc: relativePath,
+      filename: req.file.filename
+    });
+
   } catch (error) {
-    // Si hay archivo subido y ocurre un error, eliminarlo
-    if (req.file) {
-      deleteFile(req.file.path);
+    // Si hay un error, eliminar el archivo subido si existe
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
     }
-    
-    if (error instanceof ValidationError) {
-      return res.status(400).json({ 
-        error: "Datos de validación incorrectos",
-        details: error.errors.map(err => ({
-          field: err.path,
-          message: err.message
-        }))
-      });
-    }
-    console.error('Error al actualizar contenido:', error);
-    res.status(500).json({ message: "Error al actualizar contenido" });
+    next(error);
   }
 };
-
-export const deleteNosotrosContenido = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    if (!id || isNaN(Number(id))) {
-      return res.status(400).json({ error: "ID inválido" });
-    }
-
-    // Buscar el contenido existente
-    const contenidoExistente = await NosotrosContenido.findByPk(id);
-    if (!contenidoExistente) {
-      return res.status(404).json({ message: "Contenido no encontrado" });
-    }
-
-    // Eliminar imagen asociada si existe
-    if (contenidoExistente.imagen) {
-      const rutaImagen = path.join(__dirname, '../../uploads', contenidoExistente.imagen);
-      deleteFile(rutaImagen);
-    }
-
-    // Eliminar el contenido de la base de datos
-    await contenidoExistente.destroy();
-
-    res.status(200).json({ 
-      message: "Contenido eliminado correctamente",
-      data: { id: Number(id) }
-    });
-  } catch (error) {
-    console.error('Error al eliminar contenido:', error);
-    res.status(500).json({ message: "Error al eliminar contenido" });
-  }
-};
-
-// Endpoint adicional para obtener todos los tipos disponibles
-export const getTiposContenido = async (req: Request, res: Response) => {
-  try {
-    res.status(200).json({ 
-      message: "Tipos de contenido disponibles",
-      data: tiposPermitidos.map(tipo => ({
-        value: tipo,
-        label: tipo.replace(/_/g, ' ').toUpperCase()
-      }))
-    });
-  } catch (error) {
-    console.error('Error al obtener tipos:', error);
-    res.status(500).json({ message: "Error al obtener tipos de contenido" });
-  }
-};
-

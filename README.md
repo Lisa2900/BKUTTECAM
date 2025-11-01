@@ -21,7 +21,7 @@ API CRUD para gestión de contenido de la Universidad Tecnológica de Tecamachal
 
 ## 📚 Documentación Completa
 
-> 📑 **[Ver Índice Completo de Documentación →](./docs/INDEX.md)** - Guía detallada de todos los documentos disponibles
+> 📑 **[Ver Índice Visual de Documentación →](./docs/INDICE_VISUAL.md)** - Guía visual organizada por categorías y escenarios de uso
 
 ### 🔒 **Documentación de Seguridad (NUEVO)**
 | Documento | Descripción |
@@ -34,6 +34,7 @@ API CRUD para gestión de contenido de la Universidad Tecnológica de Tecamachal
 | Documento | Descripción |
 |-----------|-------------|
 | **[API Reference](./docs/API_REFERENCE.md)** | 📖 Documentación completa de todos los endpoints |
+| **[NOSOTROS API](./docs/NOSOTROS_API.md)** | 🏛️ **API de contenido institucional** - Gestión de visión, misión, valores |
 | **[Architecture Guide](./docs/ARCHITECTURE.md)** | 🏗️ Arquitectura del sistema y diagramas técnicos |
 | **[Installation Guide](./docs/INSTALLATION.md)** | ⚙️ Guía detallada de instalación |
 | **[Development Guide](./docs/DEVELOPMENT.md)** | 💻 Guía para desarrollo local |
@@ -485,9 +486,9 @@ docs/                     # 📚 Documentación completa
 ├── API_REFERENCE.md
 ├── ARCHITECTURE.md
 ├── DEVELOPMENT.md
+├── INDICE_VISUAL.md      # 📖 NUEVO: Índice visual de documentación
 ├── INSTALLATION.md
 ├── DEPLOYMENT.md
-└── INDEX.md
 
 scripts/                  # �️ Scripts utilitarios
 ├── create-admin.js       # 🔒 NUEVO: Crear usuario admin

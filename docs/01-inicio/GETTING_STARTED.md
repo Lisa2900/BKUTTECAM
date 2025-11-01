@@ -10,7 +10,7 @@ Tu documentación ha sido clasificada y ordenada exitosamente. Aquí está el re
 docs/
 │
 ├── 📄 README.md ⭐ (EMPIEZA AQUÍ)
-├── 📄 NAVEGACION.md (Mapa rápido)
+├── 📄 NAVIGATION.md (Mapa rápido)
 ├── 📄 REORGANIZACION.md (Detalles de cambios)
 │
 ├── 📖 01-inicio/
@@ -96,7 +96,7 @@ docs/
 | Icono | Archivo | Descripción |
 |-------|---------|-------------|
 | ⭐ | `docs/README.md` | Punto de entrada principal |
-| 🗺️ | `docs/NAVEGACION.md` | Mapa de navegación rápida |
+| 🗺️ | `docs/01-inicio/NAVIGATION.md` | Mapa de navegación rápida |
 | 📖 | `01-inicio/INDEX.md` | Índice detallado de todo |
 | 🔌 | `04-api-referencia/API_REFERENCE.md` | Referencia completa de API |
 | 🚀 | `05-despliegue/CPANEL_DEPLOYMENT.md` | Guía de deployment |
@@ -116,7 +116,7 @@ docs/
 ## 📝 Próximos Pasos
 
 1. ✅ Abre `docs/README.md` para ver el índice completo
-2. ✅ Consulta `docs/NAVEGACION.md` para navegación rápida
+2. ✅ Consulta `docs/01-inicio/NAVIGATION.md` para navegación rápida
 3. ✅ Explora las carpetas según tu necesidad
 4. ✅ Lee los README.md de cada carpeta para contexto
 
@@ -141,4 +141,4 @@ Tu documentación está ahora:
 
 ---
 
-[📖 Ver Índice Principal](./README.md) | [🗺️ Ver Navegación Rápida](./NAVEGACION.md)
+[📖 Ver Índice Principal](./README.md) | [🗺️ Ver Navegación Rápida](./NAVIGATION.md)

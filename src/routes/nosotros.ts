@@ -1,29 +1,50 @@
 import { Router } from "express";
-import { uploadNosotros } from "../middleware/uploadMiddleware";
 
-import { 
-  crearContenido,
-  getNosotrosContenido,
-  getNosotrosContenidoPorId,
-  updateNosotrosContenido,
-  deleteNosotrosContenido,
-  getTiposContenido
+// Importar controladores de la nueva API simplificada
+import {
+  getContent,
+  updateContent,
+  updateSection,
+  createContent,
+  getSection,
+  deleteContent,
+  deleteSection,
+  uploadImage
 } from "../controllers/nosotrosController";
 
 // Middleware de seguridad
 import { authenticateToken } from '../middleware/auth';
-import { validateNosotros, validateId, handleValidationErrors } from '../middleware/validation';
+// Middleware de upload
+import { uploadNosotros, validateUploadedFile } from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Rutas públicas (solo lectura)
-router.get("/tipos", getTiposContenido);
-router.get("/contenido", getNosotrosContenido);
-router.get("/contenido/:id", validateId, handleValidationErrors, getNosotrosContenidoPorId);
+// ============================================
+// RUTAS PARA LA NUEVA API SIMPLIFICADA
+// ============================================
 
-// Rutas protegidas (requieren autenticación)
-router.post("/contenido", authenticateToken, uploadNosotros.single('imagen'), validateNosotros, handleValidationErrors, crearContenido);
-router.put("/contenido/:id", authenticateToken, validateId, uploadNosotros.single('imagen'), validateNosotros, handleValidationErrors, updateNosotrosContenido);
-router.delete("/contenido/:id", authenticateToken, validateId, handleValidationErrors, deleteNosotrosContenido);
+// GET /api/nosotros/content - Obtener todo el contenido de la página "Nosotros"
+router.get("/content", getContent);
+
+// POST /api/nosotros/content - Crear nuevo contenido (requiere autenticación)
+router.post("/content", authenticateToken, createContent);
+
+// PUT /api/nosotros/content - Actualizar todo el contenido de la página "Nosotros" (requiere autenticación)
+router.put("/content", authenticateToken, updateContent);
+
+// DELETE /api/nosotros/content - Eliminar todo el contenido (requiere autenticación)
+router.delete("/content", authenticateToken, deleteContent);
+
+// GET /api/nosotros/content/:section - Obtener una sección específica
+router.get("/content/:section", getSection);
+
+// PATCH /api/nosotros/content/:section - Actualizar una sección específica del contenido (requiere autenticación)
+router.patch("/content/:section", authenticateToken, updateSection);
+
+// DELETE /api/nosotros/content/:section - Restaurar una sección específica a valores por defecto (requiere autenticación)
+router.delete("/content/:section", authenticateToken, deleteSection);
+
+// POST /api/nosotros/upload-image - Subir imagen para una sección específica (requiere autenticación)
+router.post("/upload-image", authenticateToken, uploadNosotros.single('image'), validateUploadedFile, uploadImage);
 
 export default router;

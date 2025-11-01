@@ -6,7 +6,7 @@ Esta carpeta contiene documentos introductorios y de referencia general.
 
 ### 📄 Documentos Disponibles
 
-1. **[INDEX.md](./INDEX.md)** - Índice General Detallado
+1. **[INDICE_VISUAL.md](../INDICE_VISUAL.md)** - Índice Visual Completo
    - Visión completa de toda la documentación
    - Enlaces a todos los documentos
    - Descripción detallada de cada documento
@@ -19,7 +19,7 @@ Esta carpeta contiene documentos introductorios y de referencia general.
 Si es tu primera vez con el proyecto:
 
 1. Lee el **[README.md principal](../../README.md)** del proyecto
-2. Consulta **[INDEX.md](./INDEX.md)** para entender toda la documentación disponible
+2. Consulta **[INDICE_VISUAL.md](../INDICE_VISUAL.md)** para entender toda la documentación disponible
 3. Continúa con **[02-instalacion-configuracion](../02-instalacion-configuracion/)**
 
 ---

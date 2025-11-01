@@ -4,7 +4,7 @@ import slowDown from 'express-slow-down';
 // Rate limiter general para la API
 export const apiRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // límite de 100 requests por IP cada 15 minutos
+  max: 1000, // límite de 100 requests por IP cada 15 minutos
   message: {
     error: 'Demasiadas peticiones desde esta IP',
     message: 'Intenta de nuevo en 15 minutos',
