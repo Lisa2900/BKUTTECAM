@@ -13,6 +13,8 @@ import { sanitizeInput } from './middleware/validation';
 import textosRouter from './routes/textos';
 import nosotrosRouter from './routes/nosotros';
 import directorioRouter from './routes/directorio';
+import organigramaRouter from './routes/organigrama';
+import calendarioRouter from './routes/calendario';
 import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
 import routerDocumentos from './routes/Documentos';
@@ -165,6 +167,8 @@ app.get('/', (_req, res) => {
       textos: '/api/textos',
       nosotros: '/api/nosotros',
       directorios: '/api/directorios',
+      organigrama: '/api/organigrama',
+      calendario: '/api/calendario',
       formularios: '/api/formularios',
       solicitudes: '/api/solicitudes-constancia',
       documentos: {
@@ -184,6 +188,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/textos', textosRouter);
 app.use('/api/nosotros', nosotrosRouter);
 app.use('/api/directorios', directorioRouter);
+app.use('/api/organigrama', organigramaRouter);
+app.use('/api/calendario', calendarioRouter);
 app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 app.use('/api/documentos', routerDocumentos);

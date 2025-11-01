@@ -2,7 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 // Tipos MIME permitidos con sus extensiones correspondientes
 const ALLOWED_MIME_TYPES = {
@@ -391,6 +391,111 @@ export const validateUploadedDocument = (req: Request, res: any, next: any) => {
     return res.status(500).json({
       error: 'Error procesando archivo',
       message: 'No se pudo validar el archivo'
+    });
+  }
+};
+
+// Configuración de almacenamiento segura para calendarios
+const secureStorageCalendarios = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/calendarios');
+
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+
+    const filename = `calendario_${timestamp}_${randomName}${originalExt}`;
+    cb(null, filename);
+  }
+});
+
+// Configuración segura de multer para calendarios (PDF e imágenes)
+export const uploadCalendarios = multer({
+  storage: multer.memoryStorage(), // Usar memory storage para validación antes de guardar
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1,
+    fieldNameSize: 100,
+    fieldSize: 1024,
+    fields: 10
+  },
+  fileFilter: (req, file, cb) => {
+    // Permitir PDF e imágenes
+    const allowedMimes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ];
+
+    if (!allowedMimes.includes(file.mimetype)) {
+      return cb(new Error('Tipo de archivo no permitido. Solo PDF e imágenes.'));
+    }
+
+    // Para memory storage, verificar firma usando file.buffer
+    const signatures = {
+      'application/pdf': [0x25, 0x50, 0x44, 0x46],
+      'image/jpeg': [0xFF, 0xD8, 0xFF],
+      'image/png': [0x89, 0x50, 0x4E, 0x47],
+      'image/gif': [0x47, 0x49, 0x46],
+      'image/webp': [0x52, 0x49, 0x46, 0x46]
+    };
+
+    const signature = signatures[file.mimetype as keyof typeof signatures];
+    if (signature && file.buffer) {
+      let isValid = true;
+      for (let i = 0; i < signature.length && i < file.buffer.length; i++) {
+        if (file.buffer[i] !== signature[i]) {
+          isValid = false;
+          break;
+        }
+      }
+      if (!isValid) {
+        return cb(new Error('Archivo corrupto o tipo incorrecto'));
+      }
+    }
+
+    cb(null, true);
+  }
+});
+
+// Middleware para guardar archivo después de validación
+export const saveCalendarioFile = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file || !req.file.buffer) {
+    return next();
+  }
+
+  const uploadPath = path.join(__dirname, '../../uploads/calendarios');
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const randomName = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now();
+  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  const filename = `calendario_${timestamp}_${randomName}${originalExt}`;
+  const filePath = path.join(uploadPath, filename);
+
+  try {
+    fs.writeFileSync(filePath, req.file.buffer);
+    // Actualizar la información del archivo
+    req.file.path = filePath;
+    req.file.filename = filename;
+    req.file.destination = uploadPath;
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de calendario:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
     });
   }
 };

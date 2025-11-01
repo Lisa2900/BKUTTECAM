@@ -23,4 +23,10 @@ router.post('/', authenticateToken, uploadDirectorios.single('imagen'), validate
 router.put('/:id', authenticateToken, validateId, uploadDirectorios.single('imagen'), validateDirectorio, handleValidationErrors, updateDirectorio);
 router.delete('/:id', authenticateToken, validateId, handleValidationErrors, deleteDirectorio);
 
+// Ruta de sincronización para desarrollo (sin auth)
+// TODO: Agregar autenticación en producción
+if (process.env.NODE_ENV !== 'production') {
+  router.post('/sync', uploadDirectorios.single('imagen'), createDirectorio);
+}
+
 export default router;
