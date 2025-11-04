@@ -4,6 +4,13 @@ import Area from '../models/Area';
 import SolicitudesConstanciasKardex from '../models/Solicitud_Constancia';
 import NosotrosContent from '../models/Nosotros';
 import Calendario from '../models/Calendario';
+import HeroSlide from '../models/HeroSlide';
+import Evento from '../models/Evento';
+import Noticia from '../models/Noticia';
+import Anuncio from '../models/Anuncio';
+import Carrera from '../models/Carrera';
+import VideoInstitucional from '../models/VideoInstitucional';
+import RelojDigital from '../models/RelojDigital';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -17,7 +24,14 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     Area,
     SolicitudesConstanciasKardex,
     NosotrosContent,
-    Calendario
+    Calendario,
+    HeroSlide,
+    Evento,
+    Noticia,
+    Anuncio,
+    Carrera,
+    VideoInstitucional,
+    RelojDigital
   ];
 
   // Sincronizar modelos con la base de datos
@@ -25,7 +39,7 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
 
   if (force) {
     console.log('🔄 Base de datos reiniciada - Tablas creadas');
-    console.log('📋 Modelos registrados: Texto, Area, SolicitudesConstanciasKardex, NosotrosContent, Calendario');
+    console.log('📋 Modelos registrados: Texto, Area, SolicitudesConstanciasKardex, NosotrosContent, Calendario, HeroSlide, Evento, Noticia, Anuncio, Carrera');
   } else {
     console.log('✅ Modelos sincronizados con la base de datos');
     console.log('🔗 Asociaciones registradas correctamente');

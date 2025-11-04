@@ -19,6 +19,8 @@
     "test:tokens": "ts-node scripts/test-token-security.ts",
     "seed:areas": "ts-node scripts/seed-areas.ts",
     "seed:nosotros": "node scripts/seed-nosotros.js",
+    "seed:hero-slides": "ts-node scripts/seed-hero-slides.ts",
+    "seed:evento": "ts-node scripts/seed-evento.ts",
     "security:test": "echo 'Testing security endpoints...' && curl -s http://localhost:3002/health",
     "lint": "echo 'Linting not configured yet'",
     "test": "echo 'Tests not configured yet'"

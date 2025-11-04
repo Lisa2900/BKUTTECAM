@@ -499,3 +499,229 @@ export const saveCalendarioFile = (req: Request, res: Response, next: NextFuncti
     });
   }
 };
+
+// Configuración para hero slides y noticias
+const heroSlideStorage = multer.memoryStorage();
+
+export const uploadHeroSlides = multer({
+  storage: heroSlideStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB para videos
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF) y videos (MP4, WEBM)'));
+    }
+  }
+}).single('archivo');
+
+export const saveHeroSlideFile = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const uploadPath = path.join(__dirname, '../../uploads/hero');
+  
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const randomName = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now();
+  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  const filename = `hero_${timestamp}_${randomName}${originalExt}`;
+  const filePath = path.join(uploadPath, filename);
+
+  try {
+    fs.writeFileSync(filePath, req.file.buffer);
+    req.file.path = filePath;
+    req.file.filename = filename;
+    req.file.destination = uploadPath;
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de hero slide:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para noticias
+const noticiaStorage = multer.memoryStorage();
+
+export const uploadNoticias = multer({
+  storage: noticiaStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF)'));
+    }
+  }
+}).single('imagen');
+
+export const saveNoticiaFile = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const uploadPath = path.join(__dirname, '../../uploads/noticias');
+  
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const randomName = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now();
+  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  const filename = `noticia_${timestamp}_${randomName}${originalExt}`;
+  const filePath = path.join(uploadPath, filename);
+
+  try {
+    fs.writeFileSync(filePath, req.file.buffer);
+    req.file.path = filePath;
+    req.file.filename = filename;
+    req.file.destination = uploadPath;
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de noticia:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para anuncios
+export const uploadAnuncios = multer({
+  storage: noticiaStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF)'));
+    }
+  }
+}).single('imagen');
+
+export const saveAnuncioFile = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const uploadPath = path.join(__dirname, '../../uploads/anuncios');
+  
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const randomName = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now();
+  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  const filename = `anuncio_${timestamp}_${randomName}${originalExt}`;
+  const filePath = path.join(uploadPath, filename);
+
+  try {
+    fs.writeFileSync(filePath, req.file.buffer);
+    req.file.path = filePath;
+    req.file.filename = filename;
+    req.file.destination = uploadPath;
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de anuncio:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para carreras - imágenes y PDFs
+const carreraStorage = multer.memoryStorage();
+
+export const uploadCarrera = multer({
+  storage: carreraStorage,
+  limits: {
+    fileSize: 15 * 1024 * 1024, // 15MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF) o PDF'));
+    }
+  }
+}).fields([
+  { name: 'imagen', maxCount: 1 },
+  { name: 'plan_estudios', maxCount: 1 }
+]);
+
+export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction) => {
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  
+  if (!files) {
+    return next();
+  }
+
+  try {
+    // Guardar imagen
+    if (files.imagen && files.imagen[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/carreras');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(files.imagen[0].originalname).toLowerCase();
+      const filename = `carrera_${timestamp}_${randomName}${originalExt}`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.imagen[0].buffer);
+      (req as any).savedImagePath = filename;
+    }
+
+    // Guardar plan de estudios (PDF)
+    if (files.plan_estudios && files.plan_estudios[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/carreras/planes');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const filename = `plan_${timestamp}_${randomName}.pdf`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.plan_estudios[0].buffer);
+      (req as any).savedPlanPath = filename;
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error guardando archivos de carrera:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar los archivos'
+    });
+  }
+};

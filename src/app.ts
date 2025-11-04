@@ -18,6 +18,13 @@ import calendarioRouter from './routes/calendario';
 import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
 import routerDocumentos from './routes/Documentos';
+import heroSlideRouter from './routes/heroSlide';
+import eventoRouter from './routes/evento';
+import noticiaRouter from './routes/noticia';
+import anuncioRouter from './routes/anuncio';
+import carreraRouter from './routes/carrera';
+import videoInstitucionalRouter from './routes/videoInstitucional';
+import relojDigitalRouter from './routes/relojDigital';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -193,6 +200,13 @@ app.use('/api/calendario', calendarioRouter);
 app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 app.use('/api/documentos', routerDocumentos);
+app.use('/api/hero-slides', heroSlideRouter);
+app.use('/api/eventos', eventoRouter);
+app.use('/api/noticias', noticiaRouter);
+app.use('/api/anuncios', anuncioRouter);
+app.use('/api/carreras', carreraRouter);
+app.use('/api/video-institucional', videoInstitucionalRouter);
+app.use('/api/reloj-digital', relojDigitalRouter);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {
