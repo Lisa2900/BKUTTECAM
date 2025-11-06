@@ -15,7 +15,10 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-super-seguro-cambialo-en-produccion';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 // Interfaz para el payload del JWT
