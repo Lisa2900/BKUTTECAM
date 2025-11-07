@@ -1,6 +1,5 @@
 import nodemailer, { SentMessageInfo, Transporter } from 'nodemailer'
-
-
+import path from 'path';
 
 export interface SendEmailOptions {
   to: string | string[];
@@ -13,11 +12,14 @@ export interface Attachement {
   filename: string;
   path: string;
   contentType?: string;
+  cid?: string;  // Content-ID para imágenes embebidas
 }
 
 
 export class EmailService {
   private transporter: Transporter;
+  private logoPath: string;
+
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -27,19 +29,35 @@ export class EmailService {
         user: process.env.MAILER_EMAIL,
         pass: process.env.MAILER_SECRET_KEY
       }
-    })
+    });
+
+    // Ruta al logo institucional
+    this.logoPath = path.resolve(process.cwd(), 'public/emailPhotos/motocleEmail.png');
   }
 
 
   async sendEmail(options: SendEmailOptions): Promise<SentMessageInfo> {
-    const fromAddress = 'uttecam.edu.mx'
+    const fromAddress = process.env.MAILER_EMAIL || 'noreply@uttecam.edu.mx';
+
+    // Imagen embebida del logo (CID)
+    const logoAttachment: Attachement = {
+      filename: 'logo-uttecam.png',
+      path: this.logoPath,
+      cid: 'logo',  // mismo ID usado en el HTML como src="cid:logo"
+      contentType: 'image/png'
+    };
+
+    // Combina logo embebido + archivos adjuntos del usuario
+    const allAttachments = [logoAttachment, ...(options.attachments || [])];
+
     const mailOptions = {
-      from: `'WEB UTTECAM': <${fromAddress}>`,
+      from: `UTTECAM - Servicios Escolares <${fromAddress}>`,
       to: options.to,
       subject: options.subject,
       html: options.htmlBody,
-      attachments: options.attachments
+      attachments: allAttachments
     };
+
     const info = await this.transporter.sendMail(mailOptions);
     return info;
   }

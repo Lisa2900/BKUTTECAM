@@ -6,6 +6,7 @@ import { FormType } from "../../types/formType";
 import generateEmailHTML from "../../helpers/htmlEmail";
 import { CustomError } from "../../errors/CustomErrors";
 import { EmailRoutingService } from "../email-service/EmailRoutingService";
+import { getEmailHeaderImage } from "../../helpers/emailsSend";
 
 export class UploadController {
   constructor(
@@ -47,10 +48,17 @@ export class UploadController {
     // Si no hay archivos, envía correo sin adjunto
     if (files.length === 0) {
       try {
+        // Prepara la imagen de encabezado
+        const headerImage = getEmailHeaderImage();
+        const attachments = headerImage.type === 'cid'
+          ? [{ filename: 'header.jpg', path: headerImage.path, cid: headerImage.cid }]
+          : undefined;
+
         const info = await this.emailService.sendEmail({
           to: destinationEmails,
           subject: tituloFormulario,
-          htmlBody: generateEmailHTML(infoForm),
+          htmlBody: generateEmailHTML(infoForm, tituloFormulario),
+          attachments,
         });
         return res.status(200).json({
           ok: true,
@@ -77,15 +85,25 @@ export class UploadController {
       }));
 
       // Envía correo con todos los adjuntos
-      const info = await this.emailService.sendEmail({
-        to: destinationEmails,
-        subject: tituloFormulario,
-        htmlBody: generateEmailHTML(infoForm),
-        attachments: savedFiles.map(sf => ({
+      const headerImage = getEmailHeaderImage();
+      const emailAttachments = [
+        ...savedFiles.map(sf => ({
           filename: sf.filename,
           path: sf.tempFilePath,
           contentType: sf.mimetype
-        }))
+        })),
+        // Agrega la imagen de encabezado si es CID
+        ...(headerImage.type === 'cid'
+          ? [{ filename: 'header.jpg', path: headerImage.path, cid: headerImage.cid }]
+          : []
+        )
+      ];
+
+      const info = await this.emailService.sendEmail({
+        to: destinationEmails,
+        subject: tituloFormulario,
+        htmlBody: generateEmailHTML(infoForm, tituloFormulario),
+        attachments: emailAttachments
       });
 
       // Limpieza final de todos los guardados
