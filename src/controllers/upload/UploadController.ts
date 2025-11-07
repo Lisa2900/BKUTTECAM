@@ -5,6 +5,7 @@ import { EmailService } from "../email-service";
 import { FormType } from "../../types/formType";
 import generateEmailHTML from "../../helpers/htmlEmail";
 import { CustomError } from "../../errors/CustomErrors";
+import { EmailRoutingService } from "../email-service/EmailRoutingService";
 
 export class UploadController {
   constructor(
@@ -37,15 +38,26 @@ export class UploadController {
       comentarios: req.body.comentarios
     };
 
+    //* Determina los correos destino: responsable + admin
+    const destinationEmails = EmailRoutingService.getAllDestinations(
+      infoForm.nivel || 'TSU',
+      infoForm.carrera
+    );
+
     // Si no hay archivos, envía correo sin adjunto
     if (files.length === 0) {
       try {
         const info = await this.emailService.sendEmail({
-          to: /* 'victor.br@personal.uttecam.edu.mx' */['mstrwalfe@gmail.com', 'jesus.sr0704@gmail.com'],
+          to: destinationEmails,
           subject: tituloFormulario,
           htmlBody: generateEmailHTML(infoForm),
         });
-        return res.status(200).json({ ok: true, message: 'Email sent', emailInfo: { messageId: info.messageId } });
+        return res.status(200).json({
+          ok: true,
+          message: 'Email sent',
+          sentTo: destinationEmails,
+          emailInfo: { messageId: info.messageId }
+        });
       } catch (error) {
         console.error(error);
         return res.status(502).json({ ok: false, message: 'Error sending email without attachment' });
@@ -66,7 +78,7 @@ export class UploadController {
 
       // Envía correo con todos los adjuntos
       const info = await this.emailService.sendEmail({
-        to: ['mstrwalfe@gmail.com', 'jesus.sr0704@gmail.com'],
+        to: destinationEmails,
         subject: tituloFormulario,
         htmlBody: generateEmailHTML(infoForm),
         attachments: savedFiles.map(sf => ({
@@ -82,6 +94,7 @@ export class UploadController {
       return res.status(200).json({
         ok: true,
         message: 'Files uploaded and email sent',
+        sentTo: destinationEmails,
         attachments: savedFiles.map(sf => sf.filename),
         emailInfo: { messageId: info.messageId }
       });
