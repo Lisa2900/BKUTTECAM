@@ -131,15 +131,35 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
       });
     }
 
+    // El frontend envía { [section]: data }, extraer los datos de la sección
+    const sectionData = updateData[section] || updateData;
+
     // Actualizar solo la sección especificada
     const updateObj: any = {};
-    updateObj[section] = updateData;
+    updateObj[section] = sectionData;
 
     await content.update(updateObj);
+    
+    // Recargar el contenido actualizado
+    await content.reload();
+
+    // Parsear el campo actualizado si es necesario
+    const parseIfString = (field: any) => {
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch {
+          return field;
+        }
+      }
+      return field;
+    };
+
+    const updatedValue = parseIfString(content[section as keyof typeof content]);
 
     res.json({
       message: `Sección ${section} actualizada exitosamente`,
-      [section]: content[section as keyof typeof content]
+      [section]: updatedValue
     });
   } catch (error) {
     next(error);
