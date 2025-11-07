@@ -51,6 +51,7 @@ export default function generateEmailHTML(data: FormType): string {
           ${row("Nivel", data.nivel)}
           ${row("Entrega", data.entrega)}
           ${row("Documentos solicitados", data["documentos-solicitados"])}
+          ${row("Comentarios", data.comentarios)}
           ${row("Referencia", data.referencia)}
           ${row("Número de seguro", data["numero-seguro"])}
         </table>

@@ -19,6 +19,8 @@ export class UploadController {
     const reqFiles = req.files || undefined;
     const raw = (reqFiles as any)?.attachment as UploadedFile | UploadedFile[] | undefined;
     const files: UploadedFile[] = raw ? (Array.isArray(raw) ? raw : [raw]) : [];
+    const tituloFormulario: string = req.body['titulo-formulario'];
+    if (!tituloFormulario) throw CustomError.badRequest('El título del formulario es obligatorio.');
 
     const infoForm: FormType = {
       nombre: req.body.nombre!,
@@ -31,15 +33,16 @@ export class UploadController {
       'documentos-solicitados': req.body['documentos-solicitados'],
       referencia: req.body.referencia,
       'numero-seguro': req.body['numero-seguro'],
-      attachment: raw
+      attachment: raw,
+      comentarios: req.body.comentarios
     };
 
     // Si no hay archivos, envía correo sin adjunto
     if (files.length === 0) {
       try {
         const info = await this.emailService.sendEmail({
-          to: 'mstrwalfe@gmail.com',
-          subject: 'Archivo adjunto desde API',
+          to: /* 'victor.br@personal.uttecam.edu.mx' */['mstrwalfe@gmail.com', 'jesus.sr0704@gmail.com'],
+          subject: tituloFormulario,
           htmlBody: generateEmailHTML(infoForm),
         });
         return res.status(200).json({ ok: true, message: 'Email sent', emailInfo: { messageId: info.messageId } });
@@ -63,8 +66,8 @@ export class UploadController {
 
       // Envía correo con todos los adjuntos
       const info = await this.emailService.sendEmail({
-        to: '22307090@estudiante.uttecam.edu.mx',
-        subject: 'Archivo adjunto desde API',
+        to: ['mstrwalfe@gmail.com', 'jesus.sr0704@gmail.com'],
+        subject: tituloFormulario,
         htmlBody: generateEmailHTML(infoForm),
         attachments: savedFiles.map(sf => ({
           filename: sf.filename,

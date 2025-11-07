@@ -20,26 +20,21 @@ export class EmailService {
   private transporter: Transporter;
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp-mail.outlook.com',
-      port: 587,
-      secure: /* process.env.SMTP_SECURE === 'true' */ false, // true for 465, false for other ports
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // true for 465, false for other ports
       auth: {
         user: process.env.MAILER_EMAIL,
         pass: process.env.MAILER_SECRET_KEY
-      },
-      tls: {
-        // A veces se necesita esta opción si hay problemas de cifrado o certificados
-        ciphers: "SSLv3",
-        rejectUnauthorized: false
       }
     })
   }
 
 
   async sendEmail(options: SendEmailOptions): Promise<SentMessageInfo> {
-    const fromAddress = process.env.MAILER_EMAIL || process.env.SMTP_USER || '';
+    const fromAddress = 'uttecam.edu.mx'
     const mailOptions = {
-      from: `'UTTECAM' <${fromAddress}>`,
+      from: `'WEB UTTECAM': <${fromAddress}>`,
       to: options.to,
       subject: options.subject,
       html: options.htmlBody,

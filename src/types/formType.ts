@@ -13,5 +13,6 @@ export type FormType = {
   referencia?: string;
   'numero-seguro'?: string;
   attachment?: UploadedFile | UploadedFile[];
+  comentarios: string;
 
 }

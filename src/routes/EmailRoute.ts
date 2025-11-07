@@ -79,6 +79,10 @@ export default class EmailRoute {
         .trim()
         .isString().withMessage('La carrera debe ser una cadena de texto.')
         .notEmpty().withMessage('La carrera no puede estar vacía.'),
+      body('titulo-formulario')
+        .trim()
+        .isString().withMessage('El título del formulario debe ser una cadena de texto.')
+        .notEmpty().withMessage('El título del formulario no puede estar vacío.'),
       body('nivel')
         .optional({ nullable: true })
         .trim()
@@ -109,6 +113,11 @@ export default class EmailRoute {
       body('attachment')
         .optional({ nullable: true })
         .notEmpty().withMessage('El archivo adjunto es obligatorio.'),
+      body('comentarios')
+        .optional({ nullable: true })
+        .trim()
+        .isString().withMessage('Los comentarios deben ser una cadena de texto.')
+        .isLength({ max: 300 }).withMessage('Los comentarios no pueden exceder los 300 caracteres.'),
       validate,
       controller.saveTempFile.bind(controller),
     )
