@@ -27,6 +27,9 @@ formularioRouter.get('/', (_req, res) => {
 
 // Error handlers
 import { notFound, errorHandler } from './middleware/errorHandler';
+import EmailRoute from './routes/EmailRoute';
+import fileUpload from 'express-fileupload';
+import path from 'path';
 
 const app = express();
 
@@ -47,7 +50,7 @@ app.use(speedLimiter);
 // 5. CORS SEGURO
 const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
-    'http://localhost:3000', 
+    'http://localhost:3000',
     'http://localhost:3001',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
@@ -107,16 +110,22 @@ app.use('/uploads',
         '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
       ];
       const fileExtension = require('path').extname(path).toLowerCase();
-      
+
       if (!allowedExtensions.includes(fileExtension)) {
         res.status(403).end();
         return;
       }
-      
+
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
-      
+
+      // Headers CORS para archivos estáticos - Permitir desde cualquier origen
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+
       // Headers específicos para PDFs y documentos
       if (fileExtension === '.pdf') {
         res.setHeader('Content-Type', 'application/pdf');
@@ -128,7 +137,7 @@ app.use('/uploads',
       } else if (['.ppt', '.pptx'].includes(fileExtension)) {
         res.setHeader('Content-Type', 'application/vnd.ms-powerpoint');
       }
-      
+
       // Cache diferente según tipo de archivo
       const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg'].includes(fileExtension);
       if (isImage) {
@@ -142,8 +151,8 @@ app.use('/uploads',
 
 // 11. RUTA PRINCIPAL CON INFORMACIÓN DE SEGURIDAD
 app.get('/', (_req, res) => {
-  res.json({ 
-    mensaje: 'API UTTECAM operativa con seguridad OWASP Top 10', 
+  res.json({
+    mensaje: 'API UTTECAM operativa con seguridad OWASP Top 10',
     version: '2.0.0-secure',
     security: {
       authentication: 'JWT Bearer Token required',
@@ -204,13 +213,13 @@ app.get('/health', async (_req, res) => {
     // Importar Sequelize y modelo
     const sequelize = require('./config/database').default;
     const Texto = require('./models/Texto').default;
-    
+
     // Verificar conexión con authenticate
     await sequelize.authenticate();
-    
+
     // Hacer consulta real para confirmar funcionamiento
     const totalRecords = await Texto.count();
-    
+
     health.database = 'connected';
     health.sequelize = 'authenticated';
     health.metrics = {
@@ -218,7 +227,7 @@ app.get('/health', async (_req, res) => {
       memoryUsage: process.memoryUsage(),
       nodeVersion: process.version
     };
-    
+
   } catch (error: any) {
     health.database = 'disconnected';
     health.db_error = error.message;
