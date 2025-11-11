@@ -1,0 +1,76 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 29-09-2025 a las 18:59:36
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: `universidad`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `nosotros_contenido`
+--
+
+CREATE TABLE `nosotros_contenido` (
+  `id` int(11) NOT NULL,
+  `tipo` enum('vision','mision','valores','politica_integral','objetivo_integral','politica_igualdad') NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `imagen` varchar(255) DEFAULT NULL,
+  `lista` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`lista`)),
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `nosotros_contenido`
+--
+
+INSERT INTO `nosotros_contenido` (`id`, `tipo`, `titulo`, `descripcion`, `imagen`, `lista`, `fecha_creacion`, `fecha_actualizacion`) VALUES
+(1, 'vision', 'Visión', 'En el año 2027, ser una institución de excelencia, reconocida Nacional e Internacionalmente por su eficiencia, eficacia, pertinencia, equidad, inclusión, vinculación y cuerpos académicos consolidados y comprometidos con las expectativas de los aprendientes y de la sociedad, al brindar educación de calidad y profesionistas con alto sentido humano, competitivos e integrados en el ámbito productivo. Siendo una Universidad abierta, flexible, innovadora, promotora de cultura, ciencia y tecnología, vinculada con los sectores social y productivo; que contribuya al desarrollo integral de la región, el estado y del país, distinguida por su compromiso social, desempeño académico, procesos consolidados de evaluación, acreditación de sus programas educativos y transparencia en la rendición de cuentas.', 'nosotros/vision.jpg', NULL, '2025-09-28 03:52:45', '2025-09-28 03:52:45'),
+(2, 'mision', 'Misión', 'Somos una Institución de Educación Superior comprometida con la excelencia, transparencia y rendición de cuentas, que brinda servicios educativos, científicos y tecnológicos con calidad, equidad, inclusión, responsabilidad social y sentido humano para contribuir al bienestar y desarrollo integral regional, estatal y nacional, cumpliendo los requerimientos de las partes interesadas, mediante un modelo formativo integral.', 'nosotros/mision.webp', NULL, '2025-09-28 03:52:45', '2025-09-28 03:52:45'),
+(3, 'valores', 'Valores', NULL, 'nosotros/valores.avif', '[\"Austeridad\",\"Honestidad\",\"Empatía\",\"Generosidad\",\"Respeto\",\"Tolerancia\",\"Igualdad\",\"Equidad\",\"Justicia\",\"Fraternidad\",\"Compromiso\",\"Bien Común\"]', '2025-09-28 03:52:45', '2025-09-28 03:52:45'),
+(4, 'politica_integral', 'Política Integral', 'Somos una institución comprometida en la formación de profesionistas con responsabilidad social, sentido humano y ético, que en conjunto con la comunidad universitaria, contribuyen al desarrollo sustentable a través de establecimiento de objetivos integrales, actualización e innovación de los programas educativos, gestión de la propiedad intelectual y la mejora continua del Sistema de Gestión Integral, considerando el desarrollo educativo, científico y técnico, cumpliendo el marco legal aplicable, considerando las necesidades y expectativas de las partes interesadas, atendiendo los criterios ambientales de manera que se pueda controlar y prevenir la contaminación derivada de nuestros procesos y servicios para la preservación del medio ambiente.', 'PortadaPW.jpg', NULL, '2025-09-28 03:52:45', '2025-09-28 03:52:45'),
+(5, 'objetivo_integral', 'Objetivo Integral', 'Formar integralmente profesionistas competentes socialmente responsables, creativos, emprendedores e innovadores, comprometidos con el cuidado del medio ambiente y la sustentabilidad, a través del proceso enseñanza-aprendizaje, conducido por una planta docente con sentido humano, perfil profesional, experiencia y capacitación adecuada para la realización de su labor educativa.', NULL, NULL, '2025-09-28 03:52:45', '2025-09-28 03:52:45'),
+(6, 'politica_igualdad', 'Política de Igualdad, No Discriminación y Derechos Humanos', 'La Universidad Tecnológica de Tecamachalco es una Institución comprometida con la igualdad Laboral y la promoción de los Derechos Humanos, erradicando cualquier forma de maltrato, y segregación por parte de cualquier miembro de la Comunidad Universitaria hacia aspirantes estudiantes, personal docente y/o administrativo y cualquier persona que se encuentre dentro de las instalaciones o asistiendo a cualquier evento organizado por la misma materia de:', NULL, '[\"Apariencia Física\",\"Cultura\",\"Discapacidad\",\"Idioma\",\"Estado civil\",\"Religión\",\"Sexo\",\"Embarazo\",\"Opiniones\",\"Origen étnico o nacional\",\"Género\",\"Edad\"]', '2025-09-28 03:52:45', '2025-09-28 03:52:45');
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `nosotros_contenido`
+--
+ALTER TABLE `nosotros_contenido`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `nosotros_contenido`
+--
+ALTER TABLE `nosotros_contenido`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
