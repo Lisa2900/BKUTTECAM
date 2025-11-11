@@ -39,7 +39,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Carla Patricia Palacios Ramírez',
-    email: 'c.p.palacios@personal.uttecam.edu.mx',
+    email: /* 'c.p.palacios@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
     carreras: [
       { area: 'TSU', nombre: 'Procesos Industriales área Manufactura' },
       { area: 'TSU', nombre: 'Procesos Industriales área Automotriz' },
@@ -52,7 +52,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Gloria Rodríguez Lara',
-    email: 'g.rodriguez@personal.uttecam.edu.mx',
+    email: /* 'g.rodriguez@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
     carreras: [
       { area: 'TSU', nombre: 'Admón. Área Formulación y Evaluación de Proyectos' },
       { area: 'TSU', nombre: 'Emprendimiento, Formulación y Evaluación de Proyectos' },
@@ -65,7 +65,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Elizabeth Cruz Flores',
-    email: 'e.cruz@personal.uttecam.edu.mx',
+    email: /* 'e.cruz@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
     carreras: [
       { area: 'TSU', nombre: 'Contaduría' },
       { area: 'LIC', nombre: 'Contaduría' },
@@ -75,7 +75,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Dulce María Sánchez Doroteo',
-    email: 'd.m.sanchez.doroteo@personal.uttecam.edu.mx',
+    email: /* 'd.m.sanchez.doroteo@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
     carreras: [
       { area: 'TSU', nombre: 'Agricultura Sustentable y Protegida' },
       { area: 'TSU', nombre: 'Mecatrónica área Automatización' },

@@ -1,6 +1,6 @@
 import { FormType } from "../types";
 
-export default function generateEmailHTML(data: FormType): string {
+export default function generateEmailHTML(data: FormType, tituloFormulario?: string): string {
   // Paleta de colores verde-naranja elegante
   const primaryGreen = "#2D7A4F";      // Verde institucional
   const accentOrange = "#F57C00";      // Naranja vibrante
@@ -72,7 +72,7 @@ export default function generateEmailHTML(data: FormType): string {
                   <td style="padding: 40px 30px; text-align: center;">
                     <img src="cid:logo" alt="UTTECAM" style="max-width: 180px; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;" />
                     <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                      Nueva Solicitud de Trámite
+                      ${tituloFormulario || 'Nueva Solicitud de Trámite'}
                     </h1>
                     <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.95); font-size: 15px; font-weight: 400;">
                       Servicios Escolares - UTTECAM

@@ -47,8 +47,13 @@ export class EmailService {
       contentType: 'image/png'
     };
 
-    // Combina logo embebido + archivos adjuntos del usuario
-    const allAttachments = [logoAttachment, ...(options.attachments || [])];
+    // Filtra archivos adjuntos del usuario (excluye header.jpg si existe)
+    const userAttachments = (options.attachments || []).filter(
+      att => att.filename !== 'header.jpg'
+    );
+
+    // Combina logo embebido + archivos adjuntos filtrados
+    const allAttachments = [logoAttachment, ...userAttachments];
 
     const mailOptions = {
       from: `UTTECAM - Servicios Escolares <${fromAddress}>`,
