@@ -13,18 +13,9 @@ import { sanitizeInput } from './middleware/validation';
 import textosRouter from './routes/textos';
 import nosotrosRouter from './routes/nosotros';
 import directorioRouter from './routes/directorio';
-import organigramaRouter from './routes/organigrama';
-import calendarioRouter from './routes/calendario';
 import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
 import routerDocumentos from './routes/Documentos';
-import heroSlideRouter from './routes/heroSlide';
-import eventoRouter from './routes/evento';
-import noticiaRouter from './routes/noticia';
-import anuncioRouter from './routes/anuncio';
-import carreraRouter from './routes/carrera';
-import videoInstitucionalRouter from './routes/videoInstitucional';
-import relojDigitalRouter from './routes/relojDigital';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -58,12 +49,11 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000', 
     'http://localhost:3001',
-    'http://localhost:5174',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx'
   ],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
   credentials: false, // Importante: no permitir credenciales para mayor seguridad
   maxAge: 86400 // Cache preflight por 24 horas
@@ -125,13 +115,7 @@ app.use('/uploads',
       
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      
-      // Headers CORS para archivos estáticos - Permitir desde cualquier origen
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
       
       // Headers específicos para PDFs y documentos
       if (fileExtension === '.pdf') {
@@ -174,8 +158,6 @@ app.get('/', (_req, res) => {
       textos: '/api/textos',
       nosotros: '/api/nosotros',
       directorios: '/api/directorios',
-      organigrama: '/api/organigrama',
-      calendario: '/api/calendario',
       formularios: '/api/formularios',
       solicitudes: '/api/solicitudes-constancia',
       documentos: {
@@ -195,18 +177,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/textos', textosRouter);
 app.use('/api/nosotros', nosotrosRouter);
 app.use('/api/directorios', directorioRouter);
-app.use('/api/organigrama', organigramaRouter);
-app.use('/api/calendario', calendarioRouter);
 app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 app.use('/api/documentos', routerDocumentos);
-app.use('/api/hero-slides', heroSlideRouter);
-app.use('/api/eventos', eventoRouter);
-app.use('/api/noticias', noticiaRouter);
-app.use('/api/anuncios', anuncioRouter);
-app.use('/api/carreras', carreraRouter);
-app.use('/api/video-institucional', videoInstitucionalRouter);
-app.use('/api/reloj-digital', relojDigitalRouter);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {
