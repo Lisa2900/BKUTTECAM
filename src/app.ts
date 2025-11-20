@@ -16,6 +16,7 @@ import directorioRouter from './routes/directorio';
 import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
 import routerDocumentos from './routes/Documentos';
+import carreraRouter from './routes/carrera';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -29,7 +30,6 @@ formularioRouter.get('/', (_req, res) => {
 import { notFound, errorHandler } from './middleware/errorHandler';
 import EmailRoute from './routes/EmailRoute';
 import fileUpload from 'express-fileupload';
-import path from 'path';
 
 const app = express();
 
@@ -118,7 +118,8 @@ app.use('/uploads',
 
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
-
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
+      
       // Headers CORS para archivos estáticos - Permitir desde cualquier origen
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -189,6 +190,7 @@ app.use('/api/directorios', directorioRouter);
 app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 app.use('/api/documentos', routerDocumentos);
+app.use('/api/carreras', carreraRouter);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

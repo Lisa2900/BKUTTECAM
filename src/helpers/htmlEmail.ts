@@ -1,4 +1,4 @@
-import { FormType } from "../types";
+import { FormType } from "../types/formType";
 
 export default function generateEmailHTML(data: FormType, tituloFormulario?: string): string {
   // Paleta de colores verde-naranja elegante
