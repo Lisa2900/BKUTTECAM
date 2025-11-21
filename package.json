@@ -23,10 +23,10 @@
     "seed:evento": "node scripts/development/seed-evento.js",
     "security:test": "echo 'Testing security endpoints...' && curl -s http://localhost:3002/health",
     "lint": "echo 'Linting not configured yet'",
-    "test": "jest",
+    "test": "jest --forceExit",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:coverage": "jest --coverage --forceExit",
+    "test:ci": "jest --ci --coverage --watchAll=false --forceExit"
   },
   "keywords": [
     "express",

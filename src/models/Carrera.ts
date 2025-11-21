@@ -13,6 +13,7 @@ interface CarreraAttributes {
   perfil_egreso: string;
   campo_laboral: string;
   imagen: string;
+  video_url?: string;
   plan_estudios_url?: string;
   orden: number;
   activo: boolean;
@@ -32,6 +33,7 @@ class Carrera extends Model<CarreraAttributes> implements CarreraAttributes {
   public perfil_egreso!: string;
   public campo_laboral!: string;
   public imagen!: string;
+  public video_url?: string;
   public plan_estudios_url?: string;
   public orden!: number;
   public activo!: boolean;
@@ -86,6 +88,10 @@ Carrera.init(
     imagen: {
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    video_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
     },
     plan_estudios_url: {
       type: DataTypes.STRING(255),

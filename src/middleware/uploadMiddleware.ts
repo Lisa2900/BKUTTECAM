@@ -657,20 +657,30 @@ const carreraStorage = multer.memoryStorage();
 export const uploadCarrera = multer({
   storage: carreraStorage,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB
+    fileSize: 50 * 1024 * 1024, // 50MB para videos
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+    const allowedMimes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp', 
+      'image/gif', 
+      'application/pdf',
+      'video/mp4',
+      'video/webm',
+      'video/x-msvideo' // .avi
+    ];
     
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF) o PDF'));
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF), PDF o videos (MP4, WEBM, AVI)'));
     }
   }
 }).fields([
   { name: 'imagen', maxCount: 1 },
-  { name: 'plan_estudios', maxCount: 1 }
+  { name: 'plan_estudios', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
 ]);
 
 export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction) => {
@@ -697,6 +707,24 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
 
       fs.writeFileSync(filePath, files.imagen[0].buffer);
       (req as any).savedImagePath = filename;
+    }
+
+    // Guardar video
+    if (files.video && files.video[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/carreras/videos');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(files.video[0].originalname).toLowerCase();
+      const filename = `video_${timestamp}_${randomName}${originalExt}`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.video[0].buffer);
+      (req as any).savedVideoPath = filename;
     }
 
     // Guardar plan de estudios (PDF)

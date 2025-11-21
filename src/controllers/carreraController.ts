@@ -83,6 +83,7 @@ export const createCarrera = async (req: Request, res: Response) => {
     } = req.body;
 
     const imagen = (req as any).savedImagePath || '';
+    const video_url = (req as any).savedVideoPath || '';
     const plan_estudios_url = (req as any).savedPlanPath || '';
 
     const carrera = await Carrera.create({
@@ -96,6 +97,7 @@ export const createCarrera = async (req: Request, res: Response) => {
       perfil_egreso,
       campo_laboral,
       imagen,
+      video_url,
       plan_estudios_url,
       orden: parseInt(orden) || 0,
       activo: activo === 'true' || activo === true,
@@ -144,6 +146,20 @@ export const updateCarrera = async (req: Request, res: Response) => {
         }
       }
       carrera.imagen = (req as any).savedImagePath;
+    }
+
+    // Actualizar video si se proporciona uno nuevo
+    if ((req as any).savedVideoPath) {
+      // Eliminar video anterior si existe
+      if (carrera.video_url) {
+        const oldVideoPath = path.join(__dirname, '../../uploads/carreras/videos', carrera.video_url);
+        try {
+          await fs.unlink(oldVideoPath);
+        } catch (error) {
+          console.error('Error al eliminar video anterior:', error);
+        }
+      }
+      carrera.video_url = (req as any).savedVideoPath;
     }
 
     // Actualizar plan de estudios si se proporciona uno nuevo
@@ -198,6 +214,15 @@ export const deleteCarrera = async (req: Request, res: Response) => {
         await fs.unlink(imagePath);
       } catch (error) {
         console.error('Error al eliminar imagen:', error);
+      }
+    }
+
+    if (carrera.video_url) {
+      const videoPath = path.join(__dirname, '../../uploads/carreras/videos', carrera.video_url);
+      try {
+        await fs.unlink(videoPath);
+      } catch (error) {
+        console.error('Error al eliminar video:', error);
       }
     }
 
