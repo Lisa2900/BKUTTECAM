@@ -33,7 +33,6 @@ Categorias.init(
     Nombre: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: true,
       validate: {
         notEmpty: {
           msg: 'El nombre de la categoría no puede estar vacío'
@@ -69,11 +68,7 @@ Categorias.init(
     timestamps: false, // No hay campos createdAt/updatedAt en la tabla
     underscored: false,
     indexes: [
-      {
-        name: 'UC_Nombre_Categoria',
-        unique: true,
-        fields: ['Nombre']
-      },
+      // Se removió el índice único sobre `Nombre` para permitir nombres duplicados de categorías.
       {
         name: 'FK_Area',
         fields: ['ID_Area']
