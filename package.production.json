@@ -10,8 +10,7 @@
   },
   "scripts": {
     "start": "node dist/server.js",
-    "create:admin": "node scripts/create-admin.js",
-    "seed:areas": "node scripts/seed-areas.js",
+    "create:admin": "node scripts/auth/create-admin.js",
     "test:security": "node scripts/test-token-security.js",
     "db:sync": "node scripts/sync-database.js",
     "db:sync:force": "node scripts/sync-database.js --force",
@@ -88,10 +87,8 @@
     }
   },
   "files": [
-    "dist/",
-    "scripts/create-admin.js",
-    "scripts/seed-all.js",
-    "scripts/seed-areas.js",
+  "dist/",
+  "scripts/auth/create-admin.js",
     "scripts/sync-database.js",
     "scripts/migrate-files.js",
     "scripts/migrate-home-content.js",

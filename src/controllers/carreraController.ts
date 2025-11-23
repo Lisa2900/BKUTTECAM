@@ -72,34 +72,55 @@ export const createCarrera = async (req: Request, res: Response) => {
       nombre,
       siglas,
       nivel,
-      modalidad,
       duracion,
       objetivo,
       perfil_ingreso,
       perfil_egreso,
       campo_laboral,
+      competencias,
+      atributos_egreso,
+      objetivos_educacionales,
+      mapa_curricular,
       orden,
       activo,
     } = req.body;
 
     const imagen = (req as any).savedImagePath || '';
+    const imagen_portada = (req as any).savedPortadaPath || '';
     const video_url = (req as any).savedVideoPath || '';
     const plan_estudios_url = (req as any).savedPlanPath || '';
+
+    let parsedMapaCurricular = null;
+    if (mapa_curricular) {
+      try {
+        parsedMapaCurricular = typeof mapa_curricular === 'string' ? JSON.parse(mapa_curricular) : mapa_curricular;
+      } catch (e) {
+        console.error('Error parsing mapa_curricular:', e);
+      }
+    }
+
+    // Asignar orden automáticamente como el máximo + 1 para evitar duplicados
+    const maxOrden = (await Carrera.max('orden')) as number || 0;
+    const nuevoOrden = maxOrden + 1;
 
     const carrera = await Carrera.create({
       nombre,
       siglas,
       nivel,
-      modalidad,
       duracion,
       objetivo,
       perfil_ingreso,
       perfil_egreso,
       campo_laboral,
+      competencias,
+      atributos_egreso,
+      objetivos_educacionales,
+      mapa_curricular: parsedMapaCurricular,
       imagen,
+      imagen_portada,
       video_url,
       plan_estudios_url,
-      orden: parseInt(orden) || 0,
+      orden: nuevoOrden,
       activo: activo === 'true' || activo === true,
     });
 
@@ -124,12 +145,15 @@ export const updateCarrera = async (req: Request, res: Response) => {
       nombre,
       siglas,
       nivel,
-      modalidad,
       duracion,
       objetivo,
       perfil_ingreso,
       perfil_egreso,
       campo_laboral,
+      competencias,
+      atributos_egreso,
+      objetivos_educacionales,
+      mapa_curricular,
       orden,
       activo,
     } = req.body;
@@ -146,6 +170,20 @@ export const updateCarrera = async (req: Request, res: Response) => {
         }
       }
       carrera.imagen = (req as any).savedImagePath;
+    }
+
+    // Actualizar imagen portada si se proporciona una nueva
+    if ((req as any).savedPortadaPath) {
+      // Eliminar imagen anterior si existe
+      if (carrera.imagen_portada) {
+        const oldPortadaPath = path.join(__dirname, '../../uploads/carreras', carrera.imagen_portada);
+        try {
+          await fs.unlink(oldPortadaPath);
+        } catch (error) {
+          console.error('Error al eliminar imagen portada anterior:', error);
+        }
+      }
+      carrera.imagen_portada = (req as any).savedPortadaPath;
     }
 
     // Actualizar video si se proporciona uno nuevo
@@ -180,12 +218,23 @@ export const updateCarrera = async (req: Request, res: Response) => {
     carrera.nombre = nombre || carrera.nombre;
     carrera.siglas = siglas || carrera.siglas;
     carrera.nivel = nivel || carrera.nivel;
-    carrera.modalidad = modalidad || carrera.modalidad;
     carrera.duracion = duracion || carrera.duracion;
     carrera.objetivo = objetivo || carrera.objetivo;
     carrera.perfil_ingreso = perfil_ingreso || carrera.perfil_ingreso;
     carrera.perfil_egreso = perfil_egreso || carrera.perfil_egreso;
     carrera.campo_laboral = campo_laboral || carrera.campo_laboral;
+    carrera.competencias = competencias !== undefined ? competencias : carrera.competencias;
+    carrera.atributos_egreso = atributos_egreso !== undefined ? atributos_egreso : carrera.atributos_egreso;
+    carrera.objetivos_educacionales = objetivos_educacionales !== undefined ? objetivos_educacionales : carrera.objetivos_educacionales;
+    
+    if (mapa_curricular) {
+      try {
+        carrera.mapa_curricular = typeof mapa_curricular === 'string' ? JSON.parse(mapa_curricular) : mapa_curricular;
+      } catch (e) {
+        console.error('Error parsing mapa_curricular update:', e);
+      }
+    }
+
     carrera.orden = orden !== undefined ? parseInt(orden) : carrera.orden;
     carrera.activo = activo !== undefined ? (activo === 'true' || activo === true) : carrera.activo;
 
@@ -217,6 +266,15 @@ export const deleteCarrera = async (req: Request, res: Response) => {
       }
     }
 
+    if (carrera.imagen_portada) {
+      const portadaPath = path.join(__dirname, '../../uploads/carreras', carrera.imagen_portada);
+      try {
+        await fs.unlink(portadaPath);
+      } catch (error) {
+        console.error('Error al eliminar imagen portada:', error);
+      }
+    }
+
     if (carrera.video_url) {
       const videoPath = path.join(__dirname, '../../uploads/carreras/videos', carrera.video_url);
       try {
@@ -240,5 +298,36 @@ export const deleteCarrera = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error al eliminar carrera:', error);
     res.status(500).json({ message: 'Error al eliminar carrera' });
+  }
+};
+
+// PUT - Actualizar orden de carreras
+export const updateOrder = async (req: Request, res: Response) => {
+  try {
+    const { orden } = req.body; // Array of { id, orden }
+
+    if (!Array.isArray(orden)) {
+      return res.status(400).json({ message: 'Formato inválido' });
+    }
+
+    // Actualizar cada carrera
+    const promises = orden.map((item: { id: number; orden: number }) => 
+      Carrera.update({ orden: item.orden }, { where: { id: item.id } })
+    );
+
+    await Promise.all(promises);
+
+    // Recalcular órdenes consecutivos para asegurar unicidad
+    const carreras = await Carrera.findAll({ order: [['orden', 'ASC']] });
+    let currentOrder = 1;
+    for (const carrera of carreras) {
+      await carrera.update({ orden: currentOrder });
+      currentOrder++;
+    }
+
+    res.json({ message: 'Orden actualizado correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar orden:', error);
+    res.status(500).json({ message: 'Error al actualizar orden' });
   }
 };

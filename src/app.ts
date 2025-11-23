@@ -17,6 +17,14 @@ import authRouter from './routes/auth';
 import solicitudConstanciaRouter from './routes/solicitudConstancia';
 import routerDocumentos from './routes/Documentos';
 import carreraRouter from './routes/carrera';
+import heroSlideRouter from './routes/heroSlide';
+import eventoRouter from './routes/evento';
+import relojDigitalRouter from './routes/relojDigital';
+import noticiaRouter from './routes/noticia';
+import anuncioRouter from './routes/anuncio';
+import calendarioRouter from './routes/calendario';
+import organigramaRouter from './routes/organigrama';
+import videoInstitucionalRouter from './routes/videoInstitucional';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -56,13 +64,15 @@ const corsOptions = {
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Accept', 'X-Requested-With'],
   credentials: false, // Importante: no permitir credenciales para mayor seguridad
   maxAge: 86400 // Cache preflight por 24 horas
 };
 
 app.use(cors(corsOptions));
+// Asegurar que las peticiones preflight OPTIONS respondan correctamente para todas las rutas
+app.options('*', cors(corsOptions));
 
 // 6. PARSERS DE BODY (excluir rutas de upload del parsing JSON)
 app.use((req, res, next) => {
@@ -106,6 +116,8 @@ app.use('/uploads',
       const allowedExtensions = [
         // Imágenes
         '.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg',
+        // Videos
+        '.mp4', '.webm', '.ogg',
         // Documentos
         '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
       ];
@@ -191,6 +203,15 @@ app.use('/api/formularios', formularioRouter);
 app.use('/api/solicitudes-constancia', solicitudConstanciaRouter);
 app.use('/api/documentos', routerDocumentos);
 app.use('/api/carreras', carreraRouter);
+app.use('/api/hero-slides', heroSlideRouter);
+app.use('/api/eventos', eventoRouter);
+app.use('/api/reloj-digital', relojDigitalRouter);
+app.use('/api/noticias', noticiaRouter);
+app.use('/api/anuncios', anuncioRouter);
+app.use('/api/calendarios', calendarioRouter);
+app.use('/api/organigrama', organigramaRouter);
+app.use('/api/video-institucional', videoInstitucionalRouter);
+app.use('/api/email', EmailRoute.routes);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

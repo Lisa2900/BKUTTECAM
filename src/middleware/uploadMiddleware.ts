@@ -657,7 +657,7 @@ const carreraStorage = multer.memoryStorage();
 export const uploadCarrera = multer({
   storage: carreraStorage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB para videos
+    fileSize: 200 * 1024 * 1024, // 200MB para videos
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
@@ -679,6 +679,7 @@ export const uploadCarrera = multer({
   }
 }).fields([
   { name: 'imagen', maxCount: 1 },
+  { name: 'imagen_portada', maxCount: 1 },
   { name: 'plan_estudios', maxCount: 1 },
   { name: 'video', maxCount: 1 }
 ]);
@@ -691,9 +692,9 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
   }
 
   try {
-    // Guardar imagen
+    // Guardar imagen (Carátula)
     if (files.imagen && files.imagen[0]) {
-      const uploadPath = path.join(__dirname, '../../uploads/carreras');
+      const uploadPath = path.join(__dirname, '../../uploads/carreras/caratulas');
       
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
@@ -702,11 +703,29 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
       const randomName = crypto.randomBytes(16).toString('hex');
       const timestamp = Date.now();
       const originalExt = path.extname(files.imagen[0].originalname).toLowerCase();
-      const filename = `carrera_${timestamp}_${randomName}${originalExt}`;
+      const filename = `caratula_${timestamp}_${randomName}${originalExt}`;
       const filePath = path.join(uploadPath, filename);
 
       fs.writeFileSync(filePath, files.imagen[0].buffer);
-      (req as any).savedImagePath = filename;
+      (req as any).savedImagePath = `caratulas/${filename}`;
+    }
+
+    // Guardar imagen portada (Cuadrícula)
+    if (files.imagen_portada && files.imagen_portada[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/carreras/portadas');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(files.imagen_portada[0].originalname).toLowerCase();
+      const filename = `portada_${timestamp}_${randomName}${originalExt}`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.imagen_portada[0].buffer);
+      (req as any).savedPortadaPath = `portadas/${filename}`;
     }
 
     // Guardar video

@@ -7,6 +7,7 @@ import {
   createCarrera,
   updateCarrera,
   deleteCarrera,
+  updateOrder,
 } from '../controllers/carreraController';
 import { authenticateToken } from '../middleware/authMiddleware';
 import { uploadCarrera, saveCarreraFiles } from '../middleware/uploadMiddleware';
@@ -20,6 +21,7 @@ router.get('/:id', getCarreraById);
 
 // Rutas protegidas (requieren autenticación)
 router.get('/admin/all', authenticateToken, getAllCarreras);
+router.put('/order', authenticateToken, updateOrder); // Nueva ruta para ordenar
 router.post('/', authenticateToken, uploadCarrera, saveCarreraFiles, createCarrera);
 router.put('/:id', authenticateToken, uploadCarrera, saveCarreraFiles, updateCarrera);
 router.delete('/:id', authenticateToken, deleteCarrera);
