@@ -37,7 +37,7 @@ formularioRouter.get('/', (_req, res) => {
 // Error handlers
 import { notFound, errorHandler } from './middleware/errorHandler';
 import EmailRoute from './routes/EmailRoute';
-import fileUpload from 'express-fileupload';
+import { ServiciosEscolaresRoute } from './routes/ServiciosEscolares';
 
 const app = express();
 
@@ -62,7 +62,8 @@ const corsOptions = {
     'http://localhost:3001',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
-    'https://www.uttecam.edu.mx'
+    'https://www.uttecam.edu.mx',
+    'http://localhost:5174',
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Accept', 'X-Requested-With'],
@@ -131,7 +132,7 @@ app.use('/uploads',
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
-      
+
       // Headers CORS para archivos estáticos - Permitir desde cualquier origen
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -212,6 +213,7 @@ app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
 app.use('/api/email', EmailRoute.routes);
+app.use('/api/servicios-escolares', ServiciosEscolaresRoute.routes);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

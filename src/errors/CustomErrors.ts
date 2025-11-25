@@ -32,6 +32,10 @@ export class CustomError extends Error {
     return new CustomError(415, message);
   }
 
+  static invalidFileType(message: string): CustomError {
+    return new CustomError(422, message);
+  }
+
   static internalServer(message: string): CustomError {
     console.log('CustomError.internalServer -> message', message);
     return new CustomError(500, message);
