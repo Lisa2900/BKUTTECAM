@@ -24,6 +24,8 @@ import noticiaRouter from './routes/noticia';
 import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
 import organigramaRouter from './routes/organigrama';
+import extensionRouter from './routes/extensionRoutes';
+/* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
 import videoInstitucionalRouter from './routes/videoInstitucional';
 
 
@@ -162,6 +164,18 @@ app.use('/uploads',
   })
 );
 
+// Servir carpeta public también
+app.use('/public',
+  express.static(path.join(__dirname, '../public'), {
+    dotfiles: 'deny',
+    index: false,
+    setHeaders: (res, path) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+  })
+);
+
 // 11. RUTA PRINCIPAL CON INFORMACIÓN DE SEGURIDAD
 app.get('/', (_req, res) => {
   res.json({
@@ -210,8 +224,24 @@ app.use('/api/noticias', noticiaRouter);
 app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
+app.use('/api/extension', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
 app.use('/api/email', EmailRoute.routes);
+// DEV ONLY: test upload endpoints to debug form field counts; not included in production bundles
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    // Require at runtime to avoid TypeScript build errors if the file doesn't exist in production build
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const testUploadRouter = require('./routes/testUpload').default;
+    if (testUploadRouter) {
+      app.use('/api/_dev/tests/upload', testUploadRouter);
+    }
+  } catch (err) {
+    // If the dev route isn't provided, log a warning and continue without failing the build
+    // eslint-disable-next-line no-console
+    console.warn('Dev testUpload route not available:', (err as Error)?.message || err);
+  }
+}
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {
