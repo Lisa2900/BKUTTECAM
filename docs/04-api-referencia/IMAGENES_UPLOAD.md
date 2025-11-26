@@ -63,6 +63,34 @@ GET /api/nosotros/contenido
 }
 ```
 
+### 4. **Subir banner para sección de Extensión Universitaria**
+```http
+POST /api/extension/sections/:slug/upload-image
+Content-Type: multipart/form-data
+Authorization: Bearer {JWT}
+
+image: [archivo de imagen]
+```
+
+Ejemplo de respuesta (200):
+```json
+{
+  "id": 1,
+  "slug": "talleres-culturales",
+  "title": "Talleres Culturales",
+  "description": "...",
+  "banner_url": "/uploads/Actividades Culturales y Deportivas/Culturales/BANNER_DEPORTIVOS_CULTURALES.jpg",
+  "items": []
+}
+```
+
+Notas:
+- Requiere autenticación (rol admin/editor según el token JWT)
+- El archivo se almacena en `uploads/` bajo una ruta amigable relacionada a la sección
+- Si ya existía un banner previo para la sección, es eliminado automáticamente
+- Se valida el tipo y tamaño del archivo
+
+
 ## 🔧 Ejemplos de Uso con cURL
 
 ### Crear contenido con imagen:

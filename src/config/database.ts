@@ -11,6 +11,10 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD || '',
   dialect: 'mysql',
   logging: false, // Deshabilitar logs SQL para limpiar la consola
+  dialectOptions: {
+    // Aumentar max_allowed_packet para permitir JSONs grandes
+    maxAllowedPacket: 64 * 1024 * 1024, // 64MB
+  },
   pool: {
     max: 10,
     min: 0,

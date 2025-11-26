@@ -71,6 +71,13 @@ export const updateContent = async (req: Request, res: Response, next: NextFunct
         details: "Todas las secciones son requeridas"
       });
     }
+    // Validate title lengths (no more than 255 characters)
+    const sectionsToCheck: any[] = [vision, mision, valores, politicaIntegral];
+    for (const s of sectionsToCheck) {
+      if (s && s.title && s.title.length > 255) {
+        return res.status(400).json({ error: 'Title too long', message: 'One of the section titles exceeds 255 characters' });
+      }
+    }
 
     // Buscar o crear el contenido
     let content = await NosotrosContent.findOne();
@@ -133,6 +140,11 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
 
     // El frontend envía { [section]: data }, extraer los datos de la sección
     const sectionData = updateData[section] || updateData;
+
+    // Validate title length for updated section
+    if (sectionData && (sectionData as any).title && (sectionData as any).title.length > 255) {
+      return res.status(400).json({ error: 'Title too long', message: 'The section title exceeds the maximum length of 255 characters' });
+    }
 
     // Actualizar solo la sección especificada
     const updateObj: any = {};
@@ -426,21 +438,35 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
     };
 
     // Procesar los datos adicionales del FormData
-    // Parsear description si viene como JSON string (para valores que es un array)
-    if (additionalData.description) {
+    // Si se envió 'data' como payload JSON, usarlo para actualizar la sección
+    let parsedAdditional: any = {};
+    if (additionalData.data) {
       try {
-        updatedSectionData.description = typeof additionalData.description === 'string' 
-          ? JSON.parse(additionalData.description)
-          : additionalData.description;
+        parsedAdditional = typeof additionalData.data === 'string' ? JSON.parse(additionalData.data) : additionalData.data;
       } catch {
-        updatedSectionData.description = additionalData.description;
+        parsedAdditional = {};
+      }
+    } else {
+      // Compatibilidad con el formato antiguo: description y title en campos separados
+      if (additionalData.description) {
+        try {
+          parsedAdditional.description = typeof additionalData.description === 'string' ? JSON.parse(additionalData.description) : additionalData.description;
+        } catch {
+          parsedAdditional.description = additionalData.description;
+        }
+      }
+      if (additionalData.title) {
+        parsedAdditional.title = additionalData.title;
       }
     }
 
-    // Agregar title si se proporcionó
-    if (additionalData.title) {
-      updatedSectionData.title = additionalData.title;
-    }
+    // Merge parsedAdditional into updatedSectionData
+    Object.assign(updatedSectionData, parsedAdditional);
+
+      // Validate title length if present
+      if (updatedSectionData.title && updatedSectionData.title.length > 255) {
+        return res.status(400).json({ error: 'Title too long', message: 'The provided title exceeds the max length of 255 characters' });
+      }
 
     // Guardar solo la sección actualizada
     await content.update({

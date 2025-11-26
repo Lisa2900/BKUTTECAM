@@ -75,3 +75,12 @@ ppt/
 pptx/
 
 uploads/
+
+#documentos
+*.pdf
+*.doc
+*.docx   
+#imagenes
+*.jpg
+*.png
+*.gif
