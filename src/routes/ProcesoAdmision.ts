@@ -1,10 +1,10 @@
 import { NextFunction, Router, Request, Response } from "express";
-import { ServiciosEscolaresController } from "../controllers/ServiciosEscolares/ServiciosEscolaresController";
+import { ServiciosEscolaresController } from "../controllers/procesoAdmision/ServiciosEscolaresController";
 import { body, validationResult } from "express-validator";
 import fileUpload, { Options } from "express-fileupload";
 
 
-export class ServiciosEscolaresRoute {
+export class ProcesoAdmisionRoute {
 
   static get routes() {
     const router = Router();

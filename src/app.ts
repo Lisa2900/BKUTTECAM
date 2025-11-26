@@ -37,7 +37,9 @@ formularioRouter.get('/', (_req, res) => {
 // Error handlers
 import { notFound, errorHandler } from './middleware/errorHandler';
 import EmailRoute from './routes/EmailRoute';
-import { ServiciosEscolaresRoute } from './routes/ServiciosEscolares';
+import { ProcesoAdmisionRoute } from './routes/ProcesoAdmision';
+import TramitesRoute from './routes/Tramites';
+import { FormularioConfigRoute } from './routes/FormularioConfigRoute';
 
 const app = express();
 
@@ -212,8 +214,11 @@ app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
-app.use('/api/email', EmailRoute.routes);
-app.use('/api/servicios-escolares', ServiciosEscolaresRoute.routes);
+app.use('/api/upload', EmailRoute.routes);
+app.use('/api/servicios-escolares', ProcesoAdmisionRoute.routes);
+app.use('/api/servicios-escolares', TramitesRoute.routes);
+app.use('/api/formularios-config', FormularioConfigRoute.routes);
+
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {
