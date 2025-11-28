@@ -32,7 +32,7 @@ describe('Extension API - banner uploads', () => {
 
   test('upload banner for section and update banner_url', async () => {
     // Create section
-    await ExtensionSection.create({ slug: 'talleres-culturales', title: 'Talleres Culturales', description: 'test', banner_url: null });
+    await ExtensionSection.create({ slug: 'talleres-culturales', title: 'Talleres Culturales', description: 'test', banner_url: undefined });
 
     const fixturesPath = path.join(__dirname, 'fixtures', 'test.jpg');
     const token = generateToken({ id: 1, username: 'test-admin', role: 'admin' });

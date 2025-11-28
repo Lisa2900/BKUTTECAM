@@ -9,6 +9,8 @@ interface ExtensionDocumentAttributes {
   cover_url?: string;
   publication_date?: Date;
   created_at?: Date;
+  media_type?: string | null; // 'document' | 'image'
+  mime_type?: string | null;
 }
 
 class ExtensionDocument extends Model<ExtensionDocumentAttributes> implements ExtensionDocumentAttributes {
@@ -19,6 +21,8 @@ class ExtensionDocument extends Model<ExtensionDocumentAttributes> implements Ex
   public cover_url!: string;
   public publication_date!: Date;
   public created_at!: Date;
+  public media_type!: string; // 'document' | 'image'
+  public mime_type!: string;
 }
 
 ExtensionDocument.init(
@@ -48,6 +52,14 @@ ExtensionDocument.init(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+      mime_type: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      media_type: {
+        type: DataTypes.STRING(32),
+        allowNull: true,
+      },
   },
   {
     sequelize,

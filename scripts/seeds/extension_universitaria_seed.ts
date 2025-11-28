@@ -87,10 +87,16 @@ const seedExtensionUniversitaria = async () => {
     await ExtensionDocument.destroy({ where: { category: 'promocion' } });
 
     for (const doc of promocionDocs) {
+      const ext = doc.file_url.split('.').pop().toLowerCase();
+      const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+      const mime = isImage ? `image/${ext === 'jpg' ? 'jpeg' : ext}` : (ext === 'pdf' ? 'application/pdf' : 'application/octet-stream');
+      const media_type = isImage ? 'image' : 'document';
       await ExtensionDocument.create({
         category: 'promocion',
         title: doc.title,
-        file_url: doc.file_url
+        file_url: doc.file_url,
+        mime_type: mime,
+        media_type
       });
     }
     console.log(`✅ Added ${promocionDocs.length} Promocion documents`);
@@ -116,10 +122,14 @@ const seedExtensionUniversitaria = async () => {
     await ExtensionDocument.destroy({ where: { category: 'gaceta' } });
 
     for (const doc of gacetaDocs) {
+      const ext = doc.file_url.split('.').pop().toLowerCase();
+      const mime = ext === 'pdf' ? 'application/pdf' : 'application/octet-stream';
       await ExtensionDocument.create({
         category: 'gaceta',
         title: doc.title,
-        file_url: doc.file_url
+        file_url: doc.file_url,
+        mime_type: mime,
+        media_type: 'document'
       });
     }
     console.log(`✅ Added ${gacetaDocs.length} Gaceta documents`);

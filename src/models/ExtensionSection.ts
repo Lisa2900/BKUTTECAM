@@ -7,6 +7,7 @@ interface ExtensionSectionAttributes {
   title: string;
   description?: string;
   banner_url?: string;
+  is_enabled?: boolean;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -17,6 +18,7 @@ class ExtensionSection extends Model<ExtensionSectionAttributes> implements Exte
   public title!: string;
   public description!: string;
   public banner_url!: string;
+  public is_enabled!: boolean;
   public created_at!: Date;
   public updated_at!: Date;
 }
@@ -44,6 +46,11 @@ ExtensionSection.init(
     banner_url: {
       type: DataTypes.STRING(255),
       allowNull: true,
+    },
+    is_enabled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
     },
   },
   {

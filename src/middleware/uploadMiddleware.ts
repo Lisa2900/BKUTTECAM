@@ -214,7 +214,7 @@ const getExtensionUploadPath = (slug?: string) => {
     'talleres-culturales': 'Actividades Culturales y Deportivas/Culturales',
     'talleres-deportivos': 'Actividades Culturales y Deportivas/Deportivas',
     'servicio-medico': 'ExtensionUniversitaria/ServicioMedico',
-    'ferias-profesoigraficas': 'ExtensionUniversitaria/DifusionyDivulgacion/Ferias',
+    'ferias-profesiograficas': 'ExtensionUniversitaria/DifusionyDivulgacion/Ferias',
     'visitas-guiadas': 'ExtensionUniversitaria/DifusionyDivulgacion/Visitas'
   };
 
@@ -225,6 +225,7 @@ const getExtensionUploadPath = (slug?: string) => {
 const secureStorageExtension = multer.diskStorage({
   destination: (req, file, cb) => {
     (async () => {
+      try {
       let slug = req.params.slug || req.body.slug || undefined;
       // If updating item by id (PUT /items/:id), try to find its section and derive slug
       if (!slug && (req.params.id || req.body.id)) {
@@ -247,10 +248,20 @@ const secureStorageExtension = multer.diskStorage({
         fs.mkdirSync(uploadPath, { recursive: true });
       }
       cb(null, uploadPath);
-    })();
+    } catch (error) {
+      console.error('uploadMiddleware: error while determining upload destination', error);
+      // Pass a generic error to multer via callback
+      try { cb(new Error('Error determining upload destination') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    }
+    })().catch((uncaught) => {
+      // Extremely defensive: ensure we don't leave dangling uncaught rejections
+      console.error('uploadMiddleware: unexpected error in destination async flow', uncaught);
+      try { cb(new Error('Unexpected error preparing upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    });
   },
   filename: (req, file, cb) => {
     (async () => {
+      try {
       const randomName = crypto.randomBytes(8).toString('hex');
       const timestamp = Date.now();
       const originalExt = path.extname(file.originalname).toLowerCase();
@@ -271,14 +282,21 @@ const secureStorageExtension = multer.diskStorage({
       }
       const name = `${slug}_${timestamp}_${randomName}${originalExt}`;
       cb(null, name);
-    })();
+    } catch (error) {
+      console.error('uploadMiddleware: error while determining filename', error);
+      try { cb(new Error('Error determining filename for upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    }
+    })().catch((uncaught) => {
+      console.error('uploadMiddleware: unexpected error in filename async flow', uncaught);
+      try { cb(new Error('Unexpected error preparing filename') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    });
   }
 });
 
 export const uploadExtension = multer({
   storage: secureStorageExtension,
   limits: {
-    fileSize: 8 * 1024 * 1024, // 8MB for banners (higher than general uploads)
+    fileSize: 50 * 1024 * 1024, // 50MB for banners (higher than general uploads)
     files: 1,
     ...DEFAULT_LIMITS,
     fields: 10
@@ -401,15 +419,26 @@ const secureStorageDocumentos = multer.diskStorage({
 
 // Filtro de archivo para documentos
 const secureDocumentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedMimeTypes = Object.keys(ALLOWED_DOCUMENT_MIME_TYPES);
-  if (!allowedMimeTypes.includes(file.mimetype)) {
+  const allowedDocMimeTypes = Object.keys(ALLOWED_DOCUMENT_MIME_TYPES);
+  const allowedImageTypes = Object.keys(ALLOWED_MIME_TYPES);
+  
+  // Check if it's an image mime type
+  const isImage = file.mimetype.startsWith('image/');
+  
+  // Accept when it's a known document mimetype, or when it's a known allowed image
+  if (!allowedDocMimeTypes.includes(file.mimetype) && !(isImage && allowedImageTypes.includes(file.mimetype))) {
     return cb(new Error(`Tipo de documento no permitido: ${file.mimetype}`));
   }
 
-  const allowedExtensions = ALLOWED_DOCUMENT_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_DOCUMENT_MIME_TYPES];
   const fileExtension = path.extname(file.originalname).toLowerCase();
-  
-  if (!allowedExtensions.includes(fileExtension)) {
+  let allowedExtensions: string[] | undefined = undefined;
+  if (allowedDocMimeTypes.includes(file.mimetype)) {
+    allowedExtensions = ALLOWED_DOCUMENT_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_DOCUMENT_MIME_TYPES];
+  } else if (isImage && Object.keys(ALLOWED_MIME_TYPES).includes(file.mimetype)) {
+    allowedExtensions = ALLOWED_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_MIME_TYPES];
+  }
+
+  if (!allowedExtensions || !allowedExtensions.includes(fileExtension)) {
     return cb(new Error(`Extensión ${fileExtension} no permitida para este tipo de documento`));
   }
 
@@ -446,6 +475,71 @@ export const uploadDocumentos = multer({
     fields: 80 // documentos may need more fields for metadata
   },
   fileFilter: secureDocumentFileFilter
+});
+
+// Configuración específica para documentos de Extensión Universitaria
+const secureStorageExtensionDocuments = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/extension-universitaria/documents');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const sanitizedOriginalName = file.originalname
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .substring(0, 50);
+    
+    const filename = `${timestamp}_${randomName}_${sanitizedOriginalName}`;
+    cb(null, filename);
+  }
+});
+
+// Upload middleware para documentos de Extensión (soporta PDF + imagen de portada opcional)
+export const uploadExtensionDocuments = multer({
+  storage: secureStorageExtensionDocuments,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+    files: 2, // Documento + portada opcional
+    ...DEFAULT_LIMITS,
+    fields: 20
+  },
+  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    // Permitir PDFs y imágenes
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ];
+    
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
+    }
+    
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+    
+    if (!allowedExts.includes(ext)) {
+      return cb(new Error(`Extensión no permitida: ${ext}`));
+    }
+    
+    // Validaciones de seguridad básicas
+    const dangerousPatterns = [/\.\./, /[<>:"|?*]/, /\x00/];
+    if (dangerousPatterns.some(pattern => pattern.test(file.originalname))) {
+      return cb(new Error('Nombre de archivo contiene patrones no permitidos'));
+    }
+    
+    if (file.originalname.length > 255) {
+      return cb(new Error('Nombre de archivo demasiado largo'));
+    }
+    
+    cb(null, true);
+  }
 });
 
 // Middleware para validación post-upload de documentos
@@ -883,5 +977,31 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
       error: 'Error interno del servidor',
       message: 'No se pudo guardar los archivos'
     });
+  }
+};
+
+/**
+ * Middleware to check category area before file upload
+ * Sets allowImages flag for Promoción area (ID 10)
+ */
+export const checkCategoryArea = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const categoryId = req.body && req.body.ID_Categorias;
+    
+    if (categoryId) {
+      const { default: Categorias } = await import('../models/Categorias');
+      const categoria = await Categorias.findByPk(categoryId);
+      
+      // Allow images for area 10 (Promoción Institucional)
+      if (categoria && categoria.ID_Area === 10) {
+        // @ts-ignore - Add custom property to request
+        req.allowImages = true;
+      }
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error checking category area:', error);
+    next();
   }
 };

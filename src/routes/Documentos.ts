@@ -23,7 +23,7 @@ import {
   // Estadísticas
   obtenerEstadisticas
 } from "../controllers/DocumentsController";
-import { uploadDocumentos, validateUploadedDocument } from "../middleware/uploadMiddleware";
+import { uploadDocumentos, validateUploadedDocument, checkCategoryArea } from "../middleware/uploadMiddleware";
 
 const router = Router();
 
@@ -52,7 +52,7 @@ router.get("/archivos", obtenerArchivos);
 router.get("/archivos/:id", obtenerArchivoPorId);
 router.get("/archivos/area/:areaId", obtenerArchivosPorArea);
 router.post("/archivos", crearArchivo);
-router.post("/archivos/upload", uploadDocumentos.single('archivo'), validateUploadedDocument, subirArchivo);
+router.post("/archivos/upload", checkCategoryArea, uploadDocumentos.single('archivo'), validateUploadedDocument, subirArchivo);
 router.put("/archivos/:id", actualizarArchivo);
 router.delete("/archivos/:id", eliminarArchivo);
 
