@@ -14,6 +14,8 @@ import RelojDigital from '../models/RelojDigital';
 import { ProcesoAdmision } from '../models/ProcesoAdmision';
 import { TramitesVista } from '../models/TramitesVista';
 import { FormularioConfig } from '../models/FormularioConfig';
+import { ConvocatoriaTitulo } from '../models/ConvocatoriaTitulo';
+import { ConvocatoriaDocumento } from '../models/ConvocatoriaDocumento';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -37,7 +39,9 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     RelojDigital,
     ProcesoAdmision,
     TramitesVista,
-    FormularioConfig
+    FormularioConfig,
+    ConvocatoriaTitulo,
+    ConvocatoriaDocumento
   ];
 
   // Sincronizar modelos con la base de datos

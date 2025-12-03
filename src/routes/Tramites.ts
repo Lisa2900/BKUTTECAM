@@ -1,6 +1,6 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import TramitesController from "../controllers/tramites/TramitesController";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 import { handleValidationErrors } from "../middleware/validation";
 
 
