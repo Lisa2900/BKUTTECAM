@@ -41,6 +41,7 @@ import { ProcesoAdmisionRoute } from './routes/ProcesoAdmision';
 import TramitesRoute from './routes/Tramites';
 import { FormularioConfigRoute } from './routes/FormularioConfigRoute';
 import ConvocatoriaTituloRoute from './routes/ConvocatoriaTitulo';
+import PersonalCarreraRoute from './routes/PersonalCarreraRoute';
 
 const app = express();
 
@@ -220,6 +221,7 @@ app.use('/api/servicios-escolares', ProcesoAdmisionRoute.routes);
 app.use('/api/servicios-escolares', TramitesRoute.routes);
 app.use('/api/servicios-escolares', ConvocatoriaTituloRoute.routes);
 app.use('/api/formularios-config', FormularioConfigRoute.routes);
+app.use('/api/personal-carreras', PersonalCarreraRoute);
 
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
