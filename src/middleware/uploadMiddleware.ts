@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
+import ExtensionItem from '../models/ExtensionItem';
+import ExtensionSection from '../models/ExtensionSection';
 
 // Tipos MIME permitidos con sus extensiones correspondientes
 const ALLOWED_MIME_TYPES = {
@@ -96,21 +98,40 @@ const secureFileFilter = (req: Request, file: Express.Multer.File, cb: multer.Fi
   cb(null, true);
 };
 
+// Default limits and sizes for multipart parsing
+// Reasoning: conservative defaults for most endpoints to avoid accepting huge payloads unintentionally.
+// We want larger limits only for 'Nosotros' because it can contain larger JSON/text sections.
+const DEFAULT_LIMITS = {
+  fields: 200, // non-file form fields (e.g., many inputs in a form)
+  fieldNameSize: 200,
+  fieldSize: 100 * 1024, // 100KB per field (conservative default)
+};
+
 // Configuración de multer con seguridad
 export const uploadNosotros = multer({
   storage: secureStorage,
   limits: {
     fileSize: 5 * 1024 * 1024,
     files: 1,
-    fieldNameSize: 100,
-    fieldSize: 1024,
-    fields: 10
+    ...DEFAULT_LIMITS,
+    fieldSize: 1 * 1024 * 1024, // 1MB per field only for nosotros
+    fields: 500 // override default for nosotros form (allow many inputs in admin panels)
   },
   fileFilter: secureFileFilter
 });
 
 // Middleware para validación post-upload
 export const validateUploadedFile = (req: Request, res: any, next: any) => {
+  // Attach field count for debugging and possible error handler formatting
+  try {
+    (req as any)._fieldCount = req.body ? Object.keys(req.body).length : 0;
+    (req as any)._fieldKeys = req.body ? Object.keys(req.body) : [];
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[UPLOAD DEBUG] Uploaded file for ${req.path} - fields: ${(req as any)._fieldCount}`, (req as any)._fieldKeys);
+    }
+  } catch (e) {
+    (req as any)._fieldCount = 0;
+  }
   if (!req.file) {
     return next();
   }
@@ -177,12 +198,112 @@ export const uploadDirectorios = multer({
   limits: {
     fileSize: 5 * 1024 * 1024,
     files: 1,
-    fieldNameSize: 100,
-    fieldSize: 1024,
+    ...DEFAULT_LIMITS,
+    fields: 50
+  },
+  fileFilter: secureFileFilter
+});
+
+// ============================================
+// CONFIGURACIÓN PARA EXTENSION UNIVERSITARIA (BANNERS)
+// ============================================
+
+const getExtensionUploadPath = (slug?: string) => {
+  // Map known sections to friendly paths under uploads
+  const mapping: { [key: string]: string } = {
+    'talleres-culturales': 'Actividades Culturales y Deportivas/Culturales',
+    'talleres-deportivos': 'Actividades Culturales y Deportivas/Deportivas',
+    'servicio-medico': 'ExtensionUniversitaria/ServicioMedico',
+    'ferias-profesiograficas': 'ExtensionUniversitaria/DifusionyDivulgacion/Ferias',
+    'visitas-guiadas': 'ExtensionUniversitaria/DifusionyDivulgacion/Visitas'
+  };
+
+  const sanitized = slug ? mapping[slug] || `ExtensionUniversitaria/${slug}` : 'ExtensionUniversitaria/general';
+  return path.join(__dirname, '../../uploads', sanitized);
+};
+
+const secureStorageExtension = multer.diskStorage({
+  destination: (req, file, cb) => {
+    (async () => {
+      try {
+      let slug = req.params.slug || req.body.slug || undefined;
+      // If updating item by id (PUT /items/:id), try to find its section and derive slug
+      if (!slug && (req.params.id || req.body.id)) {
+        const itemId = req.params.id || req.body.id;
+        try {
+          const item = await ExtensionItem.findByPk(Number(itemId));
+          if (item) {
+            const section = await ExtensionSection.findByPk(item.section_id);
+            if (section && section.slug) {
+              slug = section.slug;
+            }
+          }
+        } catch (err) {
+          // Non-blocking: we'll fallback to 'general' when DB lookup fails
+          console.warn('Could not determine slug from item id for upload, falling back to general', err);
+        }
+      }
+      const uploadPath = getExtensionUploadPath(slug as string);
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    } catch (error) {
+      console.error('uploadMiddleware: error while determining upload destination', error);
+      // Pass a generic error to multer via callback
+      try { cb(new Error('Error determining upload destination') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    }
+    })().catch((uncaught) => {
+      // Extremely defensive: ensure we don't leave dangling uncaught rejections
+      console.error('uploadMiddleware: unexpected error in destination async flow', uncaught);
+      try { cb(new Error('Unexpected error preparing upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    });
+  },
+  filename: (req, file, cb) => {
+    (async () => {
+      try {
+      const randomName = crypto.randomBytes(8).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      let slug = req.params.slug || req.body.slug || 'general';
+      if ((!req.params.slug && !req.body.slug) && (req.params.id || req.body.id)) {
+        try {
+          const itemId = req.params.id || req.body.id;
+          const item = await ExtensionItem.findByPk(Number(itemId));
+          if (item) {
+            const section = await ExtensionSection.findByPk(item.section_id);
+            if (section && section.slug) {
+              slug = section.slug;
+            }
+          }
+        } catch (_) {
+          // fallback to general
+        }
+      }
+      const name = `${slug}_${timestamp}_${randomName}${originalExt}`;
+      cb(null, name);
+    } catch (error) {
+      console.error('uploadMiddleware: error while determining filename', error);
+      try { cb(new Error('Error determining filename for upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    }
+    })().catch((uncaught) => {
+      console.error('uploadMiddleware: unexpected error in filename async flow', uncaught);
+      try { cb(new Error('Unexpected error preparing filename') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
+    });
+  }
+});
+
+export const uploadExtension = multer({
+  storage: secureStorageExtension,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB for banners (higher than general uploads)
+    files: 1,
+    ...DEFAULT_LIMITS,
     fields: 10
   },
   fileFilter: secureFileFilter
 });
+
 
 // Función utilitaria para eliminar archivos de forma segura
 export const deleteFile = (filePath: string): boolean => {
@@ -298,15 +419,26 @@ const secureStorageDocumentos = multer.diskStorage({
 
 // Filtro de archivo para documentos
 const secureDocumentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedMimeTypes = Object.keys(ALLOWED_DOCUMENT_MIME_TYPES);
-  if (!allowedMimeTypes.includes(file.mimetype)) {
+  const allowedDocMimeTypes = Object.keys(ALLOWED_DOCUMENT_MIME_TYPES);
+  const allowedImageTypes = Object.keys(ALLOWED_MIME_TYPES);
+  
+  // Check if it's an image mime type
+  const isImage = file.mimetype.startsWith('image/');
+  
+  // Accept when it's a known document mimetype, or when it's a known allowed image
+  if (!allowedDocMimeTypes.includes(file.mimetype) && !(isImage && allowedImageTypes.includes(file.mimetype))) {
     return cb(new Error(`Tipo de documento no permitido: ${file.mimetype}`));
   }
 
-  const allowedExtensions = ALLOWED_DOCUMENT_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_DOCUMENT_MIME_TYPES];
   const fileExtension = path.extname(file.originalname).toLowerCase();
-  
-  if (!allowedExtensions.includes(fileExtension)) {
+  let allowedExtensions: string[] | undefined = undefined;
+  if (allowedDocMimeTypes.includes(file.mimetype)) {
+    allowedExtensions = ALLOWED_DOCUMENT_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_DOCUMENT_MIME_TYPES];
+  } else if (isImage && Object.keys(ALLOWED_MIME_TYPES).includes(file.mimetype)) {
+    allowedExtensions = ALLOWED_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_MIME_TYPES];
+  }
+
+  if (!allowedExtensions || !allowedExtensions.includes(fileExtension)) {
     return cb(new Error(`Extensión ${fileExtension} no permitida para este tipo de documento`));
   }
 
@@ -339,11 +471,75 @@ export const uploadDocumentos = multer({
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB para documentos
     files: 1,
-    fieldNameSize: 100,
-    fieldSize: 2048, // Mayor para permitir descripciones más largas
-    fields: 15
+    ...DEFAULT_LIMITS,
+    fields: 80 // documentos may need more fields for metadata
   },
   fileFilter: secureDocumentFileFilter
+});
+
+// Configuración específica para documentos de Extensión Universitaria
+const secureStorageExtensionDocuments = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/extension-universitaria/documents');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const sanitizedOriginalName = file.originalname
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .substring(0, 50);
+    
+    const filename = `${timestamp}_${randomName}_${sanitizedOriginalName}`;
+    cb(null, filename);
+  }
+});
+
+// Upload middleware para documentos de Extensión (soporta PDF + imagen de portada opcional)
+export const uploadExtensionDocuments = multer({
+  storage: secureStorageExtensionDocuments,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+    files: 2, // Documento + portada opcional
+    ...DEFAULT_LIMITS,
+    fields: 20
+  },
+  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    // Permitir PDFs y imágenes
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ];
+    
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
+    }
+    
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+    
+    if (!allowedExts.includes(ext)) {
+      return cb(new Error(`Extensión no permitida: ${ext}`));
+    }
+    
+    // Validaciones de seguridad básicas
+    const dangerousPatterns = [/\.\./, /[<>:"|?*]/, /\x00/];
+    if (dangerousPatterns.some(pattern => pattern.test(file.originalname))) {
+      return cb(new Error('Nombre de archivo contiene patrones no permitidos'));
+    }
+    
+    if (file.originalname.length > 255) {
+      return cb(new Error('Nombre de archivo demasiado largo'));
+    }
+    
+    cb(null, true);
+  }
 });
 
 // Middleware para validación post-upload de documentos
@@ -422,9 +618,8 @@ export const uploadCalendarios = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
     files: 1,
-    fieldNameSize: 100,
-    fieldSize: 1024,
-    fields: 10
+    ...DEFAULT_LIMITS,
+    fields: 50
   },
   fileFilter: (req, file, cb) => {
     // Permitir PDF e imágenes
@@ -507,6 +702,8 @@ export const uploadHeroSlides = multer({
   storage: heroSlideStorage,
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB para videos
+    ...DEFAULT_LIMITS,
+    files: 2
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
@@ -558,6 +755,8 @@ export const uploadNoticias = multer({
   storage: noticiaStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
+    ...DEFAULT_LIMITS,
+    files: 1
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -607,6 +806,8 @@ export const uploadAnuncios = multer({
   storage: noticiaStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
+    ...DEFAULT_LIMITS,
+    files: 1
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -656,8 +857,14 @@ const carreraStorage = multer.memoryStorage();
 
 export const uploadCarrera = multer({
   storage: carreraStorage,
+  // NOTE: `fieldSize` for carreras intentionally uses DEFAULT_LIMITS (100KB). If you need to allow
+  // large text fields for carreras, explicitly set `fieldSize` here. We intentionally keep large
+  // `fieldSize` only for `Nosotros` to avoid accepting huge text fields on other endpoints.
   limits: {
     fileSize: 200 * 1024 * 1024, // 200MB para videos
+    files: 4,
+    ...DEFAULT_LIMITS,
+    fields: 1000 // allow complex forms with many fields (mapa curricular, multiple inputs)
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
@@ -770,5 +977,31 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
       error: 'Error interno del servidor',
       message: 'No se pudo guardar los archivos'
     });
+  }
+};
+
+/**
+ * Middleware to check category area before file upload
+ * Sets allowImages flag for Promoción area (ID 10)
+ */
+export const checkCategoryArea = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const categoryId = req.body && req.body.ID_Categorias;
+    
+    if (categoryId) {
+      const { default: Categorias } = await import('../models/Categorias');
+      const categoria = await Categorias.findByPk(categoryId);
+      
+      // Allow images for area 10 (Promoción Institucional)
+      if (categoria && categoria.ID_Area === 10) {
+        // @ts-ignore - Add custom property to request
+        req.allowImages = true;
+      }
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error checking category area:', error);
+    next();
   }
 };

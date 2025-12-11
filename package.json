@@ -15,6 +15,7 @@
     "db:seed": "ts-node -e \"require('./src/config/syncDatabase').seedDatabase()\"",
     "seed:all": "node scripts/auth/create-admin.js --seed-all",
     "seed:dev": "ts-node scripts/auth/create-admin.ts --seed-all --dev",
+    "seed:nosotros": "ts-node scripts/seed-nosotros.ts",
     "create:admin:dev": "ts-node scripts/auth/create-admin.ts",
     "create:admin": "node scripts/auth/create-admin.js",
     "test:files": "node scripts/tests/test-files.js",
@@ -26,6 +27,7 @@
     "test:coverage": "jest --coverage --forceExit",
     "test:ci": "jest --ci --coverage --watchAll=false --forceExit",
     "generate:prod-seeds": "node scripts/seeds/tools/generateProdProgramDetails.js"
+    ,"assets:copy": "npx ts-node scripts/utils/move_assets.ts"
   },
   "keywords": [
     "express",

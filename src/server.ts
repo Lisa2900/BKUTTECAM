@@ -1,5 +1,6 @@
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
+import { ensureExtensionAreas } from './startup/ensureExtensionAreas';
 import { scheduleTempUploadsCleanup } from './helpers/deleteTempFiles';
 
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,11 @@ const startServer = async () => {
     try {
       await syncDatabase(false); // Cambiar a true para reset completo
       console.log('✅ Sequelize configurado y base de datos sincronizada');
+      try {
+        await ensureExtensionAreas();
+      } catch (err) {
+        console.warn('⚠️  Error al asegurar las areas de Extensión:', (err as Error).message || err);
+      }
     } catch (dbError: any) {
       console.warn('⚠️  Advertencia: No se pudo conectar a la base de datos');
       console.warn('   Verifica tu configuración de MySQL y el archivo .env');

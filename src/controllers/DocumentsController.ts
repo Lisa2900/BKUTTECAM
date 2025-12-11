@@ -288,6 +288,16 @@ export const subirArchivo = async (req: Request, res: Response, next: NextFuncti
       return res.status(404).json({ message: "Categoría no encontrada" });
     }
 
+    // If file is an image, ensure the category belongs to Promoción area (ID 10)
+    if (req.file && req.file.mimetype && req.file.mimetype.startsWith('image/')) {
+      if (categoria.ID_Area !== 10) {
+        // Delete uploaded file
+        const filePath = path.join(__dirname, '../../', req.file.path);
+        deleteFile(filePath);
+        return res.status(400).json({ message: 'Imágenes solo permitidas para la categoría de Promoción Institucional' });
+      }
+    }
+
     // El middleware ya agregó Ruta_Documento y Nombre al body
     const nuevoArchivo = await DocumentosService.createFile({
       Nombre: Nombre || req.file?.originalname || 'documento',

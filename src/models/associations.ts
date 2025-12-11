@@ -2,6 +2,8 @@ import Area from './Area';
 import Categorias from './Categorias';
 import Archivos from './Archivos';
 import PortalEstudiantes from './PortalEstudiantes';
+import ExtensionSection from './ExtensionSection';
+import ExtensionItem from './ExtensionItem';
 
 // Definir las relaciones entre modelos
 
@@ -37,8 +39,20 @@ Archivos.belongsTo(Categorias, {
   onUpdate: 'CASCADE'
 });
 
+// ExtensionSection ──→ ExtensionItem (One-to-Many)
+ExtensionSection.hasMany(ExtensionItem, {
+  foreignKey: 'section_id',
+  as: 'items',
+  onDelete: 'CASCADE'
+});
+
+ExtensionItem.belongsTo(ExtensionSection, {
+  foreignKey: 'section_id',
+  as: 'section'
+});
+
 // Exportar todos los modelos con sus relaciones configuradas
-export { Area, Categorias, Archivos, PortalEstudiantes };
+export { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem };
 
 // También exportar individualmente para facilitar importaciones
-export default { Area, Categorias, Archivos, PortalEstudiantes };
+export default { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem };
