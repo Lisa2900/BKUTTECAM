@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "npm run clean && tsc",
+    "build:scripts": "tsc -p tsconfig.json --outDir dist && echo 'Scripts built to dist/'",
     "start": "node dist/server.js",
     "clean": "rimraf dist",
     "build:prod": "npm run build && node scripts/utils/create-production-package.js",
@@ -13,8 +14,9 @@
     "deploy:zip": "echo 'Crear ZIP manualmente con: dist/, package.production.json, .env.example'",
     "db:reset": "ts-node -e \"require('./src/config/syncDatabase').syncDatabase(true)\"",
     "db:seed": "ts-node -e \"require('./src/config/syncDatabase').seedDatabase()\"",
-    "seed:all": "node scripts/auth/create-admin.js --seed-all",
-    "seed:dev": "ts-node scripts/auth/create-admin.ts --seed-all --dev",
+    "seed:all": "ts-node scripts/seed-all.ts --dev",
+    "seed:all:dev": "ts-node scripts/seed-all.ts --dev",
+    "seed:all:prod": "node scripts/seed-all.js",
     "seed:nosotros": "ts-node scripts/seed-nosotros.ts",
     "create:admin:dev": "ts-node scripts/auth/create-admin.ts",
     "create:admin": "node scripts/auth/create-admin.js",
@@ -26,8 +28,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --forceExit",
     "test:ci": "jest --ci --coverage --watchAll=false --forceExit",
-    "generate:prod-seeds": "node scripts/seeds/tools/generateProdProgramDetails.js"
-    ,"assets:copy": "npx ts-node scripts/utils/move_assets.ts"
+    "generate:prod-seeds": "node scripts/seeds/tools/generateProdProgramDetails.js",
+    "assets:copy": "npx ts-node scripts/utils/move_assets.ts"
   },
   "keywords": [
     "express",
