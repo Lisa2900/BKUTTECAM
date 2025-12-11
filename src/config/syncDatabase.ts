@@ -17,6 +17,9 @@ import { FormularioConfig } from '../models/FormularioConfig';
 import { ConvocatoriaTitulo } from '../models/ConvocatoriaTitulo';
 import { ConvocatoriaDocumento } from '../models/ConvocatoriaDocumento';
 import { PersonalCarrera } from '../models/PersonalCarrera';
+import { CarreraSimple } from '../models/CarreraSimple';
+import { OpcionReinscripcion } from '../models/OpcionReinscripcion';
+import { SeccionReinscripcion } from '../models/SeccionReinscripcion';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -43,7 +46,10 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     FormularioConfig,
     ConvocatoriaTitulo,
     ConvocatoriaDocumento,
-    PersonalCarrera
+    PersonalCarrera,
+    CarreraSimple,
+    OpcionReinscripcion,
+    SeccionReinscripcion
   ];
 
   // Sincronizar modelos con la base de datos

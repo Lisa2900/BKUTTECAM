@@ -38,8 +38,8 @@ export class UploadController {
       comentarios: req.body.comentarios
     };
 
-    //* Determina los correos destino: responsable + admin
-    const destinationEmails = EmailRoutingService.getAllDestinations(
+    //* Determina los correos destino: responsable + admin (ahora async)
+    const destinationEmails = await EmailRoutingService.getAllDestinations(
       infoForm.nivel || 'TSU',
       infoForm.carrera
     );
