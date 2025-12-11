@@ -1,6 +1,7 @@
 import Area from './Area';
 import Categorias from './Categorias';
 import Archivos from './Archivos';
+import PortalEstudiantes from './PortalEstudiantes';
 
 // Definir las relaciones entre modelos
 
@@ -37,7 +38,7 @@ Archivos.belongsTo(Categorias, {
 });
 
 // Exportar todos los modelos con sus relaciones configuradas
-export { Area, Categorias, Archivos };
+export { Area, Categorias, Archivos, PortalEstudiantes };
 
 // También exportar individualmente para facilitar importaciones
-export default { Area, Categorias, Archivos };
+export default { Area, Categorias, Archivos, PortalEstudiantes };

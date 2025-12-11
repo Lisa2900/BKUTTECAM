@@ -25,6 +25,7 @@ import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
 import organigramaRouter from './routes/organigrama';
 import videoInstitucionalRouter from './routes/videoInstitucional';
+import portalEstudiantesRouter from './routes/portalEstudiantes';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -211,6 +212,7 @@ app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
+app.use('/api/portal-estudiantes', portalEstudiantesRouter);
 app.use('/api/email', EmailRoute.routes);
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD

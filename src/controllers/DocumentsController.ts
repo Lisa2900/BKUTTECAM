@@ -133,9 +133,15 @@ export const crearCategoria = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: "El ID del área es requerido" });
     }
 
-    const nuevaCategoria = await DocumentosService.createCategory(Nombre, ID_Area);
+    const nuevaCategoria = await DocumentosService.createCategory(Nombre.trim(), ID_Area);
     res.status(201).json(nuevaCategoria);
-  } catch (error) {
+  } catch (error: any) {
+    // Manejar errores específicos
+    if (error.status === 409) {
+      return res.status(409).json({ 
+        message: error.message || "Ya existe una categoría con ese nombre en esta área" 
+      });
+    }
     next(error);
   }
 };
