@@ -63,6 +63,7 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:5173',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx'
@@ -225,7 +226,10 @@ app.use('/api/noticias', noticiaRouter);
 app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
+// Keep legacy short path
 app.use('/api/extension', extensionRouter);
+// Backwards compatibility: some clients expect /api/extension-universitaria
+app.use('/api/extension-universitaria', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
 app.use('/api/portal-estudiantes', portalEstudiantesRouter);
 app.use('/api/email', EmailRoute.routes);

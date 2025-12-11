@@ -39,7 +39,17 @@ export const getSection = async (req: Request, res: Response) => {
 export const updateSection = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const { title, description, banner_url, is_enabled } = req.body;
+    const { 
+      title, 
+      description, 
+      banner_url, 
+      is_enabled,
+      schedule,
+      location,
+      contact_info,
+      requirements,
+      registration_info
+    } = req.body;
     
     if (!slug || slug.trim().length === 0) {
       return res.status(400).json({ message: 'El slug es requerido' });
@@ -61,6 +71,13 @@ export const updateSection = async (req: Request, res: Response) => {
     if (description !== undefined) updateData.description = description;
     if (banner_url !== undefined) updateData.banner_url = banner_url;
     if (is_enabled !== undefined) updateData.is_enabled = Boolean(is_enabled);
+    
+    // New fields
+    if (schedule !== undefined) updateData.schedule = schedule;
+    if (location !== undefined) updateData.location = location;
+    if (contact_info !== undefined) updateData.contact_info = contact_info;
+    if (requirements !== undefined) updateData.requirements = requirements;
+    if (registration_info !== undefined) updateData.registration_info = registration_info;
 
     await section.update(updateData);
     logger.info('Sección actualizada exitosamente', { slug, updates: Object.keys(updateData) });

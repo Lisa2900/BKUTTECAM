@@ -8,6 +8,11 @@ interface ExtensionSectionAttributes {
   description?: string;
   banner_url?: string;
   is_enabled?: boolean;
+  schedule?: string;
+  location?: string;
+  contact_info?: string;
+  requirements?: string;
+  registration_info?: string;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -19,6 +24,11 @@ class ExtensionSection extends Model<ExtensionSectionAttributes> implements Exte
   public description!: string;
   public banner_url!: string;
   public is_enabled!: boolean;
+  public schedule!: string;
+  public location!: string;
+  public contact_info!: string;
+  public requirements!: string;
+  public registration_info!: string;
   public created_at!: Date;
   public updated_at!: Date;
 }
@@ -49,8 +59,27 @@ ExtensionSection.init(
     },
     is_enabled: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
+      defaultValue: false,
+    },
+    schedule: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    location: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    contact_info: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    requirements: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    registration_info: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {
