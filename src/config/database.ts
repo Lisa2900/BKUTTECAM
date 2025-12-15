@@ -12,8 +12,10 @@ const sequelize = new Sequelize({
   dialect: 'mysql',
   logging: false, // Deshabilitar logs SQL para limpiar la consola
   dialectOptions: {
-    // Aumentar max_allowed_packet para permitir JSONs grandes
-    maxAllowedPacket: 64 * 1024 * 1024, // 64MB
+    // Nota: mysql2 no acepta la opción `maxAllowedPacket` aquí y la marcará
+    // como inválida. Si necesitas aumentar `max_allowed_packet`, hazlo en el
+    // servidor MySQL o ejecuta una consulta `SET GLOBAL max_allowed_packet=...`
+    // tras conectarte. Mantener solo opciones soportadas por el driver:
     connectTimeout: 10000, // 10 segundos de timeout para conexión
   },
   pool: {

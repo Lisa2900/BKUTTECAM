@@ -9,6 +9,7 @@ export interface RelojDigitalAttributes {
   mostrarDiaSemana: boolean;
   activo: boolean;
   estilo: 'digital' | 'analogico';
+  tema: 'light' | 'dark' | 'blue' | 'minimal';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -21,6 +22,7 @@ export class RelojDigital extends Model<RelojDigitalAttributes> implements Reloj
   public mostrarDiaSemana!: boolean;
   public activo!: boolean;
   public estilo!: 'digital' | 'analogico';
+  public tema!: 'light' | 'dark' | 'blue' | 'minimal';
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -56,6 +58,10 @@ RelojDigital.init(
     estilo: {
       type: DataTypes.ENUM('digital', 'analogico'),
       defaultValue: 'digital',
+    },
+    tema: {
+      type: DataTypes.ENUM('light', 'dark', 'blue', 'minimal'),
+      defaultValue: 'light',
     },
   },
   {

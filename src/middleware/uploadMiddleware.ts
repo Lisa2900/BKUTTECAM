@@ -122,28 +122,48 @@ export const uploadNosotros = multer({
 
 // Middleware para validación post-upload
 export const validateUploadedFile = (req: Request, res: any, next: any) => {
-  // Attach field count for debugging and possible error handler formatting
   try {
-    (req as any)._fieldCount = req.body ? Object.keys(req.body).length : 0;
-    (req as any)._fieldKeys = req.body ? Object.keys(req.body) : [];
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[UPLOAD DEBUG] Uploaded file for ${req.path} - fields: ${(req as any)._fieldCount}`, (req as any)._fieldKeys);
+    // Attach field count for debugging and possible error handler formatting
+    try {
+      (req as any)._fieldCount = req.body ? Object.keys(req.body).length : 0;
+      (req as any)._fieldKeys = req.body ? Object.keys(req.body) : [];
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[UPLOAD DEBUG] Uploaded file for ${req.path} - fields: ${(req as any)._fieldCount}`, (req as any)._fieldKeys);
+      }
+    } catch (e) {
+      (req as any)._fieldCount = 0;
     }
-  } catch (e) {
-    (req as any)._fieldCount = 0;
-  }
-  if (!req.file) {
-    return next();
-  }
 
-  const filePath = req.file.path;
-  
-  try {
-    const buffer = fs.readFileSync(filePath, { flag: 'r' });
-    const isValidType = verifyFileType(buffer.slice(0, 20), req.file.mimetype);
+    if (!req.file) {
+      return next();
+    }
+
+    // Support both disk storage (req.file.path) and memory storage (req.file.buffer)
+    let buffer: Buffer | undefined;
+    try {
+      if ((req as any).file.buffer && Buffer.isBuffer((req as any).file.buffer)) {
+        buffer = (req as any).file.buffer as Buffer;
+      } else if ((req as any).file.path) {
+        buffer = fs.readFileSync((req as any).file.path as string);
+      } else {
+        buffer = undefined;
+      }
+    } catch (err) {
+      buffer = undefined;
+    }
+
+    if (!buffer) {
+      // If we can't access file contents properly, consider it invalid
+      return res.status(400).json({ error: 'Archivo inválido', message: 'No se pudo validar el archivo' });
+    }
+
+    const isValidType = verifyFileType(buffer.slice(0, 20), (req as any).file.mimetype);
 
     if (!isValidType) {
-      fs.unlinkSync(filePath);
+      // Attempt to cleanup file only if it was saved to disk
+      if ((req as any).file.path && fs.existsSync((req as any).file.path as string)) {
+        try { fs.unlinkSync((req as any).file.path as string); } catch(e) {}
+      }
       return res.status(400).json({
         error: 'Archivo inválido',
         message: 'El archivo no corresponde al tipo declarado'
@@ -151,7 +171,9 @@ export const validateUploadedFile = (req: Request, res: any, next: any) => {
     }
 
     if (buffer.length < 100) {
-      fs.unlinkSync(filePath);
+      if ((req as any).file.path && fs.existsSync((req as any).file.path as string)) {
+        try { fs.unlinkSync((req as any).file.path as string); } catch(e) {}
+      }
       return res.status(400).json({
         error: 'Archivo inválido',
         message: 'El archivo parece estar corrupto'
@@ -160,10 +182,15 @@ export const validateUploadedFile = (req: Request, res: any, next: any) => {
 
     next();
   } catch (error) {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // Attempt best-effort cleanup
+    try {
+      if ((req as any).file && (req as any).file.path && fs.existsSync((req as any).file.path as string)) {
+        fs.unlinkSync((req as any).file.path as string);
+      }
+    } catch (cleanupErr) {
+      // ignore cleanup errors
     }
-    
+
     return res.status(500).json({
       error: 'Error procesando archivo',
       message: 'No se pudo validar el archivo'
@@ -304,13 +331,54 @@ export const uploadExtension = multer({
   fileFilter: secureFileFilter
 });
 
+// ============================================
+// CONFIGURACIÓN PARA EVENTOS (IMAGEN DE FONDO)
+// ============================================
+
+const secureStorageEventos = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/eventos');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const randomName = crypto.randomBytes(12).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const filename = `evento_${timestamp}_${randomName}${originalExt}`;
+    cb(null, filename);
+  }
+});
+
+export const uploadEventos = multer({
+  storage: secureStorageEventos,
+  limits: {
+    fileSize: 8 * 1024 * 1024, // 8MB for event background images
+    files: 1,
+    ...DEFAULT_LIMITS,
+    fields: 20
+  },
+  fileFilter: secureFileFilter
+});
+
+// Backwards-compatible alias for existing routes that import `uploadMiddleware`
+export const uploadMiddleware = uploadEventos;
+
 
 // Función utilitaria para eliminar archivos de forma segura
 export const deleteFile = (filePath: string): boolean => {
   try {
     // Validar que el path está dentro del directorio uploads
     const uploadsDir = path.join(__dirname, '../../uploads');
-    const resolvedPath = path.resolve(filePath);
+    // Support both stored DB paths like '/uploads/eventos/xyz.jpg' and absolute filesystem paths
+    let resolvedPath = filePath;
+    if (filePath.startsWith('/uploads') || filePath.startsWith('uploads')) {
+      // resolve relative to project root
+      resolvedPath = path.join(__dirname, '../../', filePath.replace(/^\//, ''));
+    }
+    resolvedPath = path.resolve(resolvedPath);
     const resolvedUploadsDir = path.resolve(uploadsDir);
     
     if (!resolvedPath.startsWith(resolvedUploadsDir)) {
@@ -320,6 +388,9 @@ export const deleteFile = (filePath: string): boolean => {
     
     if (fs.existsSync(resolvedPath)) {
       fs.unlinkSync(resolvedPath);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[uploadMiddleware] deleted file: ${resolvedPath}`);
+      }
       return true;
     }
     return false;
@@ -333,7 +404,11 @@ export const deleteFile = (filePath: string): boolean => {
 export const fileExists = (filePath: string): boolean => {
   try {
     const uploadsDir = path.join(__dirname, '../../uploads');
-    const resolvedPath = path.resolve(filePath);
+    let resolvedPath = filePath;
+    if (filePath.startsWith('/uploads') || filePath.startsWith('uploads')) {
+      resolvedPath = path.join(__dirname, '../../', filePath.replace(/^\//, ''));
+    }
+    resolvedPath = path.resolve(resolvedPath);
     const resolvedUploadsDir = path.resolve(uploadsDir);
     
     if (!resolvedPath.startsWith(resolvedUploadsDir)) {
@@ -685,6 +760,8 @@ export const saveCalendarioFile = (req: Request, res: Response, next: NextFuncti
     req.file.path = filePath;
     req.file.filename = filename;
     req.file.destination = uploadPath;
+    // For other controllers that expect savedImagePath
+    (req as any).savedImagePath = `uploads/modelo-educativo/${filename}`;
     next();
   } catch (error) {
     console.error('Error guardando archivo de calendario:', error);
@@ -698,10 +775,20 @@ export const saveCalendarioFile = (req: Request, res: Response, next: NextFuncti
 // Configuración para hero slides y noticias
 const heroSlideStorage = multer.memoryStorage();
 
+// Tamaño máximo configurable para hero slides (en bytes)
+const HERO_SLIDE_MAX_FILE_SIZE_BYTES = (() => {
+  const envVal = process.env.HERO_SLIDE_MAX_FILE_SIZE_MB;
+  const mb = envVal ? Number(envVal) : 200; // valor por defecto 200MB
+  if (Number.isNaN(mb) || mb <= 0) return 200 * 1024 * 1024;
+  const bytes = Math.round(mb * 1024 * 1024);
+  console.info(`Hero slide max file size configured: ${mb}MB (${bytes} bytes)`);
+  return bytes;
+})();
+
 export const uploadHeroSlides = multer({
   storage: heroSlideStorage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB para videos
+    fileSize: HERO_SLIDE_MAX_FILE_SIZE_BYTES,
     ...DEFAULT_LIMITS,
     files: 2
   },
@@ -729,7 +816,20 @@ export const saveHeroSlideFile = (req: Request, res: Response, next: NextFunctio
 
   const randomName = crypto.randomBytes(16).toString('hex');
   const timestamp = Date.now();
-  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  // Preservar extensión original del archivo subido
+  let originalExt = path.extname(req.file.originalname).toLowerCase();
+  // Si no tiene extensión, inferir del mimetype
+  if (!originalExt) {
+    const mimeToExt: { [key: string]: string } = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+      'video/mp4': '.mp4',
+      'video/webm': '.webm'
+    };
+    originalExt = mimeToExt[req.file.mimetype] || '.bin';
+  }
   const filename = `hero_${timestamp}_${randomName}${originalExt}`;
   const filePath = path.join(uploadPath, filename);
 
@@ -794,6 +894,55 @@ export const saveNoticiaFile = (req: Request, res: Response, next: NextFunction)
     next();
   } catch (error) {
     console.error('Error guardando archivo de noticia:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para modelo educativo (imagenes del modelo)
+export const uploadModelo = multer({
+  storage: noticiaStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    ...DEFAULT_LIMITS,
+    files: 1
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF)'));
+    }
+  }
+}).single('imagen');
+
+export const saveModeloFile = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const uploadPath = path.join(__dirname, '../../uploads/modelo-educativo');
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const randomName = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now();
+  const originalExt = path.extname(req.file.originalname).toLowerCase();
+  const filename = `modelo_${timestamp}_${randomName}${originalExt}`;
+  const filePath = path.join(uploadPath, filename);
+
+  try {
+    fs.writeFileSync(filePath, req.file.buffer);
+    req.file.path = filePath;
+    req.file.filename = filename;
+    req.file.destination = uploadPath;
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de modelo educativo:', error);
     return res.status(500).json({
       error: 'Error interno del servidor',
       message: 'No se pudo guardar el archivo'

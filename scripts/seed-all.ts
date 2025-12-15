@@ -18,6 +18,7 @@ import User from '../src/models/User';
 import Carrera from '../src/models/Carrera';
 import NosotrosContent from '../src/models/Nosotros';
 import sequelize from '../src/config/database';
+import { seedCarrerasAttached } from './seed-carreras-attached';
 
 // Configuración de la base de datos
 const isProduction = process.env.NODE_ENV === 'production';
@@ -123,21 +124,39 @@ async function seedCarreras() {
     await Carrera.sync();
     await Carrera.destroy({ where: {} });
 
+    // Mapeo de carreras a archivos que existen en uploads/carreras
+    const imageMap: Record<number, {portada: string, caratula: string, video: string}> = {
+      1: { portada: 'TICS.jpg', caratula: 'SOFTWARE.jpg', video: 'TICS.mp4' },  // SOFTWARE
+      2: { portada: 'TICS REDES DIGITALES_2025.jpg', caratula: 'TICS.jpg', video: 'TICS.mp4' },  // REDES
+      3: { portada: 'AGRICULTURA_2025.jpg', caratula: 'AGRICULTURA.jpg', video: 'AGRICULTURA.mp4' },
+      4: { portada: 'MECATRÓNICA_2025.jpg', caratula: 'MECATRONICA.jpg', video: 'MECATRONICA.mp4' },
+      5: { portada: 'MANTENIMIENTO INDUSTRIAL_2025.jpg', caratula: 'MANTENIMIENTO.jpg', video: 'MANTENIMIENTO.mp4' },
+      6: { portada: 'ALIMENTOS_2025_2025.jpg', caratula: 'ALIMENTOS.jpg', video: 'ALIMENTOS.mp4' },
+      7: { portada: 'INGENIERIA INDUSTRIAL.jpg', caratula: 'INDUSTRIAL.jpg', video: 'INDUSTRIAL.mp4' },
+      8: { portada: 'CONTADURÍA_2025.jpg', caratula: 'CONTADURIA.jpg', video: 'CONTADURIA.mp4' },
+      9: { portada: 'ADMINISTRACIÓN_CAPITAL HUMANO.jpg', caratula: 'ADMINISTRACION.jpg', video: 'ADMINISTRACION.mp4' },
+      10: { portada: 'ADMINISTRACIÓN_FORMULACIÓN DE PROYECTOS.jpg', caratula: 'ADMINISTRACION.jpg', video: 'ADMINISTRACION.mp4' },
+      11: { portada: 'NEGOCIOS Y MERCADOTECNIA.jpg', caratula: 'NEGOCIOS.jpg', video: 'MERCADOTECNIA.mp4' }
+    };
+
     let data: any[] = [];
     
     for (const detail of programDetails) {
-      const programInfo = programs.find(p => p.id === detail.programId);
+      const programInfo = programs.find((p: any) => p.id === detail.programId);
       if (!programInfo) continue;
       
       const nombre = cleanTitle(programInfo.title);
       const siglas = generateSiglas(nombre);
       const nivel = mapNivel(programInfo.category);
       const duracion = (programInfo as any).duration || '';
-      const imagen = `portadas/${programInfo.image?.replace('PE2025/', '') || ''}`;
+      
+      // Usar mapeo de archivos reales
+      const files = imageMap[detail.programId] || { portada: '', caratula: '', video: '' };
+      
       const perfil_ingreso = (detail as any).admissionProfile?.trim() || '';
       const perfil_egreso = (detail as any).graduateProfile?.trim() || '';
       const campo_laboral = (detail as any).laborField?.join('\n') || '';
-      const imagen_local = `caratulas/${(detail as any).profileImage}`;
+      
       data.push({
         nombre,
         siglas,
@@ -147,8 +166,8 @@ async function seedCarreras() {
         perfil_ingreso,
         perfil_egreso,
         campo_laboral,
-        imagen: devMode ? imagen_local : normalizeImageForProd(imagen),
-        video_url: (detail as any).videoUrl || '',
+        imagen: files.portada ? `carreras/portadas/${files.portada}` : '',
+        video_url: files.video ? `carreras/videos/${files.video}` : '',
         orden: (detail as any).programId,
         activo: true
       });
@@ -294,7 +313,8 @@ async function main() {
     // Ejecutar seeds en orden
     await seedAdmin();
     await seedNosotros();
-    await seedCarreras();
+    // Usar la versión adjunta para poblar las carreras
+    await seedCarrerasAttached(true);
     await seedExtensionUniversitaria();
 
     console.log('\n🎉 ========================================');

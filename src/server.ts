@@ -1,3 +1,5 @@
+// Cargar variables de entorno lo antes posible para que `app` use la configuración
+import 'dotenv/config';
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
 import { ensureExtensionAreas } from './startup/ensureExtensionAreas';

@@ -10,7 +10,7 @@ import Noticia from '../models/Noticia';
 import Anuncio from '../models/Anuncio';
 import Carrera from '../models/Carrera';
 import VideoInstitucional from '../models/VideoInstitucional';
-import RelojDigital from '../models/RelojDigital';
+import ModeloEducativo from '../models/ModeloEducativo';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -31,7 +31,8 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     Anuncio,
     Carrera,
     VideoInstitucional,
-    RelojDigital
+    // RelojDigital, // Eliminado del registro de modelos
+    ModeloEducativo
   ];
 
   // Sincronizar modelos con la base de datos

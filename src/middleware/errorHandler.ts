@@ -10,6 +10,10 @@ export function errorHandler(err: any, req: Request, res: Response, _next: NextF
   // Multer specific handling
   if (err && (err as multer.MulterError)?.code) {
     const mErr = err as multer.MulterError;
+    if (mErr.code === 'LIMIT_FILE_SIZE') {
+      const maxMb = process.env.HERO_SLIDE_MAX_FILE_SIZE_MB || '200';
+      return res.status(413).json({ error: 'File too large', message: `El archivo supera el tamaño máximo permitido de ${maxMb}MB`, code: mErr.code });
+    }
     if (mErr.code === 'LIMIT_FIELD_COUNT') {
       const fieldCount = (req as any)._fieldCount;
       const extra = process.env.NODE_ENV !== 'production' && typeof fieldCount === 'number' ? { receivedFields: fieldCount } : undefined;

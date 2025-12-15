@@ -19,7 +19,6 @@ import routerDocumentos from './routes/Documentos';
 import carreraRouter from './routes/carrera';
 import heroSlideRouter from './routes/heroSlide';
 import eventoRouter from './routes/evento';
-import relojDigitalRouter from './routes/relojDigital';
 import noticiaRouter from './routes/noticia';
 import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
@@ -28,6 +27,7 @@ import extensionRouter from './routes/extensionRoutes';
 /* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
 import videoInstitucionalRouter from './routes/videoInstitucional';
 import portalEstudiantesRouter from './routes/portalEstudiantes';
+import modeloEducativoRouter from './routes/modeloEducativo';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -81,7 +81,7 @@ app.options('*', cors(corsOptions));
 // 6. PARSERS DE BODY (excluir rutas de upload del parsing JSON)
 app.use((req, res, next) => {
   // Solo aplicar JSON parser a rutas que no sean de upload
-  if (!req.path.includes('/upload-image') && !req.path.includes('/upload')) {
+  if (!req.path.includes('/upload-image') && !req.path.includes('/upload') && !req.path.includes('/api/hero-slides')) {
     express.json({
       limit: '1mb',
       strict: true
@@ -123,7 +123,9 @@ app.use('/uploads',
         // Videos
         '.mp4', '.webm', '.ogg',
         // Documentos
-        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
+        // Temporal para hero slides mal guardados
+        '.bin'
       ];
       const fileExtension = require('path').extname(path).toLowerCase();
 
@@ -221,7 +223,6 @@ app.use('/api/documentos', routerDocumentos);
 app.use('/api/carreras', carreraRouter);
 app.use('/api/hero-slides', heroSlideRouter);
 app.use('/api/eventos', eventoRouter);
-app.use('/api/reloj-digital', relojDigitalRouter);
 app.use('/api/noticias', noticiaRouter);
 app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
@@ -232,6 +233,7 @@ app.use('/api/extension', extensionRouter);
 app.use('/api/extension-universitaria', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
 app.use('/api/portal-estudiantes', portalEstudiantesRouter);
+app.use('/api/modelo-educativo', modeloEducativoRouter);
 app.use('/api/email', EmailRoute.routes);
 // DEV ONLY: test upload endpoints to debug form field counts; not included in production bundles
 if (process.env.NODE_ENV !== 'production') {

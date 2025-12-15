@@ -20,8 +20,8 @@ async function seedEventosYAnuncios() {
 
     // Crear evento de ejemplo
     console.log('\n📅 Creando evento...');
-    const fechaEvento = new Date();
-    fechaEvento.setDate(fechaEvento.getDate() + 60); // Evento en 60 días
+    // Fecha específica: 8 de febrero de 2026
+    const fechaEvento = new Date('2026-02-08T12:00:00');
     
     const evento = await Evento.create({
       titulo: 'Proceso de Admisión 2025',
@@ -30,6 +30,15 @@ async function seedEventosYAnuncios() {
       activo: true,
     });
     console.log(`  ✅ Evento creado: ${evento.titulo}`);
+
+    // Crear un evento inactivo de ejemplo (pasado) para pruebas
+    const eventoInactivo = await Evento.create({
+      titulo: 'Evento histórico - Archivos',
+      descripcion: 'Evento pasado y marcado como inactivo para pruebas de visualización.',
+      fecha_evento: new Date('2024-06-01T10:00:00'),
+      activo: false,
+    });
+    console.log(`  ✅ Evento inactivo creado: ${eventoInactivo.titulo}`);
 
     // Crear anuncio de ejemplo
     console.log('\n📢 Creando anuncio...');
