@@ -27,7 +27,7 @@ export interface CareerEmailMapping {
 const STAFF_MEMBERS: StaffMember[] = [
   {
     nombre: 'Matilde Alonso Paz',
-    email: 'mstrwalfe@gmail.com',
+    email: 'malonsopaz@personal.uttecam.edu.mx',
     carreras: [
       { area: 'TSU', nombre: 'Mercadotecnia' },
       { area: 'TSU', nombre: 'Desarrollo de Negocios área Mercadotecnia' },
@@ -39,7 +39,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Carla Patricia Palacios Ramírez',
-    email: /* 'c.p.palacios@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
+    email: 'c.p.palacios@personal.uttecam.edu.mx',
     carreras: [
       { area: 'TSU', nombre: 'Procesos Industriales área Manufactura' },
       { area: 'TSU', nombre: 'Procesos Industriales área Automotriz' },
@@ -52,7 +52,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Gloria Rodríguez Lara',
-    email: /* 'g.rodriguez@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
+    email: 'g.rodriguez@personal.uttecam.edu.mx',
     carreras: [
       { area: 'TSU', nombre: 'Admón. Área Formulación y Evaluación de Proyectos' },
       { area: 'TSU', nombre: 'Emprendimiento, Formulación y Evaluación de Proyectos' },
@@ -65,7 +65,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Elizabeth Cruz Flores',
-    email: /* 'e.cruz@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
+    email: 'e.cruz@personal.uttecam.edu.mx',
     carreras: [
       { area: 'TSU', nombre: 'Contaduría' },
       { area: 'LIC', nombre: 'Contaduría' },
@@ -75,7 +75,7 @@ const STAFF_MEMBERS: StaffMember[] = [
   },
   {
     nombre: 'Dulce María Sánchez Doroteo',
-    email: /* 'd.m.sanchez.doroteo@personal.uttecam.edu.mx' */'mstrwalfe@gmail.com',
+    email: 'd.m.sanchez.doroteo@personal.uttecam.edu.mx',
     carreras: [
       { area: 'TSU', nombre: 'Agricultura Sustentable y Protegida' },
       { area: 'TSU', nombre: 'Mecatrónica área Automatización' },
@@ -102,10 +102,10 @@ export const EMAIL_ROUTING: CareerEmailMapping[] = STAFF_MEMBERS.flatMap(staff =
 // ==========================================
 
 // Email administrativo que SIEMPRE recibe copia
-export const ADMIN_EMAIL = 'jesus.sr0704@gmail.com';
+export const ADMIN_EMAIL = 'serviciosescolares@uttecam.edu.mx';
 
 // Email por defecto si no se encuentra la combinación área+carrera
-export const DEFAULT_EMAIL = 'jesus.sr0704@gmail.com';
+export const DEFAULT_EMAIL = 'serviciosescolares@uttecam.edu.mx';
 
 // Exportar también el personal para otros usos (reportes, etc.)
 export { STAFF_MEMBERS };
