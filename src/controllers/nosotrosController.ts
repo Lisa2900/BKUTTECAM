@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import NosotrosContent from "../models/Nosotros";
 import path from 'path';
 import fs from 'fs';
+import { deleteFile } from "../middleware/uploadMiddleware";
 
 // ============================================
 // CONTROLADOR PARA CONTENIDO DE "NOSOTROS"
@@ -15,15 +16,13 @@ export const getContent = async (req: Request, res: Response, next: NextFunction
     const content = await NosotrosContent.findOne();
 
     if (!content) {
-      return res.status(404).json({
-        error: "Contenido no encontrado",
-        message: "El contenido de 'Nosotros' no ha sido creado aún. Use POST /api/nosotros/content para crear el contenido inicial."
-      });
+      // Retornar null pero con status 200 para permitir que el frontend inicialice el formulario
+      return res.status(200).json(null);
     }
 
     // Obtener los datos como JSON
     const data = content.toJSON();
-    
+
     // Parsear campos JSON si vienen como string (problema con Sequelize en MySQL)
     const parseIfString = (field: any) => {
       if (typeof field === 'string') {
@@ -64,15 +63,22 @@ export const updateContent = async (req: Request, res: Response, next: NextFunct
       noDiscriminacion
     } = req.body;
 
-    // Validar estructura básica
-    if (!vision || !mision || !valores || !politicaIntegral || !objetivoIntegral || !noDiscriminacion) {
+    // Validar estructura básica (solo los campos principales son requeridos)
+    if (!vision || !mision) {
       return res.status(400).json({
         error: "Datos inválidos",
-        details: "Todas las secciones son requeridas"
+        details: "Vision y Misión son requeridas"
       });
     }
+
+    // Usar valores por defecto para campos opcionales
+    const safeValores = valores || { description: [] };
+    const safePoliticaIntegral = politicaIntegral || { imageSrc: '', title: '', description: '' };
+    const safeObjetivoIntegral = objetivoIntegral || '';
+    const safeNoDiscriminacion = noDiscriminacion || [];
+
     // Validate title lengths (no more than 255 characters)
-    const sectionsToCheck: any[] = [vision, mision, valores, politicaIntegral];
+    const sectionsToCheck: any[] = [vision, mision, safeValores, safePoliticaIntegral];
     for (const s of sectionsToCheck) {
       if (s && s.title && s.title.length > 255) {
         return res.status(400).json({ error: 'Title too long', message: 'One of the section titles exceeds 255 characters' });
@@ -86,19 +92,19 @@ export const updateContent = async (req: Request, res: Response, next: NextFunct
       content = await NosotrosContent.create({
         vision,
         mision,
-        valores,
-        politicaIntegral,
-        objetivoIntegral,
-        noDiscriminacion
+        valores: safeValores,
+        politicaIntegral: safePoliticaIntegral,
+        objetivoIntegral: safeObjetivoIntegral,
+        noDiscriminacion: safeNoDiscriminacion
       });
     } else {
       await content.update({
         vision,
         mision,
-        valores,
-        politicaIntegral,
-        objetivoIntegral,
-        noDiscriminacion
+        valores: safeValores,
+        politicaIntegral: safePoliticaIntegral,
+        objetivoIntegral: safeObjetivoIntegral,
+        noDiscriminacion: safeNoDiscriminacion
       });
     }
 
@@ -132,17 +138,32 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
     let content = await NosotrosContent.findOne();
 
     if (!content) {
-      return res.status(404).json({
-        error: "Contenido no encontrado",
-        message: "El contenido de 'Nosotros' no ha sido creado aún. Use POST /api/nosotros/content para crear el contenido inicial."
-      });
+      // Si no existe, creamos uno con valores por defecto
+      content = await NosotrosContent.create({
+        vision: { description: '' },
+        mision: { description: '' },
+        valores: { description: [] },
+        politicaIntegral: { imageSrc: '', title: '', description: '' },
+        objetivoIntegral: '',
+        noDiscriminacion: []
+      } as any);
     }
 
     // El frontend envía { [section]: data }, extraer los datos de la sección
-    const sectionData = updateData[section] || updateData;
+    let sectionData = updateData[section] || updateData;
+
+    // objetivoIntegral es un STRING en la BD, pero el frontend envía {text: "..."}
+    // Necesitamos extraer solo el texto
+    if (section === 'objetivoIntegral') {
+      if (typeof sectionData === 'object' && sectionData !== null && 'text' in sectionData) {
+        sectionData = (sectionData as any).text || '';
+      } else if (typeof sectionData !== 'string') {
+        sectionData = '';
+      }
+    }
 
     // Validate title length for updated section
-    if (sectionData && (sectionData as any).title && (sectionData as any).title.length > 255) {
+    if (sectionData && typeof sectionData === 'object' && (sectionData as any).title && (sectionData as any).title.length > 255) {
       return res.status(400).json({ error: 'Title too long', message: 'The section title exceeds the maximum length of 255 characters' });
     }
 
@@ -151,7 +172,7 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
     updateObj[section] = sectionData;
 
     await content.update(updateObj);
-    
+
     // Recargar el contenido actualizado
     await content.reload();
 
@@ -269,12 +290,26 @@ export const getSection = async (req: Request, res: Response, next: NextFunction
 // Eliminar todo el contenido
 export const deleteContent = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const deletedCount = await NosotrosContent.destroy({ where: {} });
+    const content = await NosotrosContent.findOne(); // Find the content before deleting
 
-    res.json({
-      message: "Contenido eliminado exitosamente",
-      deletedCount
-    });
+    if (content) {
+      // 1. Eliminar archivos físicos de todas las secciones que tengan imágenes
+      const sectionsWithImages = ['vision', 'mision', 'valores', 'politicaIntegral']; // 'organigrama' is not a valid section in this context
+      for (const section of sectionsWithImages) {
+        let sectionData = content[section as keyof typeof content];
+        if (typeof sectionData === 'string') {
+          try { sectionData = JSON.parse(sectionData); } catch (e) { }
+        }
+        if (sectionData && (sectionData as any).imageSrc) {
+          deleteFile((sectionData as any).imageSrc);
+        }
+      }
+      // 2. Eliminar de la base de datos
+      await content.destroy();
+      res.json({ message: "Contenido de 'Nosotros' y sus archivos físicos eliminados exitosamente", deletedCount: 1 });
+    } else {
+      res.json({ message: "No se encontró contenido para eliminar", deletedCount: 0 });
+    }
   } catch (error) {
     next(error);
   }
@@ -305,8 +340,17 @@ export const deleteSection = async (req: Request, res: Response, next: NextFunct
       });
     }
 
-    // Valores por defecto para cada sección
-    const defaultValues = {
+    // 1. Eliminar imagen física si existe
+    let sectionData = content[section as keyof typeof content];
+    if (typeof sectionData === 'string') {
+      try { sectionData = JSON.parse(sectionData); } catch (e) { }
+    }
+    if (sectionData && (sectionData as any).imageSrc) {
+      deleteFile((sectionData as any).imageSrc);
+    }
+
+    // 2. Valores por defecto
+    const defaultValues: any = {
       vision: {
         imageSrc: 'nosotros/vision_1759772754247.png',
         title: 'Visión',
@@ -418,7 +462,7 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
 
     // Obtener el contenido actual de la sección y parsearlo si es necesario
     let sectionData = content[section as keyof typeof content];
-    
+
     // Parsear el campo si es un string JSON
     if (typeof sectionData === 'string') {
       try {
@@ -429,6 +473,11 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
           message: "El contenido de la sección no está en el formato correcto"
         });
       }
+    }
+
+    // Si ya existe una imagen en esta sección, eliminarla antes de poner la nueva
+    if (sectionData && (sectionData as any).imageSrc) {
+      deleteFile((sectionData as any).imageSrc);
     }
 
     // Construir el objeto actualizado con la nueva imagen y datos adicionales
@@ -463,10 +512,10 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
     // Merge parsedAdditional into updatedSectionData
     Object.assign(updatedSectionData, parsedAdditional);
 
-      // Validate title length if present
-      if (updatedSectionData.title && updatedSectionData.title.length > 255) {
-        return res.status(400).json({ error: 'Title too long', message: 'The provided title exceeds the max length of 255 characters' });
-      }
+    // Validate title length if present
+    if (updatedSectionData.title && updatedSectionData.title.length > 255) {
+      return res.status(400).json({ error: 'Title too long', message: 'The provided title exceeds the max length of 255 characters' });
+    }
 
     // Guardar solo la sección actualizada
     await content.update({

@@ -11,7 +11,7 @@ import {
   deleteOrganigrama,
   syncOrganigramaFromClient
 } from '../controllers/organigramaController';
-import { verifyToken } from '../middleware/auth';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -54,16 +54,16 @@ router.get('/flat', getOrganigramaFlat);
 router.get('/:id', getOrganigramaById);
 
 // Rutas protegidas (requieren autenticación)
-router.post('/', verifyToken, upload.single('imagen'), createOrganigrama);
-router.put('/:id', verifyToken, upload.single('imagen'), updateOrganigrama);
-router.delete('/:id', verifyToken, deleteOrganigrama);
+router.post('/', authenticateToken, upload.single('imagen'), createOrganigrama);
+router.put('/:id', authenticateToken, upload.single('imagen'), updateOrganigrama);
+router.delete('/:id', authenticateToken, deleteOrganigrama);
 
 // Ruta de sincronización
 // En desarrollo: sin auth | En producción: con auth
 if (process.env.NODE_ENV !== 'production') {
   router.post('/sync', syncOrganigramaFromClient);
 } else {
-  router.post('/sync', verifyToken, syncOrganigramaFromClient);
+  router.post('/sync', authenticateToken, syncOrganigramaFromClient);
 }
 
 export default router;

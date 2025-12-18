@@ -1,12 +1,15 @@
 import Organigrama from "../models/Organigrama";
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "sequelize";
+import { deleteFile } from "../middleware/uploadMiddleware";
+import path from "path";
 
 // Función auxiliar para construir el árbol jerárquico
 const buildTree = (items: any[], parentId: number | null = null): any[] => {
   return items
     .filter(item => item.parent_id === parentId)
     .map(item => ({
+      id: item.id,  // ¡CRÍTICO! Sin esto, el frontend no puede editar/eliminar
       key: item.key,
       expanded: item.expanded,
       type: item.type,
@@ -30,10 +33,10 @@ export const getAllOrganigrama = async (req: Request, res: Response, next: NextF
     const items = await Organigrama.findAll({
       order: [['order_position', 'ASC']]
     });
-    
+
     // Construir árbol jerárquico
     const tree = buildTree(items.map(item => item.toJSON()));
-    
+
     res.status(200).json({
       message: "Organigrama obtenido correctamente",
       data: tree
@@ -49,7 +52,7 @@ export const getOrganigramaFlat = async (req: Request, res: Response, next: Next
     const items = await Organigrama.findAll({
       order: [['order_position', 'ASC']]
     });
-    
+
     res.status(200).json({
       message: "Organigrama (lista plana) obtenido correctamente",
       data: items
@@ -69,7 +72,7 @@ export const getOrganigramaById = async (req: Request, res: Response, next: Next
     }
 
     const item = await Organigrama.findByPk(id);
-    
+
     if (!item) {
       return res.status(404).json({ message: "Elemento de organigrama no encontrado" });
     }
@@ -89,23 +92,40 @@ export const createOrganigrama = async (req: Request, res: Response, next: NextF
     const { key, parent_id, expanded, type, name, title, text, order_position } = req.body;
     let image = req.file ? req.file.filename : req.body.image;
 
+    console.log('Creating Organigrama Item:', { body: req.body, file: req.file });
+
     // Validar campos requeridos
     if (!name || !title || !image) {
       return res.status(400).json({ error: "Nombre, título e imagen son campos requeridos" });
     }
 
+    console.log('--- Create Organigrama Request ---');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('File:', req.file);
+
+    // Ensure parent_id is strictly null if not provided or valid
+    let processedParentId = null;
+    if (parent_id && parent_id !== 'null' && parent_id !== 'undefined' && parent_id !== '') {
+      processedParentId = parseInt(parent_id, 10);
+      if (isNaN(processedParentId)) processedParentId = null;
+    }
+
+    console.log('Processed Parent ID:', processedParentId);
+
     // Crear nuevo elemento
     const nuevoItem = await Organigrama.create({
-      key,
-      parent_id: parent_id || null,
-      expanded: expanded !== undefined ? expanded : true,
+      key: key || `node-${Date.now()}`,
+      parent_id: processedParentId,
+      expanded: expanded !== undefined ? (String(expanded) === 'true') : true,
       type: type || 'person',
       image,
       name,
       title,
       text,
-      order_position: order_position || 0
+      order_position: order_position ? parseInt(order_position) : 0
     });
+
+    console.log('Item created successfully:', nuevoItem.id);
 
     res.status(201).json({
       message: "Elemento de organigrama creado correctamente",
@@ -129,6 +149,10 @@ export const createOrganigrama = async (req: Request, res: Response, next: NextF
 export const updateOrganigrama = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    console.log(`[Organigrama] Update Request for ID: ${id}`);
+    console.log('[Organigrama] Update Body:', req.body);
+    console.log('[Organigrama] Update File:', req.file);
+
     const { key, parent_id, expanded, type, name, title, text, order_position } = req.body;
     let image = req.file ? req.file.filename : req.body.image;
 
@@ -140,6 +164,7 @@ export const updateOrganigrama = async (req: Request, res: Response, next: NextF
     // Buscar el elemento existente
     const itemExistente = await Organigrama.findByPk(id);
     if (!itemExistente) {
+      console.log(`[Organigrama] Item ${id} not found`);
       return res.status(404).json({ message: "Elemento de organigrama no encontrado" });
     }
 
@@ -155,10 +180,21 @@ export const updateOrganigrama = async (req: Request, res: Response, next: NextF
 
     if (key !== undefined) datosActualizacion.key = key;
     if (parent_id !== undefined) datosActualizacion.parent_id = parent_id || null;
-    if (image) datosActualizacion.image = image;
+
+    if (image) {
+      // Eliminar imagen anterior si existe
+      if (itemExistente.image) {
+        const oldImagePath = path.join('uploads/organigrama', itemExistente.image);
+        deleteFile(oldImagePath);
+      }
+      datosActualizacion.image = image;
+    }
+
+    console.log('[Organigrama] Updating with:', datosActualizacion);
 
     // Actualizar elemento
     await itemExistente.update(datosActualizacion);
+    console.log(`[Organigrama] Item ${id} updated successfully`);
 
     res.status(200).json({
       message: "Elemento de organigrama actualizado correctamente",
@@ -182,6 +218,7 @@ export const updateOrganigrama = async (req: Request, res: Response, next: NextF
 export const deleteOrganigrama = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    console.log(`[Organigrama] Delete Request for ID: ${id}`);
 
     // Validar ID
     if (!id || isNaN(Number(id))) {
@@ -191,25 +228,41 @@ export const deleteOrganigrama = async (req: Request, res: Response, next: NextF
     // Buscar el elemento existente
     const itemExistente = await Organigrama.findByPk(id);
     if (!itemExistente) {
+      console.log(`[Organigrama] Delete: Item ${id} not found`);
       return res.status(404).json({ message: "Elemento de organigrama no encontrado" });
     }
 
-    // Verificar si tiene hijos
-    const hijos = await Organigrama.findAll({
-      where: { parent_id: id }
-    });
+    // Función recursiva para eliminar hijos y sus archivos físicos
+    const deleteChildren = async (parentId: number) => {
+      const children = await Organigrama.findAll({ where: { parent_id: parentId } });
+      for (const child of children) {
+        await deleteChildren(child.id);
 
-    if (hijos.length > 0) {
-      return res.status(400).json({
-        error: "No se puede eliminar un elemento con hijos. Elimine primero los elementos dependientes."
-      });
+        // Eliminar imagen física del hijo
+        if (child.image) {
+          const childImagePath = path.join('uploads/organigrama', child.image);
+          deleteFile(childImagePath);
+        }
+
+        await child.destroy();
+      }
+    };
+
+    // Eliminar hijos recursivamente
+    await deleteChildren(itemExistente.id);
+
+    // Eliminar imagen física del nodo principal
+    if (itemExistente.image) {
+      const mainImagePath = path.join('uploads/organigrama', itemExistente.image);
+      deleteFile(mainImagePath);
     }
 
-    // Eliminar elemento
+    // Eliminar el nodo principal
     await itemExistente.destroy();
+    console.log(`[Organigrama] Item ${id} and its subtree deleted successfully`);
 
     res.status(200).json({
-      message: "Elemento de organigrama eliminado correctamente",
+      message: "Elemento de organigrama eliminado correctamente (incluyendo descendientes)",
       data: { id: itemExistente.id }
     });
   } catch (error) {

@@ -12,7 +12,7 @@ export const obtenerAreas = async (req: Request, res: Response, next: NextFuncti
   try {
     const areas = await DocumentosService.getCompleteStructure();
     if (!areas || areas.length === 0) {
-      return res.status(404).json({ message: "No se encontraron áreas" });
+      return res.status(200).json([]);
     }
     res.json(areas);
   } catch (error) {
@@ -24,11 +24,11 @@ export const obtenerAreaPorId = async (req: Request, res: Response, next: NextFu
   try {
     const { id } = req.params;
     const area = await DocumentosService.getAreaById(Number(id));
-    
+
     if (!area) {
       return res.status(404).json({ message: "Área no encontrada" });
     }
-    
+
     res.json(area);
   } catch (error) {
     next(error);
@@ -71,7 +71,7 @@ export const eliminarArea = async (req: Request, res: Response, next: NextFuncti
   try {
     const { id } = req.params;
     const area = await Area.findByPk(id);
-    
+
     if (!area) {
       return res.status(404).json({ message: "Área no encontrada" });
     }
@@ -95,11 +95,11 @@ export const obtenerCategorias = async (req: Request, res: Response, next: NextF
         { model: Archivos, as: 'archivos' }
       ]
     });
-    
+
     if (!categorias || categorias.length === 0) {
-      return res.status(404).json({ message: "No se encontraron categorías" });
+      return res.status(200).json([]);
     }
-    
+
     res.json(categorias);
   } catch (error) {
     next(error);
@@ -110,11 +110,11 @@ export const obtenerCategoriaPorId = async (req: Request, res: Response, next: N
   try {
     const { id } = req.params;
     const categoria = await DocumentosService.getCategoryWithFiles(Number(id));
-    
+
     if (!categoria) {
       return res.status(404).json({ message: "Categoría no encontrada" });
     }
-    
+
     res.json(categoria);
   } catch (error) {
     next(error);
@@ -138,8 +138,8 @@ export const crearCategoria = async (req: Request, res: Response, next: NextFunc
   } catch (error: any) {
     // Manejar errores específicos
     if (error.status === 409) {
-      return res.status(409).json({ 
-        message: error.message || "Ya existe una categoría con ese nombre en esta área" 
+      return res.status(409).json({
+        message: error.message || "Ya existe una categoría con ese nombre en esta área"
       });
     }
     next(error);
@@ -167,7 +167,7 @@ export const eliminarCategoria = async (req: Request, res: Response, next: NextF
   try {
     const { id } = req.params;
     const categoria = await Categorias.findByPk(id);
-    
+
     if (!categoria) {
       return res.status(404).json({ message: "Categoría no encontrada" });
     }
@@ -187,18 +187,18 @@ export const obtenerArchivos = async (req: Request, res: Response, next: NextFun
   try {
     const archivos = await Archivos.findAll({
       include: [
-        { 
-          model: Categorias, 
+        {
+          model: Categorias,
           as: 'categoria',
           include: [{ model: Area, as: 'area' }]
         }
       ]
     });
-    
+
     if (!archivos || archivos.length === 0) {
-      return res.status(404).json({ message: "No se encontraron archivos" });
+      return res.status(200).json([]);
     }
-    
+
     res.json(archivos);
   } catch (error) {
     next(error);
@@ -209,11 +209,11 @@ export const obtenerArchivoPorId = async (req: Request, res: Response, next: Nex
   try {
     const { id } = req.params;
     const archivo = await DocumentosService.getFileWithHierarchy(Number(id));
-    
+
     if (!archivo) {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
-    
+
     res.json(archivo);
   } catch (error) {
     next(error);
@@ -224,11 +224,11 @@ export const obtenerArchivosPorArea = async (req: Request, res: Response, next: 
   try {
     const { areaId } = req.params;
     const archivos = await DocumentosService.getFilesByArea(Number(areaId));
-    
+
     if (!archivos || archivos.length === 0) {
-      return res.status(404).json({ message: "No se encontraron archivos para esta área" });
+      return res.status(200).json([]);
     }
-    
+
     res.json(archivos);
   } catch (error) {
     next(error);
@@ -257,7 +257,7 @@ export const crearArchivo = async (req: Request, res: Response, next: NextFuncti
       Ruta_Documento,
       ID_Categorias
     });
-    
+
     res.status(201).json(nuevoArchivo);
   } catch (error) {
     next(error);
@@ -305,7 +305,7 @@ export const subirArchivo = async (req: Request, res: Response, next: NextFuncti
       Ruta_Documento,
       ID_Categorias: Number(ID_Categorias)
     });
-    
+
     res.status(201).json({
       message: "Archivo subido exitosamente",
       archivo: nuevoArchivo,
@@ -343,7 +343,7 @@ export const actualizarArchivo = async (req: Request, res: Response, next: NextF
       Ruta_Documento,
       ID_Categorias
     });
-    
+
     res.json(archivo);
   } catch (error) {
     next(error);
@@ -354,7 +354,7 @@ export const eliminarArchivo = async (req: Request, res: Response, next: NextFun
   try {
     const { id } = req.params;
     const archivo = await Archivos.findByPk(id);
-    
+
     if (!archivo) {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
@@ -363,7 +363,7 @@ export const eliminarArchivo = async (req: Request, res: Response, next: NextFun
     if (archivo.Ruta_Documento) {
       const filePath = path.join(__dirname, '../../', archivo.Ruta_Documento);
       const deleted = deleteFile(filePath);
-      
+
       if (deleted) {
         console.log(`✅ Archivo físico eliminado: ${archivo.Ruta_Documento}`);
       } else {

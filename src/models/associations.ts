@@ -51,8 +51,26 @@ ExtensionItem.belongsTo(ExtensionSection, {
   as: 'section'
 });
 
+// Import Normatividad Models
+import NormatividadCategory from './NormatividadCategory';
+import NormatividadDocument from './NormatividadDocument';
+
+// Normatividad relations
+NormatividadCategory.hasMany(NormatividadDocument, {
+  foreignKey: 'categoria_id',
+  as: 'documentos',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+NormatividadDocument.belongsTo(NormatividadCategory, {
+  foreignKey: 'categoria_id',
+  as: 'categoria',
+  onUpdate: 'CASCADE',
+});
+
 // Exportar todos los modelos con sus relaciones configuradas
-export { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem };
+export { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem, NormatividadCategory, NormatividadDocument };
 
 // También exportar individualmente para facilitar importaciones
-export default { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem };
+export default { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem, NormatividadCategory, NormatividadDocument };

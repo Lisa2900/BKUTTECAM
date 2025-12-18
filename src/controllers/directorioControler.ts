@@ -1,6 +1,8 @@
 import Directorios from "../models/Directorios";
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "sequelize";
+import { deleteFile } from "../middleware/uploadMiddleware";
+import path from "path";
 
 export const getAllDirectorios = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -26,7 +28,7 @@ export const getDirectorioById = async (req: Request, res: Response, next: NextF
     }
 
     const directorio = await Directorios.findByPk(id);
-    
+
     if (!directorio) {
       return res.status(404).json({ message: "Directorio no encontrado" });
     }
@@ -78,7 +80,7 @@ export const createDirectorio = async (req: Request, res: Response, next: NextFu
     console.error('Error al crear directorio:', error);
     next(error);
   }
-};  
+};
 export const updateDirectorio = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -112,6 +114,11 @@ export const updateDirectorio = async (req: Request, res: Response, next: NextFu
 
     // Solo actualizar imagen si se proporciona una nueva
     if (imagen) {
+      // Eliminar imagen anterior si existe
+      if (directorioExistente.imagen) {
+        const oldImagePath = path.join('uploads/directorios', directorioExistente.imagen);
+        deleteFile(oldImagePath);
+      }
       datosActualizacion.imagen = imagen;
     }
 
@@ -151,7 +158,13 @@ export const deleteDirectorio = async (req: Request, res: Response, next: NextFu
       return res.status(404).json({ message: "Directorio no encontrado" });
     }
 
-    // Eliminar directorio
+    // Eliminar imagen física si existe
+    if (directorioExistente.imagen) {
+      const imagePath = path.join('uploads/directorios', directorioExistente.imagen);
+      deleteFile(imagePath);
+    }
+
+    // Eliminar directorio de la BD
     await directorioExistente.destroy();
 
     res.status(200).json({

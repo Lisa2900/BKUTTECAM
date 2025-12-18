@@ -598,9 +598,68 @@ npm run test            # Tests (configurar próximamente)
 - [ ] **Tests unitarios** - Con Jest y Supertest
 - [ ] **Documentación Swagger** - API docs automática
 
-## 📚 Tecnologías utilizadas
+### 🚀 Inicio Rápido para Desarrolladores
 
-- **Node.js** - Runtime de JavaScript
+Si acabas de bajar el proyecto, sigue estos pasos para garantizar que funcione:
+
+1. **Configurar el entorno**:
+   - Copia el archivo `.env.example` y renómbralo a `.env`.
+   - Ajusta las credenciales de tu base de datos MySQL local (`DB_USER`, `DB_PASSWORD`, `DB_NAME`).
+
+2. **Base de Datos**:
+   - Asegúrate de tener MySQL corriendo.
+   - Crea una base de datos vacía con el nombre que definiste en `.env` (por defecto `uttecam`).
+   - Al iniciar el servidor por primera vez, las tablas se crearán automáticamente.
+
+3. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+4. **Iniciar en modo desarrollo**:
+   ```bash
+   npm run dev
+   ```
+
+> **Nota sobre Carpetas**: El proyecto está configurado para crear automáticamente la carpeta `uploads/` y todas sus subcarpetas necesarias al iniciar, por lo que no necesitas crearlas manualmente.
+
+---
+
+## API UTTECAM - Backend
+
+Este es el backend oficial de la Universidad Tecnológica de Tecamachalco (UTTECAM).
+
+---
+
+## 🚀 Inicio Rápido para Desarrolladores
+
+Si acabas de bajar el proyecto, sigue estos pasos para garantizar que funcione:
+
+1. **Configurar el entorno**:
+   - Copia el archivo `.env.example` y renómbralo a `.env`.
+   - Ajusta las credenciales de tu base de datos MySQL local (`DB_USER`, `DB_PASSWORD`, `DB_NAME`).
+
+2. **Base de Datos**:
+   - Asegúrate de tener MySQL corriendo.
+   - Crea una base de datos vacía con el nombre que definiste en `.env` (por defecto: `uttecam`).
+   - El sistema sincronizará las tablas automáticamente al iniciar.
+
+3. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+4. **Iniciar en modo desarrollo**:
+   ```bash
+   npm run dev
+   ```
+
+> **Nota sobre Carpetas**: El proyecto detectará y creará automáticamente el directorio `uploads/` y todas sus subcarpetas necesarias (`directorios`, `documentos`, `organigrama`, etc.) al arrancar.
+
+---
+
+## 🛠️ Tecnologías y Arquitectura
+
 - **TypeScript** - Lenguaje tipado
 - **Express.js** - Framework web
 - **Sequelize** - ORM para bases de datos

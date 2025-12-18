@@ -3,6 +3,7 @@ import 'dotenv/config';
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
 import { ensureExtensionAreas } from './startup/ensureExtensionAreas';
+import { ensureUploadFolders } from './startup/ensureUploadFolders';
 import { scheduleTempUploadsCleanup } from './helpers/deleteTempFiles';
 
 const PORT = process.env.PORT || 3000;
@@ -10,11 +11,15 @@ const PORT = process.env.PORT || 3000;
 // Inicializar servidor
 const startServer = async () => {
   try {
-    // Iniciar servidor primero
+    // Asegurar estructura de carpetas primero
+    ensureUploadFolders();
+
+    // Iniciar servidor
     const server = app.listen(PORT, () => {
       scheduleTempUploadsCleanup(24 * 60 * 60 * 1000, { olderThanMs: 15 * 60 * 1000, onlyTmpPrefix: true });
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
       console.log(`📡 API disponible en: http://localhost:${PORT}`);
+
       console.log(`📋 Endpoints: http://localhost:${PORT}/api/textos`);
       console.log(`📊 Estadísticas: http://localhost:${PORT}/api/textos/stats`);
     });

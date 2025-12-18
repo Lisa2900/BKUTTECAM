@@ -11,6 +11,7 @@ import { sanitizeInput } from './middleware/validation';
 
 // IMPORTACIONES DE RUTAS
 import textosRouter from './routes/textos';
+import normatividadRouter from './routes/quienes-somos/normatividad';
 import nosotrosRouter from './routes/nosotros';
 import directorioRouter from './routes/directorio';
 import authRouter from './routes/auth';
@@ -24,6 +25,8 @@ import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
 import organigramaRouter from './routes/organigrama';
 import extensionRouter from './routes/extensionRoutes';
+import comiteRouter from './routes/comiteRoutes';
+import programaDesarrolloRouter from './routes/programaDesarrolloRoutes';
 /* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
 import videoInstitucionalRouter from './routes/videoInstitucional';
 import portalEstudiantesRouter from './routes/portalEstudiantes';
@@ -112,6 +115,18 @@ app.use(sanitizeInput);
 app.use(logUnauthorizedAccess);
 
 // 10. SERVIR ARCHIVOS ESTÁTICOS DE FORMA SEGURA
+// Validación de extensiones antes de servir archivos
+const allowedExtensions = [
+  // Imágenes
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg',
+  // Videos
+  '.mp4', '.webm', '.ogg',
+  // Documentos
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
+  // Temporal para hero slides mal guardados
+  '.bin'
+];
+
 app.use('/uploads',
   // Rate limit para downloads
   rateLimit({
@@ -119,34 +134,24 @@ app.use('/uploads',
     max: 200, // máximo 200 descargas por IP cada 15 minutos
     message: { error: 'Límite de descargas excedido' }
   }),
+  // Middleware para validar extensiones ANTES de servir
+  (req, res, next) => {
+    const filePath = req.path;
+    const fileExtension = path.extname(filePath).toLowerCase();
+
+    if (filePath !== '/' && !allowedExtensions.includes(fileExtension)) {
+      return res.status(403).json({ error: 'Tipo de archivo no permitido' });
+    }
+    next();
+  },
   express.static(path.join(__dirname, '../uploads'), {
     dotfiles: 'deny', // No servir archivos ocultos
     index: false, // No mostrar índices de directorio
-    setHeaders: (res, path) => {
-      // Validar extensión de archivo (imágenes y documentos)
-      const allowedExtensions = [
-        // Imágenes
-        '.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg',
-        // Videos
-        '.mp4', '.webm', '.ogg',
-        // Documentos
-        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
-        // Temporal para hero slides mal guardados
-        '.bin'
-      ];
-      const fileExtension = require('path').extname(path).toLowerCase();
-
-      if (!allowedExtensions.includes(fileExtension)) {
-        res.status(403).end();
-        return;
-      }
+    setHeaders: (res, filePath) => {
+      const fileExtension = path.extname(filePath).toLowerCase();
 
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
-
-
-      // Headers CORS para archivos estáticos - Permitir desde cualquier origen
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -156,7 +161,7 @@ app.use('/uploads',
       // Headers específicos para PDFs y documentos
       if (fileExtension === '.pdf') {
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline'); // Mostrar en navegador en lugar de descargar
+        res.setHeader('Content-Disposition', 'inline');
       } else if (['.doc', '.docx'].includes(fileExtension)) {
         res.setHeader('Content-Type', 'application/msword');
       } else if (['.xls', '.xlsx'].includes(fileExtension)) {
@@ -252,7 +257,10 @@ app.use('/api/carreras-simples', CarreraSimpleRoute);
 app.use('/api/opciones-reinscripcion', OpcionReinscripcionRoute);
 
 app.use('/api/quienes-somos/organigrama', organigramaRouter);
+app.use('/api/quienes-somos/normatividad', normatividadRouter);
 app.use('/api/quienes-somos/calendario', calendarioRouter);
+app.use('/api/comites', comiteRouter);
+app.use('/api/programas-desarrollo', programaDesarrolloRouter);
 // DEV ONLY: test upload endpoints to debug form field counts; not included in production bundles
 if (process.env.NODE_ENV !== 'production') {
   try {

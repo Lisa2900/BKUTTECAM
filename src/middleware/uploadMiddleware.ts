@@ -44,11 +44,11 @@ const verifyFileType = (buffer: Buffer, mimetype: string): boolean => {
 const secureStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '../../uploads/nosotros');
-    
+
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -56,7 +56,7 @@ const secureStorage = multer.diskStorage({
     const tipo = req.body.tipo || 'general';
     const timestamp = Date.now();
     const originalExt = path.extname(file.originalname).toLowerCase();
-    
+
     const filename = `${tipo}_${timestamp}_${randomName}${originalExt}`;
     cb(null, filename);
   }
@@ -71,7 +71,7 @@ const secureFileFilter = (req: Request, file: Express.Multer.File, cb: multer.Fi
 
   const allowedExtensions = ALLOWED_MIME_TYPES[file.mimetype as keyof typeof ALLOWED_MIME_TYPES];
   const fileExtension = path.extname(file.originalname).toLowerCase();
-  
+
   if (!allowedExtensions.includes(fileExtension)) {
     return cb(new Error(`Extensión ${fileExtension} no permitida`));
   }
@@ -162,7 +162,7 @@ export const validateUploadedFile = (req: Request, res: any, next: any) => {
     if (!isValidType) {
       // Attempt to cleanup file only if it was saved to disk
       if ((req as any).file.path && fs.existsSync((req as any).file.path as string)) {
-        try { fs.unlinkSync((req as any).file.path as string); } catch(e) {}
+        try { fs.unlinkSync((req as any).file.path as string); } catch (e) { }
       }
       return res.status(400).json({
         error: 'Archivo inválido',
@@ -172,7 +172,7 @@ export const validateUploadedFile = (req: Request, res: any, next: any) => {
 
     if (buffer.length < 100) {
       if ((req as any).file.path && fs.existsSync((req as any).file.path as string)) {
-        try { fs.unlinkSync((req as any).file.path as string); } catch(e) {}
+        try { fs.unlinkSync((req as any).file.path as string); } catch (e) { }
       }
       return res.status(400).json({
         error: 'Archivo inválido',
@@ -202,18 +202,18 @@ export const validateUploadedFile = (req: Request, res: any, next: any) => {
 const secureStorageDirectorios = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '../../uploads/directorios');
-    
+
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const randomName = crypto.randomBytes(16).toString('hex');
     const timestamp = Date.now();
     const originalExt = path.extname(file.originalname).toLowerCase();
-    
+
     const filename = `directorio_${timestamp}_${randomName}${originalExt}`;
     cb(null, filename);
   }
@@ -253,33 +253,33 @@ const secureStorageExtension = multer.diskStorage({
   destination: (req, file, cb) => {
     (async () => {
       try {
-      let slug = req.params.slug || req.body.slug || undefined;
-      // If updating item by id (PUT /items/:id), try to find its section and derive slug
-      if (!slug && (req.params.id || req.body.id)) {
-        const itemId = req.params.id || req.body.id;
-        try {
-          const item = await ExtensionItem.findByPk(Number(itemId));
-          if (item) {
-            const section = await ExtensionSection.findByPk(item.section_id);
-            if (section && section.slug) {
-              slug = section.slug;
+        let slug = req.params.slug || req.body.slug || undefined;
+        // If updating item by id (PUT /items/:id), try to find its section and derive slug
+        if (!slug && (req.params.id || req.body.id)) {
+          const itemId = req.params.id || req.body.id;
+          try {
+            const item = await ExtensionItem.findByPk(Number(itemId));
+            if (item) {
+              const section = await ExtensionSection.findByPk(item.section_id);
+              if (section && section.slug) {
+                slug = section.slug;
+              }
             }
+          } catch (err) {
+            // Non-blocking: we'll fallback to 'general' when DB lookup fails
+            console.warn('Could not determine slug from item id for upload, falling back to general', err);
           }
-        } catch (err) {
-          // Non-blocking: we'll fallback to 'general' when DB lookup fails
-          console.warn('Could not determine slug from item id for upload, falling back to general', err);
         }
+        const uploadPath = getExtensionUploadPath(slug as string);
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      } catch (error) {
+        console.error('uploadMiddleware: error while determining upload destination', error);
+        // Pass a generic error to multer via callback
+        try { cb(new Error('Error determining upload destination') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
       }
-      const uploadPath = getExtensionUploadPath(slug as string);
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-      cb(null, uploadPath);
-    } catch (error) {
-      console.error('uploadMiddleware: error while determining upload destination', error);
-      // Pass a generic error to multer via callback
-      try { cb(new Error('Error determining upload destination') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
-    }
     })().catch((uncaught) => {
       // Extremely defensive: ensure we don't leave dangling uncaught rejections
       console.error('uploadMiddleware: unexpected error in destination async flow', uncaught);
@@ -289,30 +289,30 @@ const secureStorageExtension = multer.diskStorage({
   filename: (req, file, cb) => {
     (async () => {
       try {
-      const randomName = crypto.randomBytes(8).toString('hex');
-      const timestamp = Date.now();
-      const originalExt = path.extname(file.originalname).toLowerCase();
-      let slug = req.params.slug || req.body.slug || 'general';
-      if ((!req.params.slug && !req.body.slug) && (req.params.id || req.body.id)) {
-        try {
-          const itemId = req.params.id || req.body.id;
-          const item = await ExtensionItem.findByPk(Number(itemId));
-          if (item) {
-            const section = await ExtensionSection.findByPk(item.section_id);
-            if (section && section.slug) {
-              slug = section.slug;
+        const randomName = crypto.randomBytes(8).toString('hex');
+        const timestamp = Date.now();
+        const originalExt = path.extname(file.originalname).toLowerCase();
+        let slug = req.params.slug || req.body.slug || 'general';
+        if ((!req.params.slug && !req.body.slug) && (req.params.id || req.body.id)) {
+          try {
+            const itemId = req.params.id || req.body.id;
+            const item = await ExtensionItem.findByPk(Number(itemId));
+            if (item) {
+              const section = await ExtensionSection.findByPk(item.section_id);
+              if (section && section.slug) {
+                slug = section.slug;
+              }
             }
+          } catch (_) {
+            // fallback to general
           }
-        } catch (_) {
-          // fallback to general
         }
+        const name = `${slug}_${timestamp}_${randomName}${originalExt}`;
+        cb(null, name);
+      } catch (error) {
+        console.error('uploadMiddleware: error while determining filename', error);
+        try { cb(new Error('Error determining filename for upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
       }
-      const name = `${slug}_${timestamp}_${randomName}${originalExt}`;
-      cb(null, name);
-    } catch (error) {
-      console.error('uploadMiddleware: error while determining filename', error);
-      try { cb(new Error('Error determining filename for upload') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
-    }
     })().catch((uncaught) => {
       console.error('uploadMiddleware: unexpected error in filename async flow', uncaught);
       try { cb(new Error('Unexpected error preparing filename') as any, ''); } catch (cbErr) { /* ignore cb errors */ }
@@ -380,12 +380,12 @@ export const deleteFile = (filePath: string): boolean => {
     }
     resolvedPath = path.resolve(resolvedPath);
     const resolvedUploadsDir = path.resolve(uploadsDir);
-    
+
     if (!resolvedPath.startsWith(resolvedUploadsDir)) {
       console.error('Intento de eliminar archivo fuera del directorio uploads:', filePath);
       return false;
     }
-    
+
     if (fs.existsSync(resolvedPath)) {
       fs.unlinkSync(resolvedPath);
       if (process.env.NODE_ENV !== 'production') {
@@ -410,11 +410,11 @@ export const fileExists = (filePath: string): boolean => {
     }
     resolvedPath = path.resolve(resolvedPath);
     const resolvedUploadsDir = path.resolve(uploadsDir);
-    
+
     if (!resolvedPath.startsWith(resolvedUploadsDir)) {
       return false;
     }
-    
+
     return fs.existsSync(resolvedPath);
   } catch (error) {
     return false;
@@ -440,7 +440,7 @@ const ALLOWED_DOCUMENT_MIME_TYPES = {
 };
 
 // Verificar firmas de archivos de documentos
-const verifyDocumentFileType = (buffer: Buffer, mimetype: string): boolean => {
+export const verifyDocumentFileType = (buffer: Buffer, mimetype: string): boolean => {
   const signatures: { [key: string]: number[] } = {
     'application/pdf': [0x25, 0x50, 0x44, 0x46], // %PDF
     'application/zip': [0x50, 0x4B, 0x03, 0x04], // PK (también para docx, xlsx, pptx)
@@ -485,21 +485,23 @@ const secureStorageDocumentos = multer.diskStorage({
     const originalExt = path.extname(file.originalname).toLowerCase();
     const sanitizedOriginalName = file.originalname
       .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\.[^.]+$/, '') // Remover extensión del nombre sanitizado
       .substring(0, 50);
-    
-    const filename = `${timestamp}_${randomName}_${sanitizedOriginalName}`;
+
+    // IMPORTANTE: Incluir la extensión original al final del nombre
+    const filename = `${timestamp}_${randomName}_${sanitizedOriginalName}${originalExt}`;
     cb(null, filename);
   }
 });
 
 // Filtro de archivo para documentos
-const secureDocumentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+export const secureDocumentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedDocMimeTypes = Object.keys(ALLOWED_DOCUMENT_MIME_TYPES);
   const allowedImageTypes = Object.keys(ALLOWED_MIME_TYPES);
-  
+
   // Check if it's an image mime type
   const isImage = file.mimetype.startsWith('image/');
-  
+
   // Accept when it's a known document mimetype, or when it's a known allowed image
   if (!allowedDocMimeTypes.includes(file.mimetype) && !(isImage && allowedImageTypes.includes(file.mimetype))) {
     return cb(new Error(`Tipo de documento no permitido: ${file.mimetype}`));
@@ -568,7 +570,7 @@ const secureStorageExtensionDocuments = multer.diskStorage({
     const sanitizedOriginalName = file.originalname
       .replace(/[^a-zA-Z0-9._-]/g, '_')
       .substring(0, 50);
-    
+
     const filename = `${timestamp}_${randomName}_${sanitizedOriginalName}`;
     cb(null, filename);
   }
@@ -591,28 +593,28 @@ export const uploadExtensionDocuments = multer({
       'image/png',
       'image/webp'
     ];
-    
+
     if (!allowedTypes.includes(file.mimetype)) {
       return cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
     }
-    
+
     const ext = path.extname(file.originalname).toLowerCase();
     const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
-    
+
     if (!allowedExts.includes(ext)) {
       return cb(new Error(`Extensión no permitida: ${ext}`));
     }
-    
+
     // Validaciones de seguridad básicas
     const dangerousPatterns = [/\.\./, /[<>:"|?*]/, /\x00/];
     if (dangerousPatterns.some(pattern => pattern.test(file.originalname))) {
       return cb(new Error('Nombre de archivo contiene patrones no permitidos'));
     }
-    
+
     if (file.originalname.length > 255) {
       return cb(new Error('Nombre de archivo demasiado largo'));
     }
-    
+
     cb(null, true);
   }
 });
@@ -627,7 +629,7 @@ export const validateUploadedDocument = (req: Request, res: any, next: any) => {
   }
 
   const filePath = req.file.path;
-  
+
   try {
     const buffer = fs.readFileSync(filePath, { flag: 'r' });
     const isValidType = verifyDocumentFileType(buffer.slice(0, 20), req.file.mimetype);
@@ -658,7 +660,7 @@ export const validateUploadedDocument = (req: Request, res: any, next: any) => {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
-    
+
     return res.status(500).json({
       error: 'Error procesando archivo',
       message: 'No se pudo validar el archivo'
@@ -794,7 +796,7 @@ export const uploadHeroSlides = multer({
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -809,7 +811,7 @@ export const saveHeroSlideFile = (req: Request, res: Response, next: NextFunctio
   }
 
   const uploadPath = path.join(__dirname, '../../uploads/hero');
-  
+
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
@@ -860,7 +862,7 @@ export const uploadNoticias = multer({
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -875,7 +877,7 @@ export const saveNoticiaFile = (req: Request, res: Response, next: NextFunction)
   }
 
   const uploadPath = path.join(__dirname, '../../uploads/noticias');
-  
+
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
@@ -960,7 +962,7 @@ export const uploadAnuncios = multer({
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -975,7 +977,7 @@ export const saveAnuncioFile = (req: Request, res: Response, next: NextFunction)
   }
 
   const uploadPath = path.join(__dirname, '../../uploads/anuncios');
-  
+
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
@@ -1017,16 +1019,16 @@ export const uploadCarrera = multer({
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
-      'image/jpeg', 
-      'image/png', 
-      'image/webp', 
-      'image/gif', 
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
       'application/pdf',
       'video/mp4',
       'video/webm',
       'video/x-msvideo' // .avi
     ];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -1042,7 +1044,7 @@ export const uploadCarrera = multer({
 
 export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction) => {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  
+
   if (!files) {
     return next();
   }
@@ -1051,7 +1053,7 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
     // Guardar imagen (Carátula)
     if (files.imagen && files.imagen[0]) {
       const uploadPath = path.join(__dirname, '../../uploads/carreras/caratulas');
-      
+
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
@@ -1069,7 +1071,7 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
     // Guardar imagen portada (Cuadrícula)
     if (files.imagen_portada && files.imagen_portada[0]) {
       const uploadPath = path.join(__dirname, '../../uploads/carreras/portadas');
-      
+
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
@@ -1087,7 +1089,7 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
     // Guardar video
     if (files.video && files.video[0]) {
       const uploadPath = path.join(__dirname, '../../uploads/carreras/videos');
-      
+
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
@@ -1105,7 +1107,7 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
     // Guardar plan de estudios (PDF)
     if (files.plan_estudios && files.plan_estudios[0]) {
       const uploadPath = path.join(__dirname, '../../uploads/carreras/planes');
-      
+
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
@@ -1136,18 +1138,18 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
 export const checkCategoryArea = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const categoryId = req.body && req.body.ID_Categorias;
-    
+
     if (categoryId) {
       const { default: Categorias } = await import('../models/Categorias');
       const categoria = await Categorias.findByPk(categoryId);
-      
+
       // Allow images for area 10 (Promoción Institucional)
       if (categoria && categoria.ID_Area === 10) {
         // @ts-ignore - Add custom property to request
         req.allowImages = true;
       }
     }
-    
+
     next();
   } catch (error) {
     console.error('Error checking category area:', error);
