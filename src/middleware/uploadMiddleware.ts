@@ -1156,3 +1156,68 @@ export const checkCategoryArea = async (req: Request, res: Response, next: NextF
     next();
   }
 };
+
+// ============================================
+// CONFIGURACIÓN PARA BECAS (PDFs)
+// ============================================
+
+const secureStorageBecas = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/becas');
+
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const sanitizedOriginalName = file.originalname
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .substring(0, 50);
+
+    const filename = `beca_${timestamp}_${randomName}_${sanitizedOriginalName}${originalExt}`;
+    cb(null, filename);
+  }
+});
+
+export const uploadBecas = multer({
+  storage: secureStorageBecas,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB para PDFs
+    files: 1,
+    ...DEFAULT_LIMITS,
+    fields: 20
+  },
+  fileFilter: secureDocumentFileFilter // Solo PDFs
+});
+
+export const uploadBanner = multer({
+  storage: secureStorageExtension,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for banners/PDFs
+    files: 1,
+    ...DEFAULT_LIMITS
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow images and PDFs
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf'
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes y PDF.'));
+    }
+  }
+}).single('bannerUpload');
+
+

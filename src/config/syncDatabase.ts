@@ -20,9 +20,7 @@ import { PersonalCarrera } from '../models/PersonalCarrera';
 import { CarreraSimple } from '../models/CarreraSimple';
 import { OpcionReinscripcion } from '../models/OpcionReinscripcion';
 import { SeccionReinscripcion } from '../models/SeccionReinscripcion';
-import ProgramaDesarrollo from '../models/ProgramaDesarrollo';
-import Comite from '../models/Comite';
-import DocumentoComite from '../models/DocumentoComite';
+import BecaSection from '../models/BecaSection';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -54,9 +52,7 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     CarreraSimple,
     OpcionReinscripcion,
     SeccionReinscripcion,
-    ProgramaDesarrollo,
-    Comite,
-    DocumentoComite
+    BecaSection
   ];
 
   // Sincronizar modelos con la base de datos

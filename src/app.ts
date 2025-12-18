@@ -25,6 +25,7 @@ import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
 import organigramaRouter from './routes/organigrama';
 import extensionRouter from './routes/extensionRoutes';
+import becasRouter from './routes/becas';
 import comiteRouter from './routes/comiteRoutes';
 import programaDesarrolloRouter from './routes/programaDesarrolloRoutes';
 /* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
@@ -242,6 +243,7 @@ app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
 // Keep legacy short path
 app.use('/api/extension', extensionRouter);
+app.use('/api/becas', becasRouter);
 // Backwards compatibility: some clients expect /api/extension-universitaria
 app.use('/api/extension-universitaria', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
