@@ -137,7 +137,7 @@ app.use('/uploads',
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
-      
+
       // Headers CORS para archivos estáticos - Permitir desde cualquier origen
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -235,6 +235,8 @@ app.use('/api/video-institucional', videoInstitucionalRouter);
 app.use('/api/portal-estudiantes', portalEstudiantesRouter);
 app.use('/api/modelo-educativo', modeloEducativoRouter);
 app.use('/api/email', EmailRoute.routes);
+app.use('/api/quienes-somos/organigrama', organigramaRouter);
+app.use('/api/quienes-somos/calendario', calendarioRouter);
 // DEV ONLY: test upload endpoints to debug form field counts; not included in production bundles
 if (process.env.NODE_ENV !== 'production') {
   try {
