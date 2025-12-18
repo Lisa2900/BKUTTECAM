@@ -107,13 +107,35 @@ export class DocumentosService {
   // 6. Crear nueva categoría
   static async createCategory(nombre: string, areaId: number) {
     try {
+      // Verificar si ya existe una categoría con el mismo nombre en la misma área
+      const categoriaExistente = await Categorias.findOne({
+        where: {
+          Nombre: nombre,
+          ID_Area: areaId
+        }
+      });
+
+      if (categoriaExistente) {
+        const error = new Error('Ya existe una categoría con ese nombre en esta área');
+        (error as any).status = 409; // Conflict
+        throw error;
+      }
+
       const categoria = await Categorias.create({
         Nombre: nombre,
         ID_Area: areaId
       });
       return categoria;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear categoría:', error);
+      
+      // Si es un error de Sequelize por restricción única
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const err = new Error('Ya existe una categoría con ese nombre');
+        (err as any).status = 409;
+        throw err;
+      }
+      
       throw error;
     }
   }

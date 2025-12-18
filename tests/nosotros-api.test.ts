@@ -540,4 +540,54 @@ describe('Nosotros API', () => {
       expect(response.body).toHaveProperty('error', 'Sección inválida');
     });
   });
+
+  describe('POST /api/nosotros/upload-image', () => {
+    beforeEach(async () => {
+      // Crear contenido base para tests
+      const testContent = {
+        vision: { imageSrc: 'test.jpg', title: 'Visión', description: 'Test vision' },
+        mision: { imageSrc: 'test.jpg', title: 'Misión', description: 'Test mision' },
+        valores: { imageSrc: 'test.jpg', title: 'Valores', description: ['Valor 1', 'Valor 2'] },
+        politicaIntegral: { imageSrc: 'test.jpg', title: 'Política', description: 'Test politica' },
+        objetivoIntegral: 'Test objetivo',
+        noDiscriminacion: [['Test1'], ['Test2']]
+      };
+      await NosotrosContent.create(testContent);
+    });
+
+    test('should accept large JSON data up to 1MB on /upload-image (nosotros)', async () => {
+      // Build a long description string larger than the default 100KB but smaller than 1MB
+      const longDescription = 'a'.repeat(150 * 1024); // ~150KB
+
+      const longPayload = { title: 'Test long', description: longDescription };
+
+      const jpegBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00]); // minimal JPEG signature
+
+      const response = await request(app)
+        .post(`${API_PREFIX}/nosotros/upload-image`)
+        .set(authHeaders)
+        .attach('image', jpegBuffer, 'test.jpg')
+        .field('section', 'vision')
+        .field('data', JSON.stringify(longPayload))
+        .expect(200);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('section', 'vision');
+      expect(response.body).toHaveProperty('filename');
+    });
+
+    test('should reject large field on carreras endpoint with default limits', async () => {
+      // Use the dev test endpoint for carreras which uses uploadCarrera with default limits (100KB)
+      const veryLong = 'b'.repeat(150 * 1024);
+      const jpegBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00]);
+
+      const response = await request(app)
+        .post(`/api/_dev/tests/upload/carreras`)
+        .attach('imagen', jpegBuffer, 'test.jpg')
+        .field('title', veryLong)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error', 'Field value too long');
+    });
+  });
 });

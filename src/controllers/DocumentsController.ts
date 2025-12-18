@@ -133,9 +133,15 @@ export const crearCategoria = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: "El ID del área es requerido" });
     }
 
-    const nuevaCategoria = await DocumentosService.createCategory(Nombre, ID_Area);
+    const nuevaCategoria = await DocumentosService.createCategory(Nombre.trim(), ID_Area);
     res.status(201).json(nuevaCategoria);
-  } catch (error) {
+  } catch (error: any) {
+    // Manejar errores específicos
+    if (error.status === 409) {
+      return res.status(409).json({ 
+        message: error.message || "Ya existe una categoría con ese nombre en esta área" 
+      });
+    }
     next(error);
   }
 };
@@ -280,6 +286,16 @@ export const subirArchivo = async (req: Request, res: Response, next: NextFuncti
         deleteFile(filePath);
       }
       return res.status(404).json({ message: "Categoría no encontrada" });
+    }
+
+    // If file is an image, ensure the category belongs to Promoción area (ID 10)
+    if (req.file && req.file.mimetype && req.file.mimetype.startsWith('image/')) {
+      if (categoria.ID_Area !== 10) {
+        // Delete uploaded file
+        const filePath = path.join(__dirname, '../../', req.file.path);
+        deleteFile(filePath);
+        return res.status(400).json({ message: 'Imágenes solo permitidas para la categoría de Promoción Institucional' });
+      }
     }
 
     // El middleware ya agregó Ruta_Documento y Nombre al body

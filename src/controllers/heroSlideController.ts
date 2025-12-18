@@ -3,8 +3,13 @@ import HeroSlide from '../models/HeroSlide';
 
 export const getHeroSlides = async (req: Request, res: Response) => {
   try {
+    // Allow including inactive slides using a query param: ?includeInactive=true
+    const includeInactive = req.query.includeInactive === 'true';
+    const whereClause: any = {};
+    if (!includeInactive) whereClause.activo = true;
+
     const slides = await HeroSlide.findAll({
-      where: { activo: true },
+      where: whereClause,
       order: [['orden', 'ASC']],
     });
     res.json(slides);
@@ -16,6 +21,9 @@ export const getHeroSlides = async (req: Request, res: Response) => {
 
 export const createHeroSlide = async (req: Request, res: Response) => {
   try {
+    console.log('Incoming createHeroSlide request content-type:', req.headers['content-type']);
+    console.log('Incoming createHeroSlide has file:', !!req.file);
+    console.log('Incoming createHeroSlide body keys:', Object.keys(req.body || {}));
     const { titulo, tipo } = req.body;
     const file = req.file;
 
@@ -69,6 +77,21 @@ export const deleteHeroSlide = async (req: Request, res: Response) => {
     
     if (!slide) {
       return res.status(404).json({ error: 'Slide no encontrado' });
+    }
+
+    // Eliminar archivo físico si existe
+    if (slide.archivo) {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '../../uploads/hero', slide.archivo);
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`Archivo eliminado: ${filePath}`);
+        }
+      } catch (fileErr) {
+        console.warn(`No se pudo eliminar el archivo físico: ${filePath}`, fileErr);
+      }
     }
 
     await slide.destroy();

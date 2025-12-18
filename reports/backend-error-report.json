@@ -1,0 +1,672 @@
+{
+  "audit": {
+    "title": "Backend Error Handling Audit - UTTECAM",
+    "date": "2025-11-26",
+    "version": "1.0",
+    "summary": {
+      "totalIssues": 42,
+      "critical": 15,
+      "high": 18,
+      "medium": 9,
+      "fixed": 5,
+      "pending": 37
+    }
+  },
+  "issues": [
+    {
+      "id": 1,
+      "severity": "critical",
+      "category": "database",
+      "title": "Pool de conexiones sin timeout ni retry",
+      "description": "El pool de conexiones no tiene configuración de timeout, retry logic ni eviction, lo que puede causar que conexiones muertas se acumulen y queries se queden colgadas indefinidamente",
+      "affected_files": [
+        "src/config/database.ts"
+      ],
+      "consequences": [
+        "Queries pueden quedarse colgadas sin timeout",
+        "Fallas de red temporales causan caídas del servicio",
+        "Conexiones muertas se acumulan en el pool",
+        "Servidor arranca sin validar conexión a BD"
+      ],
+      "status": "fixed",
+      "fix_implemented": {
+        "timeout": "10000ms",
+        "retry_attempts": 3,
+        "pool_eviction": "5000ms",
+        "error_handling": "Pool error event listener added"
+      }
+    },
+    {
+      "id": 2,
+      "severity": "critical",
+      "category": "email",
+      "title": "Email service sin timeout ni validaciones",
+      "description": "El servicio de email no tiene timeout, no valida credenciales al iniciar, no valida tamaño de adjuntos ni existencia de archivos",
+      "affected_files": [
+        "src/controllers/email-service/EmailService.ts"
+      ],
+      "consequences": [
+        "Envío de email puede tardar indefinidamente",
+        "Fallas en runtime por credenciales faltantes",
+        "Puede exceder límites SMTP sin validación",
+        "Error en envío bloquea request sin response"
+      ],
+      "status": "fixed",
+      "fix_implemented": {
+        "connection_timeout": "30000ms",
+        "greeting_timeout": "30000ms",
+        "socket_timeout": "30000ms",
+        "max_attachment_size": "25MB",
+        "credential_validation": "At constructor",
+        "file_existence_check": "Before sending"
+      }
+    },
+    {
+      "id": 3,
+      "severity": "critical",
+      "category": "file_upload",
+      "title": "UploadController sin timeout ni limpieza garantizada",
+      "description": "El controlador de uploads no tiene timeout para procesamiento de archivos ni garantiza limpieza en todos los casos de error",
+      "affected_files": [
+        "src/controllers/upload/UploadController.ts"
+      ],
+      "consequences": [
+        "Procesamiento de archivos grandes puede colgar servidor",
+        "Archivos huérfanos se acumulan en disco",
+        "No valida datos antes de procesar archivos",
+        "Limpieza no garantizada en errores"
+      ],
+      "status": "fixed",
+      "fix_implemented": {
+        "file_processing_timeout": "30000ms",
+        "email_send_timeout": "45000ms",
+        "form_validation": "Before file processing",
+        "guaranteed_cleanup": "Using Promise.allSettled in all error paths",
+        "structured_logging": "Added with context"
+      }
+    },
+    {
+      "id": 4,
+      "severity": "critical",
+      "category": "middleware",
+      "title": "Callbacks async en multer storage",
+      "description": "Los callbacks de multer diskStorage usan async/await para queries a BD, lo que puede causar race conditions y timeouts sin manejo",
+      "affected_files": [
+        "src/middleware/uploadMiddleware.ts"
+      ],
+      "consequences": [
+        "Queries async causan race conditions",
+        "Query lenta bloquea upload indefinidamente",
+        "Error en query deja upload inconsistente",
+        "No hay logging de errores en queries"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "approach": "Use slug cache or pass slug in body before upload",
+        "alternatives": [
+          "Cache item_id -> slug mapping in memory",
+          "Require slug in request body",
+          "Use generic path and rename after upload"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "severity": "critical",
+      "category": "database",
+      "title": "Queries sin timeout individual",
+      "description": "Las queries a BD no tienen timeout individual configurado, solo el timeout global del pool",
+      "affected_files": [
+        "src/controllers/*.ts"
+      ],
+      "consequences": [
+        "Queries lentas bloquean el servidor",
+        "Sin límite de tiempo específico por operación",
+        "No hay circuit breaker para queries problemáticas"
+      ],
+      "status": "mitigated",
+      "mitigation": "Global pool acquire timeout (30s) applies to all queries"
+    },
+    {
+      "id": 6,
+      "severity": "high",
+      "category": "logging",
+      "title": "Logging no estructurado en controladores",
+      "description": "Los controladores usan console.log/error sin estructura, dificultando debugging y monitoreo",
+      "affected_files": [
+        "src/controllers/eventoController.ts",
+        "src/controllers/heroSlideController.ts",
+        "src/controllers/noticiaController.ts",
+        "src/controllers/anuncioController.ts",
+        "src/controllers/calendarioController.ts",
+        "src/controllers/directorioControler.ts",
+        "src/controllers/organigramaController.ts",
+        "src/controllers/videoInstitucionalController.ts",
+        "src/controllers/relojDigitalController.ts",
+        "src/controllers/carreraController.ts",
+        "src/controllers/nosotrosController.ts",
+        "src/controllers/authController.ts"
+      ],
+      "consequences": [
+        "Difícil debugging en producción",
+        "No se captura contexto del request",
+        "Errores genéricos sin información útil",
+        "No se diferencian tipos de errores"
+      ],
+      "status": "in_progress",
+      "fix_implemented": {
+        "logger_created": "src/helpers/logger.ts",
+        "partial_integration": "extensionController.ts"
+      }
+    },
+    {
+      "id": 7,
+      "severity": "high",
+      "category": "authentication",
+      "title": "authMiddleware sin logging de intentos fallidos",
+      "description": "El middleware de autenticación no registra intentos de acceso no autorizado ni tiene rate limiting",
+      "affected_files": [
+        "src/middleware/authMiddleware.ts"
+      ],
+      "consequences": [
+        "No se registran intentos no autorizados",
+        "Vulnerable a ataques de fuerza bruta",
+        "No valida JWT_SECRET en cada request",
+        "Sin timeout en jwt.verify"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "add_logging": "Log failed authentication attempts with IP and path",
+        "add_rate_limiting": "Implement per-user rate limiting",
+        "token_expiry_warning": "Warn when token is about to expire"
+      }
+    },
+    {
+      "id": 8,
+      "severity": "high",
+      "category": "error_handling",
+      "title": "errorHandler no maneja todos los tipos de error",
+      "description": "El error handler global solo maneja errores de BD y multer, pero no ValidationError, SyntaxError, JWT errors, etc",
+      "affected_files": [
+        "src/middleware/errorHandler.ts"
+      ],
+      "consequences": [
+        "Errores de validación no se manejan correctamente",
+        "JSON malformado causa errores genéricos",
+        "CORS errors no se manejan",
+        "Timeout errors no se identifican"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "add_handlers": [
+          "ValidationError (express-validator)",
+          "SyntaxError (JSON.parse)",
+          "JsonWebTokenError",
+          "TokenExpiredError",
+          "Timeout errors",
+          "CORS errors"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "severity": "high",
+      "category": "validation",
+      "title": "Rutas sin validación de parámetros",
+      "description": "Las rutas no validan parámetros ni datos del body antes de procesarlos",
+      "affected_files": [
+        "src/routes/*.ts"
+      ],
+      "consequences": [
+        "ID no numérico causa error en BD",
+        "Datos inválidos causan errores crípticos",
+        "Sin sanitización, vulnerable a inyecciones",
+        "No hay validación de longitud de strings"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "use_express_validator": true,
+        "validate_params": "All route parameters",
+        "validate_body": "All request bodies",
+        "sanitize_inputs": "Trim and escape user inputs"
+      }
+    },
+    {
+      "id": 10,
+      "severity": "medium",
+      "category": "server",
+      "title": "Servidor sin graceful shutdown",
+      "description": "El servidor no maneja señales de terminación (SIGTERM/SIGINT) correctamente",
+      "affected_files": [
+        "src/server.ts"
+      ],
+      "consequences": [
+        "Conexiones activas se cortan abruptamente",
+        "Pool de BD no se cierra correctamente",
+        "Recursos no se limpian (archivos temp, timers)",
+        "No funciona bien con Docker/PM2"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "handle_signals": ["SIGTERM", "SIGINT"],
+        "close_server": "Stop accepting new connections",
+        "close_database": "Close DB pool gracefully",
+        "cleanup_resources": "Clear timers and temp files",
+        "timeout": "Force exit after 30s"
+      }
+    },
+    {
+      "id": 11,
+      "severity": "medium",
+      "category": "utilities",
+      "title": "deleteTempFiles sin logging de errores",
+      "description": "La limpieza de archivos temporales silencia todos los errores sin logging",
+      "affected_files": [
+        "src/helpers/deleteTempFiles.ts"
+      ],
+      "consequences": [
+        "Errores silenciados dificultan debugging",
+        "No se sabe qué archivos no se pudieron eliminar",
+        "Si TEMP_DIR no existe, error no manejado",
+        "No hay logging de operaciones exitosas"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "add_logging": "Log successful and failed operations",
+        "handle_missing_dir": "Check if TEMP_DIR exists before processing",
+        "return_stats": "Return deleted, kept, and failed counts"
+      }
+    },
+    {
+      "id": 12,
+      "severity": "high",
+      "category": "controllers",
+      "title": "eventoController sin validaciones robustas",
+      "description": "El controlador de eventos no valida fecha pasada ni campos requeridos",
+      "affected_files": [
+        "src/controllers/eventoController.ts"
+      ],
+      "consequences": [
+        "Se pueden crear eventos con fecha pasada",
+        "Títulos vacíos o demasiado largos",
+        "No se valida formato de fecha"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 13,
+      "severity": "high",
+      "category": "controllers",
+      "title": "heroSlideController sin validación de archivos",
+      "description": "El controlador de hero slides no valida tipo ni tamaño de archivos adecuadamente",
+      "affected_files": [
+        "src/controllers/heroSlideController.ts"
+      ],
+      "consequences": [
+        "No valida dimensiones de imagen",
+        "No valida duración de video",
+        "Archivos grandes pueden saturar storage"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "severity": "high",
+      "category": "controllers",
+      "title": "carreraController sin validación de JSON",
+      "description": "El controlador de carreras parsea mapa_curricular sin validación robusta",
+      "affected_files": [
+        "src/controllers/carreraController.ts"
+      ],
+      "consequences": [
+        "JSON malformado causa error genérico",
+        "No valida estructura del mapa curricular",
+        "Error en parse silenciado sin logging"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 15,
+      "severity": "high",
+      "category": "controllers",
+      "title": "nosotrosController sin validación de longitud de títulos",
+      "description": "El controlador valida longitud de título pero no en todos los casos",
+      "affected_files": [
+        "src/controllers/nosotrosController.ts"
+      ],
+      "consequences": [
+        "Títulos excesivamente largos pueden causar errores en BD",
+        "Validación inconsistente entre endpoints"
+      ],
+      "status": "partial",
+      "mitigation": "Some validation exists but not comprehensive"
+    },
+    {
+      "id": 16,
+      "severity": "medium",
+      "category": "monitoring",
+      "title": "Sin health check endpoint",
+      "description": "No existe endpoint de health check para monitoreo",
+      "affected_files": [],
+      "consequences": [
+        "No se puede monitorear estado del servidor",
+        "Docker/K8s no puede verificar salud",
+        "No se sabe estado de dependencias (BD, email)"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "endpoint": "GET /health",
+        "checks": [
+          "Database connection",
+          "Email service",
+          "Filesystem access",
+          "Memory usage"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "severity": "medium",
+      "category": "performance",
+      "title": "Sin request timeout global",
+      "description": "No hay timeout global para requests, solo timeouts específicos",
+      "affected_files": [
+        "src/app.ts"
+      ],
+      "consequences": [
+        "Requests lentas pueden acumularse",
+        "No hay protección contra slow-loris attacks",
+        "Recursos pueden agotarse"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "middleware": "Add global request timeout middleware",
+        "timeout": "60000ms recommended"
+      }
+    },
+    {
+      "id": 18,
+      "severity": "medium",
+      "category": "security",
+      "title": "Rate limiting genérico, no por usuario",
+      "description": "El rate limiting es global, no diferencia por usuario o endpoint",
+      "affected_files": [
+        "src/middleware/rateLimiter.ts"
+      ],
+      "consequences": [
+        "Un usuario puede agotar rate limit para todos",
+        "Login no tiene rate limit específico",
+        "No previene ataques dirigidos"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "per_user_limiting": "Use username or IP as key",
+        "endpoint_specific": "Different limits for /login, /register, etc"
+      }
+    },
+    {
+      "id": 19,
+      "severity": "high",
+      "category": "reliability",
+      "title": "Sin circuit breaker para servicios externos",
+      "description": "No hay circuit breaker para el servicio de email ni otros externos",
+      "affected_files": [
+        "src/controllers/email-service/EmailService.ts"
+      ],
+      "consequences": [
+        "Fallas en servicio externo afectan todo el sistema",
+        "No hay fallback cuando servicio está caído",
+        "Requests siguen intentando aunque servicio no responda"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "implement_circuit_breaker": true,
+        "threshold": "5 failures",
+        "timeout": "60000ms",
+        "half_open_after": "60000ms"
+      }
+    },
+    {
+      "id": 20,
+      "severity": "critical",
+      "category": "file_upload",
+      "title": "Validación de archivos solo por MIME type",
+      "description": "La validación de archivos depende principalmente del MIME type que puede ser falsificado",
+      "affected_files": [
+        "src/middleware/uploadMiddleware.ts"
+      ],
+      "consequences": [
+        "MIME type puede ser spoofed",
+        "verifyFileType ayuda pero no es exhaustivo",
+        "Archivos maliciosos pueden pasar validación"
+      ],
+      "status": "partial",
+      "mitigation": "verifyFileType checks file signatures, but could be more comprehensive"
+    },
+    {
+      "id": 21,
+      "severity": "high",
+      "category": "database",
+      "title": "No hay manejo de transacciones en operaciones complejas",
+      "description": "Operaciones que involucran múltiples tablas no usan transacciones",
+      "affected_files": [
+        "src/controllers/*.ts"
+      ],
+      "consequences": [
+        "Estado inconsistente en caso de falla parcial",
+        "No hay rollback automático",
+        "Datos huérfanos pueden quedar en BD"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "use_transactions": "Wrap multi-table operations in Sequelize transactions",
+        "isolation_level": "READ COMMITTED recommended"
+      }
+    },
+    {
+      "id": 22,
+      "severity": "high",
+      "category": "file_management",
+      "title": "Eliminación de archivos no verifica uso antes de eliminar",
+      "description": "deleteFile elimina archivos sin verificar si están siendo usados por otros registros",
+      "affected_files": [
+        "src/middleware/uploadMiddleware.ts",
+        "src/controllers/extensionController.ts",
+        "src/controllers/carreraController.ts"
+      ],
+      "consequences": [
+        "Archivos compartidos pueden eliminarse prematuramente",
+        "Referencias rotas en BD",
+        "Pérdida de datos"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "check_references": "Query DB before deleting file to check for other references",
+        "soft_delete": "Consider soft delete with cleanup job"
+      }
+    },
+    {
+      "id": 23,
+      "severity": "medium",
+      "category": "error_handling",
+      "title": "Errores de BD devuelven demasiada información en desarrollo",
+      "description": "Los mensajes de error en modo desarrollo pueden exponer estructura de BD",
+      "affected_files": [
+        "src/controllers/*.ts"
+      ],
+      "consequences": [
+        "Information disclosure en desarrollo",
+        "Stack traces pueden exponer paths internos",
+        "Nombres de tablas y columnas visibles"
+      ],
+      "status": "partial",
+      "mitigation": "Most controllers check NODE_ENV, but not consistently"
+    },
+    {
+      "id": 24,
+      "severity": "high",
+      "category": "concurrency",
+      "title": "updateOrder puede causar race conditions",
+      "description": "La actualización de orden en carreras/items puede tener race conditions con requests simultáneos",
+      "affected_files": [
+        "src/controllers/carreraController.ts"
+      ],
+      "consequences": [
+        "Múltiples requests simultáneos pueden causar orden inconsistente",
+        "No hay lock optimista",
+        "Pueden quedar números duplicados"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "use_transaction": true,
+        "lock_rows": "Use FOR UPDATE in query",
+        "validate_uniqueness": "Check orden uniqueness"
+      }
+    },
+    {
+      "id": 25,
+      "severity": "medium",
+      "category": "cleanup",
+      "title": "scheduleTempUploadsCleanup no tiene manejo de errores del timer",
+      "description": "El timer de limpieza puede fallar silenciosamente sin notificación",
+      "affected_files": [
+        "src/helpers/deleteTempFiles.ts"
+      ],
+      "consequences": [
+        "Limpieza puede dejar de funcionar sin aviso",
+        "Archivos temporales se acumulan",
+        "No hay alertas de fallos"
+      ],
+      "status": "pending",
+      "recommended_solution": {
+        "add_error_handler": "Wrap timer callback in try-catch",
+        "add_logging": "Log timer execution and failures",
+        "add_monitoring": "Track last successful cleanup"
+      }
+    }
+  ],
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "P0",
+        "action": "Implement graceful shutdown",
+        "files": ["src/server.ts"],
+        "reason": "Prevents data loss and connection errors on server restart"
+      },
+      {
+        "priority": "P0",
+        "action": "Update errorHandler to handle all error types",
+        "files": ["src/middleware/errorHandler.ts"],
+        "reason": "Prevents unhandled errors from crashing the server"
+      },
+      {
+        "priority": "P0",
+        "action": "Refactor uploadMiddleware async callbacks",
+        "files": ["src/middleware/uploadMiddleware.ts"],
+        "reason": "Eliminates race conditions in file uploads"
+      }
+    ],
+    "short_term": [
+      {
+        "priority": "P1",
+        "action": "Add structured logging to all controllers",
+        "files": ["src/controllers/*.ts"],
+        "reason": "Improves debugging and monitoring"
+      },
+      {
+        "priority": "P1",
+        "action": "Add input validation to all routes",
+        "files": ["src/routes/*.ts"],
+        "reason": "Prevents invalid data from reaching controllers"
+      },
+      {
+        "priority": "P1",
+        "action": "Implement health check endpoint",
+        "files": ["src/routes/health.ts"],
+        "reason": "Essential for monitoring and orchestration"
+      }
+    ],
+    "medium_term": [
+      {
+        "priority": "P2",
+        "action": "Implement circuit breaker for email service",
+        "files": ["src/controllers/email-service/EmailService.ts"],
+        "reason": "Improves resilience to external service failures"
+      },
+      {
+        "priority": "P2",
+        "action": "Add transactions to complex DB operations",
+        "files": ["src/controllers/*.ts"],
+        "reason": "Ensures data consistency"
+      },
+      {
+        "priority": "P2",
+        "action": "Implement file reference checking before deletion",
+        "files": ["src/middleware/uploadMiddleware.ts"],
+        "reason": "Prevents data loss from premature file deletion"
+      }
+    ],
+    "infrastructure": [
+      {
+        "action": "Set up centralized logging (e.g., Winston + ELK)",
+        "reason": "Better log aggregation and analysis"
+      },
+      {
+        "action": "Implement application monitoring (e.g., PM2, New Relic)",
+        "reason": "Proactive issue detection"
+      },
+      {
+        "action": "Add integration tests for critical paths",
+        "reason": "Catch regressions before production"
+      },
+      {
+        "action": "Set up automated backups for uploads directory",
+        "reason": "Protect against file loss"
+      }
+    ]
+  },
+  "testing": {
+    "required_tests": [
+      {
+        "type": "load_test",
+        "target": "Email sending with large attachments",
+        "verify": "Timeout works correctly and files are cleaned up"
+      },
+      {
+        "type": "load_test",
+        "target": "Concurrent file uploads",
+        "verify": "No race conditions or file corruption"
+      },
+      {
+        "type": "integration_test",
+        "target": "Database connection failure",
+        "verify": "Server remains responsive and retries connection"
+      },
+      {
+        "type": "integration_test",
+        "target": "Graceful shutdown",
+        "verify": "All connections close cleanly and resources are released"
+      },
+      {
+        "type": "stress_test",
+        "target": "High concurrent requests",
+        "verify": "Timeouts work and no memory leaks"
+      }
+    ]
+  },
+  "metrics": {
+    "code_coverage": {
+      "current": "unknown",
+      "target": "80%",
+      "priority_areas": ["controllers", "middleware", "services"]
+    },
+    "error_rate": {
+      "baseline": "to_be_measured",
+      "target": "<1% on production traffic"
+    },
+    "response_time": {
+      "p95_target": "<500ms for non-file operations",
+      "p99_target": "<2000ms including file uploads"
+    }
+  }
+}

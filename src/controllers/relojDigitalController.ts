@@ -17,6 +17,7 @@ export const getRelojDigital = async (req: Request, res: Response) => {
         mostrarDiaSemana: true,
         activo: true,
         estilo: 'digital' as const,
+        tema: 'light' as const,
       };
 
       return res.json({

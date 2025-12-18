@@ -1,0 +1,75 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "logs\\.b1b34a840dd79dc87cd1882c00ae06c7565bde3f-audit.json",
+    "files": [
+        {
+            "date": 1763665331001,
+            "name": "logs\\security-2025-11-20.log",
+            "hash": "7982f1a047694a39937f7de78a7bae6b7e0580aa7a5872d1d8c5d731ee45c7d2"
+        },
+        {
+            "date": 1763753055050,
+            "name": "logs\\security-2025-11-21.log",
+            "hash": "05c9103c0ac6c38713c1ed1e5a98ca00cb62f5869ec2c642d05f5718c3dfb28e"
+        },
+        {
+            "date": 1763831654836,
+            "name": "logs\\security-2025-11-22.log",
+            "hash": "36ee326265d8688109b2657a17365e7a07ebde94de7c7387532ce0b2cf98aa74"
+        },
+        {
+            "date": 1763901103526,
+            "name": "logs\\security-2025-11-23.log",
+            "hash": "36d3f4c3f5c1da70a28c880e897b6169c1f868268280f2a7aaf4f27eb955cd4c"
+        },
+        {
+            "date": 1764003974496,
+            "name": "logs\\security-2025-11-24.log",
+            "hash": "416982252edc960ad212ab818141a85dd467f424697beeca93397a8e7eaa5fbf"
+        },
+        {
+            "date": 1764084065839,
+            "name": "logs\\security-2025-11-25.log",
+            "hash": "485c676e90c90dd411a88cb5a9df6a9ca1dd6c6d247fbed7c5987ee12eeb949c"
+        },
+        {
+            "date": 1764137927528,
+            "name": "logs\\security-2025-11-26.log",
+            "hash": "d21f54eb7d4289d371c7f9f81b243d12c1659256e34a64a258d607f8286ee681"
+        },
+        {
+            "date": 1764277318210,
+            "name": "logs\\security-2025-11-27.log",
+            "hash": "96e20e01d5696d662f169df1333b72cc3951025dafe3c6869f8349f4c9d885ac"
+        },
+        {
+            "date": 1764346455316,
+            "name": "logs\\security-2025-11-28.log",
+            "hash": "2fdab76e64d76e3f1c41ccf999d70a9557d1c8160f170f0cf553080a76edec2d"
+        },
+        {
+            "date": 1764615795453,
+            "name": "logs\\security-2025-12-01.log",
+            "hash": "fa1490653b29fb3673f177927c886ff0488b3dc3ef2d540f76b558f5bc5a76c4"
+        },
+        {
+            "date": 1765301966301,
+            "name": "logs\\security-2025-12-09.log",
+            "hash": "ca078d19f745605a42cb6652555caf8448579a76e79ac2f2bc4b40d5d4296053"
+        },
+        {
+            "date": 1765391287847,
+            "name": "logs\\security-2025-12-10.log",
+            "hash": "c228b3f973df97ab6fa294720dcaf756cec6bd4b01cecdf810d0574b54b83bdc"
+        },
+        {
+            "date": 1765826309950,
+            "name": "logs/security-2025-12-15.log",
+            "hash": "58a13dfb6733053c7f4b81a13826ec16df87664615ffbd951ab3f636b4e55224"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -8,7 +8,11 @@ package-lock.json
 # Production build
 dist/
 build/
+
+# JavaScript files (except scripts/ folder for production seeds)
 *.js
+!scripts/*.js
+!scripts/**/*.js
 *.js.map
 
 # Environment variables
@@ -75,3 +79,12 @@ ppt/
 pptx/
 
 uploads/
+
+#documentos
+*.pdf
+*.doc
+*.docx   
+#imagenes
+*.jpg
+*.png
+*.gif

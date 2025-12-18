@@ -59,7 +59,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   // Método para resetear intentos fallidos
   public async resetFailedAttempts(): Promise<void> {
     this.failedLoginAttempts = 0;
-    this.lockedUntil = undefined;
+    this.lockedUntil = null as any; // Establecer null explícitamente para limpiar el campo en la BD
     this.lastLogin = new Date();
     await this.save();
   }

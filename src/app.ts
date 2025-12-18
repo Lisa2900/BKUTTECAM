@@ -19,12 +19,15 @@ import routerDocumentos from './routes/Documentos';
 import carreraRouter from './routes/carrera';
 import heroSlideRouter from './routes/heroSlide';
 import eventoRouter from './routes/evento';
-import relojDigitalRouter from './routes/relojDigital';
 import noticiaRouter from './routes/noticia';
 import anuncioRouter from './routes/anuncio';
 import calendarioRouter from './routes/calendario';
 import organigramaRouter from './routes/organigrama';
+import extensionRouter from './routes/extensionRoutes';
+/* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
 import videoInstitucionalRouter from './routes/videoInstitucional';
+import portalEstudiantesRouter from './routes/portalEstudiantes';
+import modeloEducativoRouter from './routes/modeloEducativo';
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -66,6 +69,7 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:5173',
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx',
@@ -84,7 +88,7 @@ app.options('*', cors(corsOptions));
 // 6. PARSERS DE BODY (excluir rutas de upload del parsing JSON)
 app.use((req, res, next) => {
   // Solo aplicar JSON parser a rutas que no sean de upload
-  if (!req.path.includes('/upload-image') && !req.path.includes('/upload')) {
+  if (!req.path.includes('/upload-image') && !req.path.includes('/upload') && !req.path.includes('/api/hero-slides')) {
     express.json({
       limit: '1mb',
       strict: true
@@ -126,7 +130,9 @@ app.use('/uploads',
         // Videos
         '.mp4', '.webm', '.ogg',
         // Documentos
-        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
+        // Temporal para hero slides mal guardados
+        '.bin'
       ];
       const fileExtension = require('path').extname(path).toLowerCase();
 
@@ -138,6 +144,7 @@ app.use('/uploads',
       // Headers de seguridad para archivos estáticos
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Access-Control-Allow-Origin', '*'); // Permitir desde cualquier origen para archivos estáticos
+
 
       // Headers CORS para archivos estáticos - Permitir desde cualquier origen
       res.setHeader('Access-Control-Allow-Origin', '*');
@@ -165,6 +172,18 @@ app.use('/uploads',
       } else {
         res.setHeader('Cache-Control', 'private, max-age=3600'); // Documentos: 1 hora
       }
+    }
+  })
+);
+
+// Servir carpeta public también
+app.use('/public',
+  express.static(path.join(__dirname, '../public'), {
+    dotfiles: 'deny',
+    index: false,
+    setHeaders: (res, path) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     }
   })
 );
@@ -212,12 +231,17 @@ app.use('/api/documentos', routerDocumentos);
 app.use('/api/carreras', carreraRouter);
 app.use('/api/hero-slides', heroSlideRouter);
 app.use('/api/eventos', eventoRouter);
-app.use('/api/reloj-digital', relojDigitalRouter);
 app.use('/api/noticias', noticiaRouter);
 app.use('/api/anuncios', anuncioRouter);
 app.use('/api/calendarios', calendarioRouter);
 app.use('/api/organigrama', organigramaRouter);
+// Keep legacy short path
+app.use('/api/extension', extensionRouter);
+// Backwards compatibility: some clients expect /api/extension-universitaria
+app.use('/api/extension-universitaria', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
+app.use('/api/portal-estudiantes', portalEstudiantesRouter);
+app.use('/api/modelo-educativo', modeloEducativoRouter);
 app.use('/api/upload', EmailRoute.routes);
 app.use('/api/servicios-escolares', ProcesoAdmisionRoute.routes);
 app.use('/api/servicios-escolares', TramitesRoute.routes);
@@ -227,6 +251,23 @@ app.use('/api/personal-carreras', PersonalCarreraRoute);
 app.use('/api/carreras-simples', CarreraSimpleRoute);
 app.use('/api/opciones-reinscripcion', OpcionReinscripcionRoute);
 
+app.use('/api/quienes-somos/organigrama', organigramaRouter);
+app.use('/api/quienes-somos/calendario', calendarioRouter);
+// DEV ONLY: test upload endpoints to debug form field counts; not included in production bundles
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    // Require at runtime to avoid TypeScript build errors if the file doesn't exist in production build
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const testUploadRouter = require('./routes/testUpload').default;
+    if (testUploadRouter) {
+      app.use('/api/_dev/tests/upload', testUploadRouter);
+    }
+  } catch (err) {
+    // If the dev route isn't provided, log a warning and continue without failing the build
+    // eslint-disable-next-line no-console
+    console.warn('Dev testUpload route not available:', (err as Error)?.message || err);
+  }
+}
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

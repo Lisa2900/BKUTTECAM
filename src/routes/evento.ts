@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as eventoController from '../controllers/eventoController';
 import { authenticateToken } from '../middleware/authMiddleware';
+import { uploadMiddleware, validateUploadedFile } from '../middleware/uploadMiddleware';
 
 const router = Router();
 
@@ -12,12 +13,16 @@ router.get('/activo', eventoController.getEventoActivo);
 router.post(
   '/',
   authenticateToken,
+  uploadMiddleware.single('imagen_fondo'),
+  validateUploadedFile,
   eventoController.createEvento
 );
 
 router.put(
   '/:id',
   authenticateToken,
+  uploadMiddleware.single('imagen_fondo'),
+  validateUploadedFile,
   eventoController.updateEvento
 );
 
