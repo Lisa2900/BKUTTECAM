@@ -10,6 +10,7 @@ interface BolsaTrabajoHeaderAttributes {
   imagen_banner: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  items?: any[]; // Asociación
 }
 
 interface BolsaTrabajoHeaderCreationAttributes extends Optional<BolsaTrabajoHeaderAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
@@ -22,6 +23,9 @@ class BolsaTrabajoHeader extends Model<BolsaTrabajoHeaderAttributes, BolsaTrabaj
   public imagen_banner!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+  
+  // Asociaciones
+  public readonly items?: any[];
 }
 
 BolsaTrabajoHeader.init({

@@ -1222,10 +1222,39 @@ export const saveMovilidadInternacionalFiles = (req: Request, res: Response, nex
 
     fs.writeFileSync(filePath, file.buffer);
     (req as any).savedFilePath = `movilidad-internacional/${filename}`;
-    
+
     next();
   } catch (error) {
     console.error('Error al guardar archivo:', error);
     next(error);
   }
 };
+
+// Exports adicionales para compatibilidad con código remoto
+export const uploadMiddleware = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 1
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  }
+});
+export const uploadBecas = uploadPdf('becas');
+export const uploadBanner = uploadPdf('becas-banner');
+export const uploadExtension = uploadNosotros;
+export const uploadExtensionDocuments = uploadDocumentos;
+export const uploadModelo = uploadPdf('modelo-educativo');
+export const saveModeloFile = saveNoticiaFile;
+export const checkCategoryArea = async (req: any, res: any, next: any) => {
+  next();
+};
+
+// Exportar funciones existentes que están como const locales
+export { verifyDocumentFileType, secureDocumentFileFilter };

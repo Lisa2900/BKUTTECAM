@@ -18,6 +18,9 @@ class Comite extends Model<ComiteAttributes, ComiteCreationAttributes> implement
     public titulo!: string;
     public descripcion?: string;
     public activo!: boolean;
+    
+    // Asociaciones
+    public readonly documentos?: any[];
 }
 
 Comite.init(
