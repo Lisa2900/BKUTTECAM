@@ -1,14 +1,9 @@
-<<<<<<< Updated upstream
-// Cargar variables de entorno lo antes posible para que `app` use la configuración
-import 'dotenv/config';
-=======
 import dotenv from 'dotenv';
 import path from 'path';
 
 // Cargar configuración explícitamente
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
->>>>>>> Stashed changes
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
 import { ensureExtensionAreas } from './startup/ensureExtensionAreas';

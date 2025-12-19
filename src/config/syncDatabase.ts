@@ -10,7 +10,6 @@ import Noticia from '../models/Noticia';
 import Anuncio from '../models/Anuncio';
 import Carrera from '../models/Carrera';
 import VideoInstitucional from '../models/VideoInstitucional';
-<<<<<<< Updated upstream
 import ModeloEducativo from '../models/ModeloEducativo';
 import { ProcesoAdmision } from '../models/ProcesoAdmision';
 import { TramitesVista } from '../models/TramitesVista';
@@ -22,7 +21,6 @@ import { CarreraSimple } from '../models/CarreraSimple';
 import { OpcionReinscripcion } from '../models/OpcionReinscripcion';
 import { SeccionReinscripcion } from '../models/SeccionReinscripcion';
 import BecaSection from '../models/BecaSection';
-=======
 import RelojDigital from '../models/RelojDigital';
 import EstadiaDocumento from '../models/EstadiaDocumento';
 import TipoEstadia from '../models/TipoEstadia';
@@ -41,7 +39,6 @@ import EncuentroEgresados from '../models/EncuentroEgresados';
 import EntidadCertificacionEvaluacion from '../models/EntidadCertificacionEvaluacion';
 import MiembroSniiTipo from '../models/MiembroSniiTipo';
 import MiembroSNII from '../models/MiembroSNII';
->>>>>>> Stashed changes
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -63,8 +60,7 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     Anuncio,
     Carrera,
     VideoInstitucional,
-<<<<<<< Updated upstream
-    // RelojDigital, // Eliminado del registro de modelos
+    RelojDigital,
     ModeloEducativo,
     ProcesoAdmision,
     TramitesVista,
@@ -75,9 +71,7 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     CarreraSimple,
     OpcionReinscripcion,
     SeccionReinscripcion,
-    BecaSection
-=======
-    RelojDigital,
+    BecaSection,
     EstadiaDocumento,
     TipoEstadia,
     ServicioTecnologico,
@@ -94,7 +88,6 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     EncuentroEgresados,
     MiembroSniiTipo,
     MiembroSNII,
->>>>>>> Stashed changes
   ];
 
   // Sincronizar modelos con la base de datos
