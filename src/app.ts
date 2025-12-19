@@ -30,8 +30,29 @@ import comiteRouter from './routes/comiteRoutes';
 import programaDesarrolloRouter from './routes/programaDesarrolloRoutes';
 /* Dev-only test upload router is dynamically required at runtime to avoid build-time dependency errors when the route file is missing. */
 import videoInstitucionalRouter from './routes/videoInstitucional';
+<<<<<<< Updated upstream
 import portalEstudiantesRouter from './routes/portalEstudiantes';
 import modeloEducativoRouter from './routes/modeloEducativo';
+=======
+import estadiaRouter from './routes/estadiaRoutes';
+import tipoEstadiaRouter from './routes/tipoEstadiaRoutes';
+import servicioTecnologicoRouter from './routes/servicioTecnologico';
+import miembroSniiRouter from './routes/miembroSnii';
+import miembroSniiTipoRouter from './routes/miembroSniiTipoRoutes';
+import productoInvestigacionRouter from './routes/productoInvestigacionRoutes';
+import seminarioCafeRouter from './routes/seminarioCafeRoutes';
+import vinculacionBannerRouter from './routes/vinculacionBannerRoutes';
+import practicasEstadiasBannerRouter from './routes/practicasEstadiasBannerRoutes';
+import educacionContinuaRouter from './routes/educacionContinuaRoutes';
+import servicioSocialRouter from './routes/servicioSocialRoutes';
+import servicioSocialTipoRouter from './routes/servicioSocialTipoRoutes';
+import servicioTecnologicoRealizadoRouter from './routes/servicioTecnologicoRealizadoRoutes';
+import movilidadInternacionalRouter from './routes/movilidadInternacionalRoutes';
+import bolsaTrabajoRouter from './routes/bolsaTrabajoRoutes';
+import encuentroEgresadosRouter from './routes/encuentroEgresadosRoutes';
+import entidadCertificacionEvaluacionRouter from './routes/entidadCertificacionEvaluacionRoutes';
+
+>>>>>>> Stashed changes
 
 
 // Ruta temporal para formularios (puede expandirse luego)
@@ -73,14 +94,20 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000',
     'http://localhost:3001',
+<<<<<<< Updated upstream
     'http://localhost:5173',
+=======
+    'http://localhost:5173', // Vite dev server, used by UTTECAM
+    'http://localhost:5174',
+    'http://localhost:5175',
+>>>>>>> Stashed changes
     'https://api.uttecam.edu.mx',
     'https://uttecam.edu.mx',
     'https://www.uttecam.edu.mx',
     'http://localhost:5174',
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Accept', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Accept', 'X-Requested-With', 'Cache-Control', 'Pragma'],
   credentials: false, // Importante: no permitir credenciales para mayor seguridad
   maxAge: 86400 // Cache preflight por 24 horas
 };
@@ -171,6 +198,22 @@ app.use('/uploads',
         res.setHeader('Content-Type', 'application/vnd.ms-powerpoint');
       }
 
+      // Remove global X-Frame-Options to allow embedding PDF in known clients
+      // Note: Helmet sets X-Frame-Options globally; we remove it for uploads only
+      try { res.removeHeader('X-Frame-Options'); } catch (e) { /* ignore */ }
+
+      // Allow specific origins to embed documents in an iframe via CSP frame-ancestors
+      // This header will override the global CSP set by helmet for this route
+      const allowedFrameAncestors = [
+        "'self'",
+        'https://www.uttecam.edu.mx',
+        'https://uttecam.edu.mx',
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:5175'
+      ];
+      res.setHeader('Content-Security-Policy', `frame-ancestors ${allowedFrameAncestors.join(' ')};`);
+
       // Cache diferente según tipo de archivo
       const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg'].includes(fileExtension);
       if (isImage) {
@@ -247,6 +290,7 @@ app.use('/api/becas', becasRouter);
 // Backwards compatibility: some clients expect /api/extension-universitaria
 app.use('/api/extension-universitaria', extensionRouter);
 app.use('/api/video-institucional', videoInstitucionalRouter);
+<<<<<<< Updated upstream
 app.use('/api/portal-estudiantes', portalEstudiantesRouter);
 app.use('/api/modelo-educativo', modeloEducativoRouter);
 app.use('/api/upload', EmailRoute.routes);
@@ -278,6 +322,26 @@ if (process.env.NODE_ENV !== 'production') {
     console.warn('Dev testUpload route not available:', (err as Error)?.message || err);
   }
 }
+=======
+app.use('/api/estadias', estadiaRouter);
+app.use('/api/tipos-estadia', tipoEstadiaRouter);
+app.use('/api/servicios-tecnologicos', servicioTecnologicoRouter);
+app.use('/api/miembros-snii', miembroSniiRouter);
+app.use('/api/miembros-snii-tipos', miembroSniiTipoRouter);
+app.use('/api/productos-investigacion', productoInvestigacionRouter);
+app.use('/api/seminarios-cafe', seminarioCafeRouter);
+app.use('/api/vinculacion-banner', vinculacionBannerRouter);
+app.use('/api/practicas-estadias-banner', practicasEstadiasBannerRouter);
+app.use('/api/educacion-continua', educacionContinuaRouter);
+app.use('/api/servicio-social', servicioSocialRouter);
+app.use('/api/servicio-social-tipos', servicioSocialTipoRouter);
+app.use('/api/servicios-tecnologicos-realizados', servicioTecnologicoRealizadoRouter);
+app.use('/api/movilidad-internacional', movilidadInternacionalRouter);
+app.use('/api/bolsa-trabajo', bolsaTrabajoRouter);
+app.use('/api/egresados-encuentros', encuentroEgresadosRouter);
+app.use('/api/entidad-certificacion-evaluacion', entidadCertificacionEvaluacionRouter);
+app.use('/api/email', EmailRoute.routes);
+>>>>>>> Stashed changes
 
 // 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
 app.get('/health', async (_req, res) => {

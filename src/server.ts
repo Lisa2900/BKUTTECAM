@@ -1,5 +1,14 @@
+<<<<<<< Updated upstream
 // Cargar variables de entorno lo antes posible para que `app` use la configuración
 import 'dotenv/config';
+=======
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Cargar configuración explícitamente
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+>>>>>>> Stashed changes
 import app from './app';
 import { syncDatabase } from './config/syncDatabase';
 import { ensureExtensionAreas } from './startup/ensureExtensionAreas';
@@ -7,6 +16,18 @@ import { ensureUploadFolders } from './startup/ensureUploadFolders';
 import { scheduleTempUploadsCleanup } from './helpers/deleteTempFiles';
 
 const PORT = process.env.PORT || 3000;
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+
+process.on('exit', (code) => {
+  console.log(`Process exiting with code: ${code}`);
+});
 
 // Inicializar servidor
 const startServer = async () => {

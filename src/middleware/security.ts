@@ -14,7 +14,7 @@ export const securityHeaders = helmet({
       fontSrc: ["'self'", "https:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      frameSrc: ["'self'", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     },
   },
   

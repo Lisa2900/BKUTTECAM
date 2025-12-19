@@ -299,6 +299,7 @@ LOG_DIR=./logs
 const corsOptions = {
   origin: [
     'http://localhost:3000',        // Frontend desarrollo
+    'http://localhost:5173',        // Vite dev server usado por UTTECAM
     'https://uttecam.edu.mx',       // Dominio producción
     'https://www.uttecam.edu.mx'    // Dominio con www
   ],
@@ -316,6 +317,18 @@ const corsOptions = {
 - Upload endpoints: 10 requests/15min por IP
 - Speed limiting: Retraso progresivo después de 50 requests
 ```
+
+---
+
+## 🔧 EXCEPCIONES CONTROLADAS
+
+Para permitir que el frontend UTTECAM muestre archivos PDF en un iframe (viewer), se agregó una excepción controlada solo para la ruta de archivos estáticos `/uploads`:
+
+- Se eliminó `X-Frame-Options` para esta ruta y se estableció una cabecera `Content-Security-Policy: frame-ancestors` con las URLs permitidas: `https://www.uttecam.edu.mx`, `https://uttecam.edu.mx` y `http://localhost:5173` (solo para desarrollo).
+- Esta excepción está restringida únicamente a `/uploads` para minimizar riesgos y mantener `X-Frame-Options: DENY` en el resto de la aplicación.
+
+> Recomendación: En producción solo permitir el dominio de producción (no incluir `localhost`), y mantener `X-Frame-Options: DENY` en endpoints sensibles.
+
 
 ---
 

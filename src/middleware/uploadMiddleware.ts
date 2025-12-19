@@ -1131,6 +1131,7 @@ export const saveCarreraFiles = (req: Request, res: Response, next: NextFunction
   }
 };
 
+<<<<<<< Updated upstream
 /**
  * Middleware to check category area before file upload
  * Sets allowImages flag for Promoción area (ID 10)
@@ -1169,6 +1170,15 @@ const secureStorageBecas = multer.diskStorage({
       fs.mkdirSync(uploadPath, { recursive: true });
     }
 
+=======
+// Configuración de almacenamiento para estadias
+const secureStorageEstadias = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../../uploads/estadias');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+>>>>>>> Stashed changes
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -1178,12 +1188,18 @@ const secureStorageBecas = multer.diskStorage({
     const sanitizedOriginalName = file.originalname
       .replace(/[^a-zA-Z0-9._-]/g, '_')
       .substring(0, 50);
+<<<<<<< Updated upstream
 
     const filename = `beca_${timestamp}_${randomName}_${sanitizedOriginalName}${originalExt}`;
+=======
+    
+    const filename = `estadia_${timestamp}_${randomName}_${sanitizedOriginalName}`;
+>>>>>>> Stashed changes
     cb(null, filename);
   }
 });
 
+<<<<<<< Updated upstream
 export const uploadBecas = multer({
   storage: secureStorageBecas,
   limits: {
@@ -1221,3 +1237,439 @@ export const uploadBanner = multer({
 }).single('bannerUpload');
 
 
+=======
+export const uploadEstadias = multer({
+  storage: secureStorageEstadias,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+    files: 1,
+  },
+  fileFilter: secureDocumentFileFilter // Reusing the secure document filter
+});
+
+export const validateUploadedEstadia = (req: Request, res: any, next: any) => {
+  if (!req.file) {
+    return res.status(400).json({
+      error: 'Archivo requerido',
+      message: 'Debe proporcionar un archivo para subir'
+    });
+  }
+
+  const filePath = req.file.path;
+  
+  try {
+    const buffer = fs.readFileSync(filePath, { flag: 'r' });
+    const isValidType = verifyDocumentFileType(buffer.slice(0, 20), req.file.mimetype);
+
+    if (!isValidType) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        error: 'Archivo inválido',
+        message: 'El archivo no corresponde al tipo declarado'
+      });
+    }
+
+    req.body.Ruta_Documento = `/uploads/estadias/${req.file.filename}`;
+    req.body.Nombre = req.body.Nombre || req.file.originalname;
+
+    next();
+  } catch (error) {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    return res.status(500).json({
+      error: 'Error procesando archivo',
+      message: 'No se pudo validar el archivo'
+    });
+  }
+};
+
+// Configuración para Servicios Tecnológicos
+const serviciosTecnologicosStorage = multer.memoryStorage();
+
+export const uploadServiciosTecnologicos = multer({
+  storage: serviciosTecnologicosStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp', 
+      'image/gif', 
+      'application/pdf'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF) y PDF'));
+    }
+  }
+}).fields([
+  { name: 'imagen', maxCount: 1 },
+  { name: 'pdf', maxCount: 1 }
+]);
+
+export const saveServiciosTecnologicosFiles = (req: Request, res: Response, next: NextFunction) => {
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  
+  if (!files) {
+    return next();
+  }
+
+  try {
+    // Guardar imagen
+    if (files.imagen && files.imagen[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/servicios-tecnologicos/imagenes');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(files.imagen[0].originalname).toLowerCase();
+      const filename = `servicio_img_${timestamp}_${randomName}${originalExt}`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.imagen[0].buffer);
+      (req as any).savedImagePath = `servicios-tecnologicos/imagenes/${filename}`;
+    }
+
+    // Guardar PDF
+    if (files.pdf && files.pdf[0]) {
+      const uploadPath = path.join(__dirname, '../../uploads/servicios-tecnologicos/documentos');
+      
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(files.pdf[0].originalname).toLowerCase();
+      const filename = `servicio_doc_${timestamp}_${randomName}${originalExt}`;
+      const filePath = path.join(uploadPath, filename);
+
+      fs.writeFileSync(filePath, files.pdf[0].buffer);
+      (req as any).savedPdfPath = `servicios-tecnologicos/documentos/${filename}`;
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error guardando archivos de servicios tecnológicos:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar los archivos'
+    });
+  }
+};
+
+// Configuración para Miembros SNII
+const miembrosSniiStorage = multer.memoryStorage();
+
+export const uploadMiembrosSnii = multer({
+  storage: miembrosSniiStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['application/pdf'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo PDF'));
+    }
+  }
+}).single('pdf');
+
+export const saveMiembrosSniiFiles = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  try {
+    const uploadPath = path.join(__dirname, '../../uploads/miembros-snii');
+    
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(req.file.originalname).toLowerCase();
+    const filename = `snii_${timestamp}_${randomName}${originalExt}`;
+    const filePath = path.join(uploadPath, filename);
+
+    fs.writeFileSync(filePath, req.file.buffer);
+    (req as any).savedPdfPath = `miembros-snii/${filename}`;
+
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de miembro SNII:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para Productos de Investigación
+const productosInvestigacionStorage = multer.memoryStorage();
+
+export const uploadProductosInvestigacion = multer({
+  storage: productosInvestigacionStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['application/pdf'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo PDF'));
+    }
+  }
+}).single('pdf');
+
+export const saveProductosInvestigacionFiles = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  try {
+    const uploadPath = path.join(__dirname, '../../uploads/productos-investigacion');
+    
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(req.file.originalname).toLowerCase();
+    const filename = `investigacion_${timestamp}_${randomName}${originalExt}`;
+    const filePath = path.join(uploadPath, filename);
+
+    fs.writeFileSync(filePath, req.file.buffer);
+    (req as any).savedPdfPath = `productos-investigacion/${filename}`;
+
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de producto de investigación:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración para Seminario Café Científico
+const seminarioCafeStorage = multer.memoryStorage();
+
+export const uploadSeminarioCafe = multer({
+  storage: seminarioCafeStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp', 
+      'image/gif', 
+      'application/pdf'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo imágenes (JPEG, PNG, WEBP, GIF) y PDF'));
+    }
+  }
+}).single('archivo');
+
+export const saveSeminarioCafeFiles = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return next();
+  }
+
+  try {
+    const isPdf = req.file.mimetype === 'application/pdf';
+    const subDir = isPdf ? 'documentos' : 'imagenes';
+    const uploadPath = path.join(__dirname, `../../uploads/seminario-cafe/${subDir}`);
+    
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(req.file.originalname).toLowerCase();
+    const filename = `seminario_${timestamp}_${randomName}${originalExt}`;
+    const filePath = path.join(uploadPath, filename);
+
+    fs.writeFileSync(filePath, req.file.buffer);
+    (req as any).savedFilePath = `seminario-cafe/${subDir}/${filename}`;
+    (req as any).fileType = isPdf ? 'pdf' : 'image';
+
+    next();
+  } catch (error) {
+    console.error('Error guardando archivo de Seminario Café:', error);
+    return res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo guardar el archivo'
+    });
+  }
+};
+
+// Configuración genérica para subir PDFs a una carpeta específica
+export const uploadPdf = (subfolder: string) => {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(__dirname, `../../uploads/${subfolder}`);
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      const filename = `${timestamp}_${randomName}${originalExt}`;
+      cb(null, filename);
+    }
+  });
+
+  const upload = multer({
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten archivos PDF'));
+      }
+    }
+  }).single('pdf');
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    upload(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      if (req.file) {
+        (req as any).savedPdfPath = `${subfolder}/${req.file.filename}`;
+      }
+      next();
+    });
+  };
+};
+
+// Configuración para Servicios Tecnológicos Realizados
+const serviciosTecnologicosRealizadosStorage = multer.memoryStorage();
+
+export const uploadServiciosTecnologicosRealizados = multer({
+  storage: serviciosTecnologicosRealizadosStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['application/pdf'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo PDF'));
+    }
+  }
+}).single('archivo');
+
+export const saveServiciosTecnologicosRealizadosFiles = (req: Request, res: Response, next: NextFunction) => {
+  const file = req.file;
+  
+  console.log('saveServiciosTecnologicosRealizadosFiles - req.file:', file ? 'Present' : 'Missing');
+
+  if (!file) {
+    return next();
+  }
+
+  try {
+    // Guardar PDF
+    const uploadPath = path.join(__dirname, '../../uploads/servicios-tecnologicos-realizados');
+    console.log('saveServiciosTecnologicosRealizadosFiles - uploadPath:', uploadPath);
+    
+    if (!fs.existsSync(uploadPath)) {
+      console.log('Creating directory:', uploadPath);
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const filename = `servicio_realizado_${timestamp}_${randomName}${originalExt}`;
+    const filePath = path.join(uploadPath, filename);
+
+    console.log('Writing file to:', filePath);
+    fs.writeFileSync(filePath, file.buffer);
+    (req as any).savedPdfPath = `servicios-tecnologicos-realizados/${filename}`;
+    
+    next();
+  } catch (error) {
+    console.error('Error al guardar archivo:', error);
+    next(error);
+  }
+};
+
+// Configuración para Movilidad Internacional
+const movilidadInternacionalStorage = multer.memoryStorage();
+
+export const uploadMovilidadInternacional = multer({
+  storage: movilidadInternacionalStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo PDF e imágenes.'));
+    }
+  }
+}).single('archivo');
+
+export const saveMovilidadInternacionalFiles = (req: Request, res: Response, next: NextFunction) => {
+  const file = req.file;
+  
+  if (!file) {
+    return next();
+  }
+
+  try {
+    const uploadPath = path.join(__dirname, '../../uploads/movilidad-internacional');
+    
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    const randomName = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const filename = `movilidad_${timestamp}_${randomName}${originalExt}`;
+    const filePath = path.join(uploadPath, filename);
+
+    fs.writeFileSync(filePath, file.buffer);
+    (req as any).savedFilePath = `movilidad-internacional/${filename}`;
+    
+    next();
+  } catch (error) {
+    console.error('Error al guardar archivo:', error);
+    next(error);
+  }
+};
+>>>>>>> Stashed changes

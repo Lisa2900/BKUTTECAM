@@ -208,24 +208,6 @@ SolicitudesConstanciasKardex.init(
     tableName: 'solicitudes_constancias_kardex',
     timestamps: false, // Usamos nuestros propios campos de timestamp
     underscored: false, // Los nombres ya están en snake_case en la DB
-    indexes: [
-      {
-        fields: ['matricula'],
-        name: 'idx_matricula'
-      },
-      {
-        fields: ['correo'],
-        name: 'idx_correo'
-      },
-      {
-        fields: ['estado'],
-        name: 'idx_estado'
-      },
-      {
-        fields: ['fecha_solicitud'],
-        name: 'idx_fecha_solicitud'
-      }
-    ],
     hooks: {
       beforeUpdate: (instance) => {
         instance.fecha_actualizacion = new Date();
