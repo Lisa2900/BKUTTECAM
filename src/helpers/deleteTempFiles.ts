@@ -46,3 +46,14 @@ export function scheduleTempUploadsCleanup(everyMs = 24 * 60 * 60 * 1000, option
       .catch(() => { });
   }, everyMs);
 }
+
+/**
+ * Detiene el timer de limpieza programado
+ */
+export function stopTempUploadsCleanup(): void {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    console.log('🛑 Timer de limpieza de archivos temporales detenido');
+  }
+}

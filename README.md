@@ -580,9 +580,29 @@ npm run test            # Tests (configurar próximamente)
 - ✅ **Documentación 100%** - Guías completas
 - ✅ **Usuario Administrador** - Setup inicial
 - ✅ **Health Monitoring** - Estado del sistema
+- ✅ **Tests de Diagnóstico** - Verificación automatizada del backend en producción
+
+### 🧪 **Testing**
+```bash
+# Tests de diagnóstico para backend en línea
+npm run test:diagnostic          # Test rápido (health, endpoints públicos)
+npm run test:diagnostic:full     # Test exhaustivo (auth, CRUD, seguridad)
+npm run test:diagnostic:all      # Ejecutar ambos tests
+
+# Test de seguridad (auditoría OWASP Top 10)
+npm run test:security            # 26 tests de seguridad
+
+# Tests locales
+npm test                         # Ejecutar todos los tests
+npm run test:watch              # Tests en modo watch
+npm run test:coverage           # Tests con cobertura
+```
+
+**📖 Documentación de tests:**
+- [Tests de Diagnóstico](./docs/DIAGNOSTIC_TESTS.md) - Verificación del backend en producción
+- [Auditoría de Seguridad](./docs/SECURITY_AUDIT.md) - Tests OWASP Top 10
 
 ### 🚧 **Próximas Mejoras Sugeridas**
-- [ ] **Tests Automatizados** - Unit testing y integration testing
 - [ ] **CI/CD Pipeline** - Integración y despliegue continuo
 - [ ] **API Versioning** - Versionado de endpoints
 - [ ] **Cache Redis** - Optimización de performance
@@ -590,13 +610,6 @@ npm run test            # Tests (configurar próximamente)
 - [ ] **OAuth Integration** - Login con Google/Microsoft
 - [ ] **API Documentation** - Swagger/OpenAPI
 - [ ] **Monitoring Dashboard** - Métricas en tiempo real
-- [ ] **Roles y permisos** - Control de acceso
-- [ ] **Categorías de textos** - Clasificación
-- [ ] **Historial de cambios** - Auditoría
-- [ ] **API de archivos** - Subida de documentos
-- [ ] **Cache con Redis** - Mejor rendimiento
-- [ ] **Tests unitarios** - Con Jest y Supertest
-- [ ] **Documentación Swagger** - API docs automática
 
 ### 🚀 Inicio Rápido para Desarrolladores
 

@@ -216,6 +216,16 @@ app.use('/uploads',
       }
     }
   })
+
+// Root response: ensure `/` always returns JSON to satisfy cPanel availability checks
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 );
 
 // Servir carpeta public también
