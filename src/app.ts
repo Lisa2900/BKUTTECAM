@@ -216,7 +216,7 @@ app.use('/uploads',
       }
     }
   })
-
+);
 // Root response: ensure `/` always returns JSON to satisfy cPanel availability checks
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -226,7 +226,7 @@ app.get('/', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
-);
+
 
 // Servir carpeta public también
 app.use('/public',
