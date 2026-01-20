@@ -167,9 +167,21 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json({ error: 'Title too long', message: 'The section title exceeds the maximum length of 255 characters' });
     }
 
-    // Actualizar solo la sección especificada
+    // Obtener datos actuales de la sección para fusionar
+    let currentRaw = content.get(section as any);
+    let currentParsed = currentRaw;
+    if (typeof currentRaw === 'string') {
+      try { currentParsed = JSON.parse(currentRaw); } catch (e) { }
+    }
+
+    // Actualizar solo la sección especificada, fusionando con lo existente si es objeto
     const updateObj: any = {};
-    updateObj[section] = sectionData;
+
+    if (typeof sectionData === 'object' && sectionData !== null && typeof currentParsed === 'object' && currentParsed !== null) {
+      updateObj[section] = { ...currentParsed, ...sectionData };
+    } else {
+      updateObj[section] = sectionData;
+    }
 
     await content.update(updateObj);
 
@@ -506,6 +518,16 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
       }
       if (additionalData.title) {
         parsedAdditional.title = additionalData.title;
+      }
+      if (additionalData.text) {
+        parsedAdditional.text = additionalData.text;
+      }
+      if (additionalData.items) {
+        try {
+          parsedAdditional.items = typeof additionalData.items === 'string' ? JSON.parse(additionalData.items) : additionalData.items;
+        } catch {
+          parsedAdditional.items = additionalData.items;
+        }
       }
     }
 
