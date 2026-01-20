@@ -30,6 +30,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --forceExit",
     "test:ci": "jest --ci --coverage --watchAll=false --forceExit",
+    "test:diagnostic": "DIAGNOSTIC_BACKEND_URL=${DIAGNOSTIC_BACKEND_URL:-https://api.uttecam.edu.mx} npm test -- diagnostic-online.test.ts --runInBand",
+    "test:diagnostic:full": "DIAGNOSTIC_BACKEND_URL=${DIAGNOSTIC_BACKEND_URL:-https://api.uttecam.edu.mx} npm test -- diagnostic-online-comprehensive.test.ts --runInBand",
+    "test:diagnostic:all": "DIAGNOSTIC_BACKEND_URL=${DIAGNOSTIC_BACKEND_URL:-https://api.uttecam.edu.mx} npm test -- diagnostic-online --runInBand",
+    "test:security": "DIAGNOSTIC_BACKEND_URL=${DIAGNOSTIC_BACKEND_URL:-https://api.uttecam.edu.mx} npm test -- security-audit.test.ts --runInBand",
     "generate:prod-seeds": "node scripts/seeds/tools/generateProdProgramDetails.js",
     "assets:copy": "npx ts-node scripts/utils/move_assets.ts"
   },

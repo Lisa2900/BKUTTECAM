@@ -8,9 +8,12 @@ import app from './app';
 import { syncDatabase } from './config/syncDatabase';
 import { ensureExtensionAreas } from './startup/ensureExtensionAreas';
 import { ensureUploadFolders } from './startup/ensureUploadFolders';
-import { scheduleTempUploadsCleanup } from './helpers/deleteTempFiles';
+import { scheduleTempUploadsCleanup, stopTempUploadsCleanup } from './helpers/deleteTempFiles';
+import sequelize from './config/database';
 
 const PORT = process.env.PORT || 3000;
+
+let server: any = null;
 
 process.on('uncaughtException', (err) => {
   console.error('UNCAUGHT EXCEPTION:', err);
@@ -24,6 +27,54 @@ process.on('exit', (code) => {
   console.log(`Process exiting with code: ${code}`);
 });
 
+// Graceful shutdown handler
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\n🛑 ${signal} recibido - Iniciando cierre controlado...`);
+  
+  const shutdownTimeout = setTimeout(() => {
+    console.error('⏰ Timeout en cierre - Forzando salida');
+    process.exit(1);
+  }, 10000); // 10 segundos máximo para cerrar
+
+  try {
+    // 1. Detener timer de limpieza
+    stopTempUploadsCleanup();
+
+    // 2. Cerrar servidor HTTP (deja de aceptar nuevas conexiones)
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server.close((err: Error | undefined) => {
+          if (err) {
+            console.error('❌ Error cerrando servidor HTTP:', err.message);
+            reject(err);
+          } else {
+            console.log('✅ Servidor HTTP cerrado');
+            resolve();
+          }
+        });
+      });
+    }
+
+    // 3. Cerrar conexiones de base de datos
+    await sequelize.close();
+    console.log('✅ Conexiones de base de datos cerradas');
+
+    // 4. Limpiar timeout y salir
+    clearTimeout(shutdownTimeout);
+    console.log('👋 Cierre controlado completado');
+    process.exit(0);
+  } catch (error: any) {
+    console.error('❌ Error en cierre controlado:', error.message);
+    clearTimeout(shutdownTimeout);
+    process.exit(1);
+  }
+};
+
+// Registrar handlers de señales
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+
 // Inicializar servidor
 const startServer = async () => {
   try {
@@ -31,7 +82,7 @@ const startServer = async () => {
     ensureUploadFolders();
 
     // Iniciar servidor
-    const server = app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       scheduleTempUploadsCleanup(24 * 60 * 60 * 1000, { olderThanMs: 15 * 60 * 1000, onlyTmpPrefix: true });
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
       console.log(`📡 API disponible en: http://localhost:${PORT}`);

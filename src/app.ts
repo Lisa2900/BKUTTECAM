@@ -10,6 +10,7 @@ import { httpLogging, logUnauthorizedAccess, detectAttackPatterns } from './midd
 import { sanitizeInput } from './middleware/validation';
 
 // IMPORTACIONES DE RUTAS
+import healthRouter from './routes/health';
 import textosRouter from './routes/textos';
 import normatividadRouter from './routes/quienes-somos/normatividad';
 import nosotrosRouter from './routes/nosotros';
@@ -215,6 +216,16 @@ app.use('/uploads',
       }
     }
   })
+
+// Root response: ensure `/` always returns JSON to satisfy cPanel availability checks
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 );
 
 // Servir carpeta public también
@@ -259,10 +270,13 @@ app.get('/', (_req, res) => {
   });
 });
 
-// 12. RUTAS DE AUTENTICACIÓN (PÚBLICAS)
+// 12. HEALTH CHECKS Y MÉTRICAS (PÚBLICAS - sin autenticación)
+app.use(healthRouter);
+
+// 13. RUTAS DE AUTENTICACIÓN (PÚBLICAS)
 app.use('/api/auth', authRouter);
 
-// 13. RUTAS DE LA API (PROTEGIDAS)
+// 14. RUTAS DE LA API (PROTEGIDAS)
 app.use('/api/textos', textosRouter);
 app.use('/api/nosotros', nosotrosRouter);
 app.use('/api/directorios', directorioRouter);
@@ -331,52 +345,8 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-// 14. HEALTH CHECK AVANZADO CON MÉTRICAS DE SEGURIDAD
-app.get('/health', async (_req, res) => {
-  const health: any = {
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    database: 'disconnected',
-    environment: process.env.NODE_ENV || 'development',
-    api_version: '2.0.0-secure',
-    security: {
-      headers: 'enabled',
-      cors: 'restricted',
-      rateLimit: 'active',
-      authentication: 'jwt',
-      fileValidation: 'active',
-      logging: 'enabled'
-    }
-  };
-
-  try {
-    // Importar Sequelize y modelo
-    const sequelize = require('./config/database').default;
-    const Texto = require('./models/Texto').default;
-
-    // Verificar conexión con authenticate
-    await sequelize.authenticate();
-
-    // Hacer consulta real para confirmar funcionamiento
-    const totalRecords = await Texto.count();
-
-    health.database = 'connected';
-    health.sequelize = 'authenticated';
-    health.metrics = {
-      totalTexts: totalRecords,
-      memoryUsage: process.memoryUsage(),
-      nodeVersion: process.version
-    };
-
-  } catch (error: any) {
-    health.database = 'disconnected';
-    health.db_error = error.message;
-    health.status = 'DEGRADED';
-  }
-
-  res.json(health);
-});
+// Nota: El health check anterior fue movido a /routes/health.ts
+// El endpoint legacy /health aún funciona pero se recomienda migrar a /health/detailed
 
 // 15. MIDDLEWARE DE MANEJO DE ERRORES (debe ir al final)
 app.use(notFound);

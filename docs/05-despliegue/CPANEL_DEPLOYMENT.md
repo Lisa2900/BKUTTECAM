@@ -94,10 +94,17 @@ PORT=3000
 
 ### Opción 1: File Manager (Recomendado)
 
-**Paso 1: Comprimir archivos**
+**Paso 1: Crear paquete de deployment (recomendado)**
+
+Se ha añadido el directorio `despliegue/` con los archivos preparados para deployment. Para crear el ZIP final desde la carpeta del proyecto:
+
 ```bash
-# En tu PC, crear ZIP con archivos necesarios
-zip -r uttecam-api.zip dist/ package.json .env.example database_setup.sql docs/
+# Opción recomendada: usar el paquete ya preparado
+cd despliegue
+zip -r ../uttecam-api.zip .
+
+# Si prefieres crear el ZIP manualmente desde la raíz del repo
+# zip -r uttecam-api.zip dist/ package.json .env.example database_setup.sql docs/
 ```
 
 **Paso 2: Subir en cPanel**
