@@ -9,8 +9,8 @@ import 'dotenv/config';
 import { Sequelize, DataTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { CONTENIDO_INICIAL } from './seeds/data/nosotrosData';
-import { programDetails } from './data/programDetailsData';
-import { programs } from './data/programsData';
+import { programDetails } from './data/data/programDetails';
+import { programs } from './data/data/programs';
 import ExtensionSection from '../src/models/ExtensionSection';
 import ExtensionItem from '../src/models/ExtensionItem';
 import ExtensionDocument from '../src/models/ExtensionDocument';
@@ -18,7 +18,7 @@ import User from '../src/models/User';
 import Carrera from '../src/models/Carrera';
 import NosotrosContent from '../src/models/Nosotros';
 import sequelize from '../src/config/database';
-import { seedCarrerasAttached } from './seed-carreras-attached';
+// import { seedCarrerasAttached } from './seed-carreras-attached'; // Comentado - archivo no existe
 
 // Configuración de la base de datos
 const isProduction = process.env.NODE_ENV === 'production';
@@ -314,7 +314,7 @@ async function main() {
     await seedAdmin();
     await seedNosotros();
     // Usar la versión adjunta para poblar las carreras
-    await seedCarrerasAttached(true);
+    // await seedCarrerasAttached(true); // Comentado - función no disponible
     await seedExtensionUniversitaria();
 
     console.log('\n🎉 ========================================');
