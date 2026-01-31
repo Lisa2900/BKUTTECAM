@@ -25,7 +25,7 @@ export class EmailService {
 
   constructor() {
     // Validar que las credenciales de email estén configuradas
-    if (!process.env.MAILER_EMAIL || !process.env.MAILER_SECRET_KEY) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       console.warn('⚠️ MAILER_EMAIL o MAILER_SECRET_KEY no están configurados. El servicio de email no estará disponible.');
     }
 
@@ -34,8 +34,8 @@ export class EmailService {
       port: 465,
       secure: true, // true for 465, false for other ports
       auth: {
-        user: process.env.MAILER_EMAIL,
-        pass: process.env.MAILER_SECRET_KEY
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
       },
       connectionTimeout: EMAIL_TIMEOUT,
       greetingTimeout: EMAIL_TIMEOUT,
@@ -87,11 +87,11 @@ export class EmailService {
       this.validateEmailOptions(options);
       
       // Validar que el servicio esté configurado
-      if (!process.env.MAILER_EMAIL || !process.env.MAILER_SECRET_KEY) {
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         throw new Error('Servicio de email no configurado. Verifique las variables MAILER_EMAIL y MAILER_SECRET_KEY');
       }
 
-      const fromAddress = process.env.MAILER_EMAIL;
+      const fromAddress = process.env.EMAIL_USER  || 'Uttecam Web';
 
       // Imagen embebida del logo (CID) - solo si el archivo existe
       const attachments: Attachement[] = [];
@@ -148,7 +148,7 @@ export class EmailService {
   // Método para verificar la configuración del servicio
   async verifyConnection(): Promise<boolean> {
     try {
-      if (!process.env.MAILER_EMAIL || !process.env.MAILER_SECRET_KEY) {
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         return false;
       }
       await this.transporter.verify();

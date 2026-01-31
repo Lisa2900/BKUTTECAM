@@ -1,6 +1,8 @@
 import sequelize, { connectDatabase } from './database';
 import Texto from '../models/Texto';
 import Area from '../models/Area';
+import Categorias from '../models/Categorias';
+import Archivos from '../models/Archivos';
 import SolicitudesConstanciasKardex from '../models/Solicitud_Constancia';
 import NosotrosContent from '../models/Nosotros';
 import Calendario from '../models/Calendario';
@@ -39,6 +41,10 @@ import EncuentroEgresados from '../models/EncuentroEgresados';
 import EntidadCertificacionEvaluacion from '../models/EntidadCertificacionEvaluacion';
 import MiembroSniiTipo from '../models/MiembroSniiTipo';
 import MiembroSNII from '../models/MiembroSNII';
+import ExtensionSection from '../models/ExtensionSection';
+import ExtensionItem from '../models/ExtensionItem';
+import ExtensionDocument from '../models/ExtensionDocument';
+import User from '../models/User';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -48,9 +54,12 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
 
   // Importar todos los modelos para que se registren en Sequelize
   const models = [
+    User,
     EntidadCertificacionEvaluacion,
     Texto,
     Area,
+    Categorias,
+    Archivos,
     SolicitudesConstanciasKardex,
     NosotrosContent,
     Calendario,
@@ -83,6 +92,9 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     // ServicioSocialTipo,
     ServicioTecnologicoRealizado,
     MovilidadInternacional,
+    ExtensionSection,
+    ExtensionItem,
+    ExtensionDocument,
     BolsaTrabajoHeader,
     BolsaTrabajoItem,
     EncuentroEgresados,
@@ -92,6 +104,30 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
 
   // Sincronizar modelos con la base de datos
   // await sequelize.sync({ force, alter: true });
+  
+  // Si force=true, primero eliminar las tablas hijas con FK antes de las padres
+  // Orden importante: de las más dependientes a las menos dependientes
+  if (force) {
+    const tablesToDropFirst = [
+      { model: Archivos, name: 'Archivos' },           // Depende de Categorias
+      { model: Categorias, name: 'Categorias' },       // Depende de Area
+      { model: BolsaTrabajoItem, name: 'BolsaTrabajoItem' },
+      { model: ExtensionItem, name: 'ExtensionItem' },
+      { model: ExtensionDocument, name: 'ExtensionDocument' }
+    ];
+    
+    for (const { model, name } of tablesToDropFirst) {
+      try {
+        await model.drop();
+        console.log(`🗑️ Tabla ${name} eliminada`);
+      } catch (error: any) {
+        // Ignorar si no existe
+        if (error.original?.code !== 'ER_BAD_TABLE_ERROR') {
+          console.log(`ℹ️ No se pudo eliminar ${name}:`, error.message);
+        }
+      }
+    }
+  }
   
   for (const model of models) {
     try {

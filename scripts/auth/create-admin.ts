@@ -7,8 +7,8 @@ import { Sequelize, DataTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import { CONTENIDO_INICIAL } from '../seeds/data/nosotrosData';
-import { programDetails } from '../data/programDetailsData';
-import { programs } from '../data/programsData';
+import { programDetails } from '../data/data/programDetails';
+import { programs } from '../data/data/programs';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
