@@ -29,7 +29,7 @@ export const getProgramas = async (req: Request, res: Response) => {
 export const createCategory = async (req: Request, res: Response) => {
     try {
         const { titulo } = req.body;
-        const categoria = await ProgramDesarrolloCategory.create({ titulo });
+        const categoria = await ProgramaDesarrolloCategory.create({ titulo });
         res.status(201).json(categoria);
     } catch (error) {
         res.status(500).json({ message: 'Error al crear categoría', error });
@@ -39,7 +39,7 @@ export const createCategory = async (req: Request, res: Response) => {
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const categoria = await ProgramDesarrolloCategory.findByPk(id, {
+        const categoria = await ProgramaDesarrolloCategory.findByPk(id, {
             include: [{ model: ProgramaDesarrollo, as: 'programas' }]
         });
         if (!categoria) return res.status(404).json({ message: 'Categoría no encontrada' });
@@ -61,7 +61,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { titulo } = req.body;
-        const categoria = await ProgramDesarrolloCategory.findByPk(id);
+        const categoria = await ProgramaDesarrolloCategory.findByPk(id);
         if (!categoria) return res.status(404).json({ message: 'Categoría no encontrada' });
         await categoria.update({ titulo });
         res.json(categoria);
