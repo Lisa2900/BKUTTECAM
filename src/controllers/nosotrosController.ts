@@ -5,6 +5,35 @@ import fs from 'fs';
 import { deleteFile } from "../middleware/uploadMiddleware";
 
 // ============================================
+// HELPER: normalizar noDiscriminacion al formato
+// unificado { text: string, items: string[] }
+// ============================================
+const normalizeNoDisc = (raw: any): { text: string; items: string[] } => {
+  if (!raw) return { text: '', items: [] };
+
+  // Formato nuevo: { text?, items? }
+  if (typeof raw === 'object' && !Array.isArray(raw)) {
+    const items = Array.isArray(raw.items)
+      ? (raw.items as any[]).flat().filter((v: any) => typeof v === 'string') as string[]
+      : [];
+    return {
+      text: typeof raw.text === 'string' ? raw.text : '',
+      items,
+    };
+  }
+
+  // Formato viejo: string[][] (3 columnas)
+  if (Array.isArray(raw)) {
+    const flatItems = (raw as any[])
+      .flat()
+      .filter((v: any) => typeof v === 'string') as string[];
+    return { text: '', items: flatItems };
+  }
+
+  return { text: '', items: [] };
+};
+
+// ============================================
 // CONTROLADOR PARA CONTENIDO DE "NOSOTROS"
 // ============================================
 
@@ -41,7 +70,8 @@ export const getContent = async (req: Request, res: Response, next: NextFunction
       vision: parseIfString(data.vision),
       mision: parseIfString(data.mision),
       valores: parseIfString(data.valores),
-      noDiscriminacion: parseIfString(data.noDiscriminacion)
+      // Siempre devolver { text, items } independientemente del formato en BD
+      noDiscriminacion: normalizeNoDisc(parseIfString(data.noDiscriminacion)),
     };
 
     res.json(parsedData);
@@ -162,6 +192,30 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
       }
     }
 
+    // noDiscriminacion: puede llegar como { items, text } (dashboard) o string[][]
+    // Siempre guardamos en formato { text, items } para consistencia
+    if (section === 'noDiscriminacion') {
+      let currentRaw = content.get('noDiscriminacion' as any);
+      if (typeof currentRaw === 'string') {
+        try { currentRaw = JSON.parse(currentRaw); } catch (_) { }
+      }
+      const current = normalizeNoDisc(currentRaw);
+      const incoming = normalizeNoDisc(sectionData);
+      const updateObj: any = {};
+      updateObj['noDiscriminacion'] = {
+        text: incoming.text !== '' ? incoming.text : current.text,
+        items: incoming.items.length > 0 ? incoming.items : current.items,
+      };
+      await content.update(updateObj);
+      await content.reload();
+      let saved = content.get('noDiscriminacion' as any);
+      if (typeof saved === 'string') { try { saved = JSON.parse(saved); } catch (_) { } }
+      return res.json({
+        message: 'Sección noDiscriminacion actualizada exitosamente',
+        noDiscriminacion: normalizeNoDisc(saved),
+      });
+    }
+
     // Validate title length for updated section
     if (sectionData && typeof sectionData === 'object' && (sectionData as any).title && (sectionData as any).title.length > 255) {
       return res.status(400).json({ error: 'Title too long', message: 'The section title exceeds the maximum length of 255 characters' });
@@ -177,7 +231,8 @@ export const updateSection = async (req: Request, res: Response, next: NextFunct
     // Actualizar solo la sección especificada, fusionando con lo existente si es objeto
     const updateObj: any = {};
 
-    if (typeof sectionData === 'object' && sectionData !== null && typeof currentParsed === 'object' && currentParsed !== null) {
+    if (typeof sectionData === 'object' && sectionData !== null && typeof currentParsed === 'object' && currentParsed !== null && !Array.isArray(currentParsed)) {
+      // Merge solo si ambos son objetos planos (no arrays)
       updateObj[section] = { ...currentParsed, ...sectionData };
     } else {
       updateObj[section] = sectionData;
@@ -487,9 +542,16 @@ export const uploadImage = async (req: Request, res: Response, next: NextFunctio
       }
     }
 
-    // Si ya existe una imagen en esta sección, eliminarla antes de poner la nueva
-    if (sectionData && (sectionData as any).imageSrc) {
-      deleteFile((sectionData as any).imageSrc);
+    // Si ya existe una imagen en esta sección, eliminar el archivo físico anterior
+    const oldImageSrc: string | undefined = (sectionData as any)?.imageSrc;
+    if (oldImageSrc) {
+      // Construir ruta absoluta: uploads/ está 2 niveles arriba de src/controllers/
+      const uploadsDir = path.join(__dirname, '../../uploads');
+      const absoluteOldPath = path.join(uploadsDir, oldImageSrc);
+      const deleted = deleteFile(absoluteOldPath);
+      if (!deleted) {
+        console.warn(`[uploadImage] No se pudo eliminar imagen anterior: ${absoluteOldPath}`);
+      }
     }
 
     // Construir el objeto actualizado con la nueva imagen y datos adicionales

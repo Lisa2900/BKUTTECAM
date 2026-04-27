@@ -420,7 +420,7 @@ const secureStorageCalendarios = multer.diskStorage({
 export const uploadCalendarios = multer({
   storage: multer.memoryStorage(), // Usar memory storage para validación antes de guardar
   limits: {
-    fileSize: 30 * 1024 * 1024, // 30MB para calendarios detallados (PDF/Imagen)
+    fileSize: 5 * 1024 * 1024, // 5MB para calendarios (PDF/Imagen)
     files: 1,
     fieldNameSize: 100,
     fieldSize: 1024 * 1024,

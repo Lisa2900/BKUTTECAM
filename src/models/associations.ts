@@ -4,6 +4,9 @@ import Archivos from './Archivos';
 import PortalEstudiantes from './PortalEstudiantes';
 import ExtensionSection from './ExtensionSection';
 import ExtensionItem from './ExtensionItem';
+import Comite from './Comite';
+import ComiteCategory from './ComiteCategory';
+import DocumentoComite from './DocumentoComite';
 
 // Definir las relaciones entre modelos
 
@@ -51,9 +54,10 @@ ExtensionItem.belongsTo(ExtensionSection, {
   as: 'section'
 });
 
-// Import Normatividad Models
 import NormatividadCategory from './NormatividadCategory';
 import NormatividadDocument from './NormatividadDocument';
+import ProgramaDesarrolloCategory from './ProgramaDesarrolloCategory';
+import ProgramaDesarrollo from './ProgramaDesarrollo';
 
 // Normatividad relations
 NormatividadCategory.hasMany(NormatividadDocument, {
@@ -69,8 +73,75 @@ NormatividadDocument.belongsTo(NormatividadCategory, {
   onUpdate: 'CASCADE',
 });
 
+// ProgramaDesarrollo relations
+ProgramaDesarrolloCategory.hasMany(ProgramaDesarrollo, {
+  foreignKey: 'categoria_id',
+  as: 'programas',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+ProgramaDesarrollo.belongsTo(ProgramaDesarrolloCategory, {
+  foreignKey: 'categoria_id',
+  as: 'categoria',
+  onUpdate: 'CASCADE',
+});
+
+// COMITES relations
+Comite.hasMany(ComiteCategory, {
+  foreignKey: 'comiteId',
+  as: 'categorias',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+ComiteCategory.belongsTo(Comite, {
+  foreignKey: 'comiteId',
+  as: 'comite'
+});
+
+ComiteCategory.hasMany(DocumentoComite, {
+  foreignKey: 'categoriaId',
+  as: 'documentos',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+DocumentoComite.belongsTo(ComiteCategory, {
+  foreignKey: 'categoriaId',
+  as: 'categoria'
+});
+
 // Exportar todos los modelos con sus relaciones configuradas
-export { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem, NormatividadCategory, NormatividadDocument };
+export { 
+  Area, 
+  Categorias, 
+  Archivos, 
+  PortalEstudiantes, 
+  ExtensionSection, 
+  ExtensionItem, 
+  NormatividadCategory, 
+  NormatividadDocument,
+  ProgramaDesarrolloCategory,
+  ProgramaDesarrollo,
+  Comite,
+  ComiteCategory,
+  DocumentoComite
+};
 
 // También exportar individualmente para facilitar importaciones
-export default { Area, Categorias, Archivos, PortalEstudiantes, ExtensionSection, ExtensionItem, NormatividadCategory, NormatividadDocument };
+export default { 
+  Area, 
+  Categorias, 
+  Archivos, 
+  PortalEstudiantes, 
+  ExtensionSection, 
+  ExtensionItem, 
+  NormatividadCategory, 
+  NormatividadDocument,
+  ProgramaDesarrolloCategory,
+  ProgramaDesarrollo,
+  Comite,
+  ComiteCategory,
+  DocumentoComite
+};

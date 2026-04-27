@@ -39,6 +39,22 @@ import EncuentroEgresados from '../models/EncuentroEgresados';
 import EntidadCertificacionEvaluacion from '../models/EntidadCertificacionEvaluacion';
 import MiembroSniiTipo from '../models/MiembroSniiTipo';
 import MiembroSNII from '../models/MiembroSNII';
+import Comite from '../models/Comite';
+import ComiteCategory from '../models/ComiteCategory';
+import DocumentoComite from '../models/DocumentoComite';
+import ProgramaDesarrollo from '../models/ProgramaDesarrollo';
+import ProgramaDesarrolloCategory from '../models/ProgramaDesarrolloCategory';
+import NormatividadCategory from '../models/NormatividadCategory';
+import NormatividadDocument from '../models/NormatividadDocument';
+import SeminarioCafeRecurso from '../models/SeminarioCafeRecurso';
+import Formulario from '../models/Formulario';
+import Directorios from '../models/Directorios';
+import Archivos from '../models/Archivos';
+import Categorias from '../models/Categorias';
+import Organigrama from '../models/Organigrama';
+import PortalEstudiantes from '../models/PortalEstudiantes';
+import ProductoInvestigacion from '../models/ProductoInvestigacion';
+import SeminarioCafeRecurso from '../models/SeminarioCafeRecurso';
 // Importar asociaciones para que se registren correctamente
 import '../models/associations';
 
@@ -88,6 +104,22 @@ export const syncDatabase = async (force: boolean = false): Promise<void> => {
     EncuentroEgresados,
     MiembroSniiTipo,
     MiembroSNII,
+    Comite,
+    ComiteCategory,
+    DocumentoComite,
+    ProgramaDesarrollo,
+    ProgramaDesarrolloCategory,
+    NormatividadCategory,
+    NormatividadDocument,
+    Organigrama,
+    PortalEstudiantes,
+    ProductoInvestigacion,
+    SeminarioCafeRecurso,
+    Formulario,
+    Directorios,
+    Archivos,
+    Categorias,
+    Organigrama,
   ];
 
   // Sincronizar modelos con la base de datos

@@ -8,9 +8,10 @@ interface ProgramaDesarrolloAttributes {
     descripcion: string;
     archivo: string;
     activo: boolean;
+    categoria_id: number | null;
 }
 
-interface ProgramaDesarrolloCreationAttributes extends Optional<ProgramaDesarrolloAttributes, 'id' | 'activo'> { }
+interface ProgramaDesarrolloCreationAttributes extends Optional<ProgramaDesarrolloAttributes, 'id' | 'activo' | 'categoria_id'> { }
 
 class ProgramaDesarrollo extends Model<ProgramaDesarrolloAttributes, ProgramaDesarrolloCreationAttributes>
     implements ProgramaDesarrolloAttributes {
@@ -19,6 +20,7 @@ class ProgramaDesarrollo extends Model<ProgramaDesarrolloAttributes, ProgramaDes
     public descripcion!: string;
     public archivo!: string;
     public activo!: boolean;
+    public categoria_id!: number | null;
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -47,6 +49,14 @@ ProgramaDesarrollo.init(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        categoria_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'programa_desarrollo_categorias',
+                key: 'id'
+            }
+        }
     },
     {
         sequelize,

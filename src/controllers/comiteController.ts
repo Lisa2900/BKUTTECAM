@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import Comite from '../models/Comite';
 import DocumentoComite from '../models/DocumentoComite';
-import fs from 'fs';
-import path from 'path';
+import ComiteCategory from '../models/ComiteCategory';
 import { deleteFile } from '../middleware/uploadMiddleware';
 
 export const getComites = async (req: Request, res: Response) => {
@@ -16,24 +15,23 @@ export const getComites = async (req: Request, res: Response) => {
             whereClause.slug = slug;
         }
 
-        const docWhereClause = includeInactive ? {} : { activo: true };
-
         const comites = await Comite.findAll({
             where: whereClause,
             include: [{
-                model: DocumentoComite,
-                as: 'documentos',
-                where: docWhereClause,
-                required: false // LEFT JOIN to include comites without documents
+                model: ComiteCategory,
+                as: 'categorias',
+                include: [{
+                    model: DocumentoComite,
+                    as: 'documentos',
+                    where: includeInactive ? {} : { activo: true },
+                    required: false
+                }]
             }],
             order: [['id', 'ASC']]
         });
 
-        // Siempre devolver array (vacío si no hay datos)
         res.json(comites || []);
     } catch (error: any) {
-        console.error('Error en getComites:', error.message);
-        // Si la tabla no existe o hay error, devolver array vacío para permitir crear
         if (error.name === 'SequelizeDatabaseError' || error.message?.includes('doesn\'t exist')) {
             return res.json([]);
         }
@@ -47,15 +45,19 @@ export const getComiteBySlug = async (req: Request, res: Response) => {
         const { admin } = req.query;
 
         const includeInactive = admin === 'true';
-        const docWhereClause = includeInactive ? {} : { activo: true };
 
         const comite = await Comite.findOne({
             where: { slug: slug },
             include: [{
-                model: DocumentoComite,
-                as: 'documentos',
-                where: docWhereClause,
-                required: false
+                model: ComiteCategory,
+                as: 'categorias',
+                required: false,
+                include: [{
+                    model: DocumentoComite,
+                    as: 'documentos',
+                    where: includeInactive ? {} : { activo: true },
+                    required: false
+                }]
             }]
         });
 
@@ -64,14 +66,57 @@ export const getComiteBySlug = async (req: Request, res: Response) => {
         }
         res.json(comite);
     } catch (error: any) {
-        console.error('Error en getComiteBySlug:', error.message);
-        // Si la tabla no existe, devolver 404 para permitir inicializar
         if (error.name === 'SequelizeDatabaseError' || error.message?.includes('doesn\'t exist')) {
             return res.status(404).json({ message: 'Comité no encontrado' });
         }
         res.status(500).json({ message: 'Error al obtener el comité' });
     }
-}
+};
+
+export const createCategory = async (req: Request, res: Response) => {
+    try {
+        const { comiteId, titulo } = req.body;
+        const categoria = await ComiteCategory.create({ comiteId, titulo });
+        res.status(201).json(categoria);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al crear la categoría del comité' });
+    }
+};
+
+export const updateCategory = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { titulo } = req.body;
+        const categoria = await ComiteCategory.findByPk(id);
+        if (!categoria) return res.status(404).json({ message: 'Categoría no encontrada' });
+        await categoria.update({ titulo });
+        res.json(categoria);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar la categoría' });
+    }
+};
+
+export const deleteCategory = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const categoria = await ComiteCategory.findByPk(id, {
+            include: [{ model: DocumentoComite, as: 'documentos' }]
+        });
+        if (!categoria) return res.status(404).json({ message: 'Categoría no encontrada' });
+
+        // Borrar archivos
+        const docs = (categoria as any).documentos || [];
+        for (const doc of docs) {
+            if (doc.archivo) deleteFile(doc.archivo);
+        }
+
+        await categoria.destroy();
+        res.json({ message: 'Categoría eliminada' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al eliminar la categoría' });
+    }
+};
+
 
 export const createComite = async (req: Request, res: Response) => {
     try {
@@ -150,33 +195,53 @@ export const deleteComite = async (req: Request, res: Response) => {
 // Document Management
 export const addDocumento = async (req: Request, res: Response) => {
     try {
-        console.log('[Comite Documento] Body:', req.body);
-        console.log('[Comite Documento] File:', req.file);
-
-        const { comiteId, titulo, activo } = req.body;
+        const { comiteId, categoriaId, titulo, activo } = req.body;
 
         if (!req.file) {
-            console.log('[Comite Documento] Error: No hay archivo');
             return res.status(400).json({ message: 'Se requiere un archivo' });
         }
 
         const archivoPath = `/uploads/documentos/${req.file.filename}`;
-        console.log('[Comite Documento] Guardando en:', archivoPath);
 
         const doc = await DocumentoComite.create({
             comiteId,
+            categoriaId: categoriaId ? Number(categoriaId) : null,
             titulo,
             archivo: archivoPath,
             activo: activo === 'true' || activo === true
         });
 
-        console.log('[Comite Documento] Documento creado:', doc.id);
         res.status(201).json(doc);
     } catch (error: any) {
-        console.error('[Comite Documento] Error:', error.message);
-        res.status(500).json({ message: 'Error al agregar documento', error: error.message });
+        res.status(500).json({ message: 'Error al agregar documento' });
     }
 };
+
+export const updateDocumento = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { titulo, activo, categoriaId } = req.body;
+        const doc = await DocumentoComite.findByPk(id);
+        if (!doc) return res.status(404).json({ message: 'Documento no encontrado' });
+
+        const updateData: any = { 
+            titulo, 
+            activo: activo === 'true' || activo === true,
+            categoriaId: categoriaId ? Number(categoriaId) : doc.categoriaId
+        };
+        
+        if (req.file) {
+            if (doc.archivo) deleteFile(doc.archivo);
+            updateData.archivo = `/uploads/documentos/${req.file.filename}`;
+        }
+
+        await doc.update(updateData);
+        res.json(doc);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar documento' });
+    }
+};
+
 
 export const deleteDocumento = async (req: Request, res: Response) => {
     try {

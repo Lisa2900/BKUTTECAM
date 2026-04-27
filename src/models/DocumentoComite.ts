@@ -5,16 +5,18 @@ import Comite from './Comite';
 interface DocumentoComiteAttributes {
     id: number;
     comiteId: number;
+    categoriaId: number | null;
     titulo: string;
     archivo: string;
     activo: boolean;
 }
 
-interface DocumentoComiteCreationAttributes extends Optional<DocumentoComiteAttributes, 'id' | 'activo'> { }
+interface DocumentoComiteCreationAttributes extends Optional<DocumentoComiteAttributes, 'id' | 'activo' | 'categoriaId'> { }
 
 class DocumentoComite extends Model<DocumentoComiteAttributes, DocumentoComiteCreationAttributes> implements DocumentoComiteAttributes {
     public id!: number;
     public comiteId!: number;
+    public categoriaId!: number | null;
     public titulo!: string;
     public archivo!: string;
     public activo!: boolean;
@@ -36,6 +38,15 @@ DocumentoComite.init(
             },
             field: 'comite_id'
         },
+        categoriaId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'comite_categorias',
+                key: 'id'
+            },
+            field: 'categoria_id'
+        },
         titulo: {
             type: DataTypes.STRING(255),
             allowNull: false,
@@ -49,6 +60,7 @@ DocumentoComite.init(
             defaultValue: true,
         }
     },
+
     {
         sequelize,
         tableName: 'documentos_comite',

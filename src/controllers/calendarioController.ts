@@ -90,9 +90,16 @@ export const updateCalendario = async (req: Request, res: Response, next: NextFu
 
     // Si hay nuevo archivo, eliminar el anterior
     if (archivo && calendario.archivo) {
-      const oldPath = path.join(__dirname, '../../uploads/calendarios', calendario.archivo);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
+      const uploadDir = path.resolve(process.cwd(), 'uploads/calendarios');
+      const oldPath = path.join(uploadDir, calendario.archivo);
+      
+      try {
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      } catch (err) {
+        console.error('Error al eliminar archivo físico anterior:', err);
+        // Continuamos aunque falle el borrado del archivo viejo
       }
     }
 
@@ -130,9 +137,16 @@ export const deleteCalendario = async (req: Request, res: Response, next: NextFu
 
     // Eliminar archivo físico
     if (calendario.archivo) {
-      const filePath = path.join(__dirname, '../../uploads/calendarios', calendario.archivo);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      const uploadDir = path.resolve(process.cwd(), 'uploads/calendarios');
+      const filePath = path.join(uploadDir, calendario.archivo);
+      
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (err) {
+        console.error('Error al eliminar archivo físico:', err);
+        // Continuamos eliminando el registro en la BD
       }
     }
 
