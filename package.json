@@ -21,7 +21,7 @@
     "seed:all:prod": "node scripts/seed-all.js",
     "seed:nosotros": "ts-node scripts/seed-nosotros.ts",
     "create:admin:dev": "ts-node scripts/auth/create-admin.ts",
-    "create:admin": "node scripts/auth/create-admin.js",
+    "create:admin": "node scripts/create-admin.js",
     "test:files": "node scripts/tests/test-files.js",
     "test:tokens": "node scripts/tests/test-token-security.js",
     "security:test": "echo 'Testing security endpoints...' && curl -s http://localhost:3002/health",

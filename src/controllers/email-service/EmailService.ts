@@ -44,7 +44,7 @@ export class EmailService {
 
     // Ruta al logo institucional
     this.logoPath = path.resolve(process.cwd(), 'public/emailPhotos/motocleEmail.png');
-    
+
     // Verificar que el logo existe
     if (!fs.existsSync(this.logoPath)) {
       console.warn(`⚠️ Logo institucional no encontrado en: ${this.logoPath}`);
@@ -55,15 +55,15 @@ export class EmailService {
     if (!options.to || (Array.isArray(options.to) && options.to.length === 0)) {
       throw new Error('Debe especificar al menos un destinatario');
     }
-    
+
     if (!options.subject || options.subject.trim().length === 0) {
       throw new Error('El asunto del email es requerido');
     }
-    
+
     if (!options.htmlBody || options.htmlBody.trim().length === 0) {
       throw new Error('El cuerpo del email es requerido');
     }
-    
+
     // Validar tamaño de adjuntos
     if (options.attachments && options.attachments.length > 0) {
       let totalSize = 0;
@@ -74,7 +74,7 @@ export class EmailService {
         const stats = fs.statSync(att.path);
         totalSize += stats.size;
       }
-      
+
       if (totalSize > MAX_ATTACHMENT_SIZE) {
         throw new Error(`El tamaño total de los adjuntos (${Math.round(totalSize / 1024 / 1024)}MB) excede el límite de ${MAX_ATTACHMENT_SIZE / 1024 / 1024}MB`);
       }
@@ -85,7 +85,7 @@ export class EmailService {
     try {
       // Validar opciones
       this.validateEmailOptions(options);
-      
+
       // Validar que el servicio esté configurado
       if (!process.env.MAILER_EMAIL || !process.env.MAILER_SECRET_KEY) {
         throw new Error('Servicio de email no configurado. Verifique las variables MAILER_EMAIL y MAILER_SECRET_KEY');
@@ -121,15 +121,15 @@ export class EmailService {
       };
 
       console.log(`📧 Enviando email a: ${Array.isArray(options.to) ? options.to.join(', ') : options.to}`);
-      
+
       // Enviar con timeout
       const info = await Promise.race([
         this.transporter.sendMail(mailOptions),
-        new Promise<never>((_, reject) => 
+        new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Email timeout: El envío tardó más de 30 segundos')), EMAIL_TIMEOUT)
         )
       ]);
-      
+
       console.log(`✅ Email enviado exitosamente. MessageId: ${info.messageId}`);
       return info;
     } catch (error: any) {

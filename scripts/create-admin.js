@@ -19,7 +19,7 @@ const isInDistFolder = __dirname.includes('dist');
 const envPaths = [
   path.join(__dirname, '..', '.env'),
   path.join(__dirname, '..', '..', '.env'),
-  path.join(process.cwd(), '.env')
+  path.join(process.cwd(), '.env'),
 ];
 
 let envLoaded = false;
@@ -38,7 +38,9 @@ if (!envLoaded) {
 
 // Verificar configuración crítica
 const requiredEnvVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
-const missingVars = requiredEnvVars.filter(varName => process.env[varName] === undefined);
+const missingVars = requiredEnvVars.filter(
+  (varName) => process.env[varName] === undefined,
+);
 
 if (missingVars.length > 0) {
   console.error('❌ Variables de entorno faltantes:', missingVars.join(', '));
@@ -64,75 +66,79 @@ const sequelize = new Sequelize({
     max: 5,
     min: 0,
     acquire: 30000,
-    idle: 10000
-  }
+    idle: 10000,
+  },
 });
 
 // Definir modelo User (simplificado)
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
-  username: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
-    unique: true
-  },
-  email: {
-    type: DataTypes.STRING(150),
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true
-    }
-  },
-  password: {
-    type: DataTypes.STRING(255),
-    allowNull: false
-  },
-  role: {
-    type: DataTypes.ENUM('admin', 'editor', 'viewer'),
-    allowNull: false,
-    defaultValue: 'viewer'
-  },
-  is_active: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: true
-  },
-  last_login: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  failed_login_attempts: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
-  },
-  locked_until: {
-    type: DataTypes.DATE,
-    allowNull: true
-  }
-}, {
-  tableName: 'users',
-  underscored: true,
-  hooks: {
-    beforeCreate: async (user) => {
-      if (user.password) {
-        const saltRounds = 12;
-        user.password = await bcrypt.hash(user.password, saltRounds);
-      }
+const User = sequelize.define(
+  'User',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    beforeUpdate: async (user) => {
-      if (user.changed('password')) {
-        const saltRounds = 12;
-        user.password = await bcrypt.hash(user.password, saltRounds);
-      }
-    }
-  }
-});
+    username: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      unique: true,
+    },
+    email: {
+      type: DataTypes.STRING(150),
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM('admin', 'editor', 'viewer'),
+      allowNull: false,
+      defaultValue: 'viewer',
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    last_login: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    failed_login_attempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    locked_until: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+  },
+  {
+    tableName: 'users',
+    underscored: true,
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          const saltRounds = 12;
+          user.password = await bcrypt.hash(user.password, saltRounds);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password')) {
+          const saltRounds = 12;
+          user.password = await bcrypt.hash(user.password, saltRounds);
+        }
+      },
+    },
+  },
+);
 
 const createAdminUser = async (isForced = false) => {
   try {
@@ -140,13 +146,13 @@ const createAdminUser = async (isForced = false) => {
     console.log(`📍 Host: ${process.env.DB_HOST}`);
     console.log(`🗄️  Base de datos: ${process.env.DB_NAME}`);
     console.log(`👤 Usuario: ${process.env.DB_USER}`);
-    
+
     // Conectar a la base de datos con timeout
     const connectionPromise = sequelize.authenticate();
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout de conexión (30s)')), 30000)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout de conexión (30s)')), 30000),
     );
-    
+
     await Promise.race([connectionPromise, timeoutPromise]);
     console.log('✅ Conexión a base de datos establecida');
 
@@ -158,7 +164,7 @@ const createAdminUser = async (isForced = false) => {
     // Verificar si ya existe un administrador
     console.log('🔍 Verificando administradores existentes...');
     const existingAdmin = await User.findOne({
-      where: { role: 'admin' }
+      where: { role: 'admin' },
     });
 
     if (existingAdmin) {
@@ -184,7 +190,7 @@ const createAdminUser = async (isForced = false) => {
       email: 'admin@uttecam.edu.mx',
       password: 'Admin123!@#', // Será hasheada automáticamente por el hook
       role: 'admin',
-      is_active: true
+      is_active: true,
     };
 
     console.log('👤 Creando usuario administrador...');
@@ -215,10 +221,11 @@ const createAdminUser = async (isForced = false) => {
     console.log('🚀 Puedes hacer login en: POST /api/auth/login');
     console.log('   Body: { "username": "admin", "password": "Admin123!@#" }');
 
+    return true;
   } catch (error) {
     console.error('❌ Error al crear usuario administrador:');
     console.error('');
-    
+
     // Mostrar información detallada del error
     if (error.name === 'SequelizeConnectionError') {
       console.error('🔌 Error de conexión a la base de datos:');
@@ -294,7 +301,7 @@ const main = async () => {
   }
 
   const success = await createAdminUser(isForced);
-  
+
   if (!success && !isSafe) {
     console.log('');
     console.log('❌ Script finalizado con errores');

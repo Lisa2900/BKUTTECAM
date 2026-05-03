@@ -9,6 +9,9 @@ package-lock.json
 dist/
 build/
 
+#CLAUDE
+CLAUDE.md
+
 # JavaScript files (except scripts/ folder for production seeds)
 *.js
 !scripts/*.js
