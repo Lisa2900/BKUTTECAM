@@ -10,8 +10,12 @@ import path from 'path';
 // GET /api/becas/sections - Obtener todas las secciones ordenadas
 export const getAllSections = async (req: Request, res: Response) => {
     try {
+        const { module = 'becas' } = req.query;
         const sections = await BecaSection.findAll({
-            where: { active: true },
+            where: { 
+                active: true,
+                module: module as string
+            },
             order: [['order', 'ASC']]
         });
 
@@ -42,22 +46,25 @@ export const getSection = async (req: Request, res: Response) => {
 // POST /api/becas/sections - Crear nueva sección
 export const createSection = async (req: Request, res: Response) => {
     try {
-        const { type, title, data, order } = req.body;
+        const { type, title, data, order, module = 'becas' } = req.body;
 
         // Validar tipo de sección
-        const allowedTypes = ['header', 'banner', 'convocatoria', 'avisos', 'footer', 'repository'];
+        const allowedTypes = ['header', 'banner', 'convocatoria', 'avisos', 'footer', 'repository', 'results', 'infographics'];
         if (!allowedTypes.includes(type)) {
             return res.status(400).json({ message: 'Tipo de sección inválido' });
         }
 
-        // Si no se proporciona orden, obtener el siguiente disponible
+        // Si no se proporciona orden, obtener el siguiente disponible para ese módulo
         let sectionOrder = order;
         if (!sectionOrder) {
-            const maxOrder = await BecaSection.max('order') as number | null;
+            const maxOrder = await BecaSection.max('order', {
+                where: { module: module as string }
+            }) as number | null;
             sectionOrder = (maxOrder || 0) + 1;
         }
 
         const section = await BecaSection.create({
+            module: module as 'becas' | 'estadia',
             type,
             title,
             data: data || {},

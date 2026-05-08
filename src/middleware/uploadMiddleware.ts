@@ -1082,6 +1082,49 @@ export const saveSeminarioCafeFiles = (req: Request, res: Response, next: NextFu
   }
 };
 
+// Configuración genérica para subir archivos (PDF/Imagen) a una carpeta específica de becas
+export const uploadBecaFile = (subfolder: string) => {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(__dirname, `../../uploads/${subfolder}`);
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const randomName = crypto.randomBytes(16).toString('hex');
+      const timestamp = Date.now();
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      const filename = `${timestamp}_${randomName}${originalExt}`;
+      cb(null, filename);
+    }
+  });
+
+  const upload = multer({
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten PDFs e imágenes (JPG, PNG, WEBP, GIF)'));
+      }
+    }
+  }).single('bannerUpload');
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    upload(req, res, (err: any) => {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  };
+};
+
 // Configuración genérica para subir PDFs a una carpeta específica
 export const uploadPdf = (subfolder: string) => {
   const storage = multer.diskStorage({
@@ -1247,7 +1290,7 @@ export const uploadMiddleware = multer({
   }
 });
 export const uploadBecas = uploadPdf('becas');
-export const uploadBanner = uploadPdf('becas-banner');
+export const uploadBanner = uploadBecaFile('becas-banner');
 export const uploadExtension = uploadNosotros;
 export const uploadExtensionDocuments = uploadDocumentos;
 export const uploadModelo = uploadPdf('modelo-educativo');

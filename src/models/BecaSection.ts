@@ -3,7 +3,8 @@ import sequelize from '../config/database';
 
 interface BecaSectionAttributes {
     id?: number;
-    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository';
+    module: 'becas' | 'estadia';
+    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository' | 'infographics';
     title: string;
     data: any; // JSON data specific to each section type
     order: number;
@@ -14,7 +15,8 @@ interface BecaSectionAttributes {
 
 class BecaSection extends Model<BecaSectionAttributes> implements BecaSectionAttributes {
     public id!: number;
-    public type!: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository';
+    public module!: 'becas' | 'estadia';
+    public type!: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository' | 'infographics';
     public title!: string;
     public data!: any;
     public order!: number;
@@ -30,8 +32,13 @@ BecaSection.init(
             autoIncrement: true,
             primaryKey: true,
         },
+        module: {
+            type: DataTypes.ENUM('becas', 'estadia'),
+            allowNull: false,
+            defaultValue: 'becas',
+        },
         type: {
-            type: DataTypes.ENUM('header', 'requirements', 'documents', 'links', 'platform', 'results', 'banner', 'avisos', 'convocatoria', 'footer', 'repository'),
+            type: DataTypes.ENUM('header', 'requirements', 'documents', 'links', 'platform', 'results', 'banner', 'avisos', 'convocatoria', 'footer', 'repository', 'infographics'),
             allowNull: false,
         },
         title: {
